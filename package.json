@@ -6,17 +6,7 @@
   "scripts": {
     "build": "node ssg.js"
   },
-  "keywords": [
-    "static-site-generator",
-    "ssg",
-    "markdown",
-    "html",
-    "nodejs"
-  ],
-  "author": "Your Name <your.email@example.com>",
   "license": "MIT",
   "dependencies": {
-    "front-matter": "^4.0.2",
-    "marked": "^9.1.2"
   }
 }
