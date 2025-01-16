@@ -142,7 +142,7 @@ async function runSSG() {
 
     // Build CodeMirror bundle using the npm script
     console.log('Building CodeMirror bundle...');
-    await runCommand('npm run build:codeMirror');
+    await runCommand('npm run build:codeMirror', rootDir);
     console.log('CodeMirror bundle built successfully!');
 
     const partials = await loadPartials();
