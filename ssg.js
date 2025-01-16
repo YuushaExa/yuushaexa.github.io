@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const modelsDir = path.join(__dirname, 'models');
+const modelsDir = path.join(__dirname, 'model');
 const partialsDir = path.join(__dirname, 'partials');
 const publicDir = path.join(__dirname, 'public');
 
