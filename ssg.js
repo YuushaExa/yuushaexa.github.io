@@ -1,6 +1,7 @@
 const fs = require('fs').promises;
 const path = require('path');
 const { exec } = require('child_process'); // Import child_process.exec
+const rootDir = path.join(__dirname); // Path to your project root
 
 const modelsDir = path.join(__dirname, 'models');
 const partialsDir = path.join(__dirname, 'partials');
