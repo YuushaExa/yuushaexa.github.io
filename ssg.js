@@ -4,7 +4,7 @@ const marked = require('marked');
 const fm = require('front-matter');
 
 const modelDir = path.join(__dirname, 'model');
-const outputDir = path.join(__dirname, ''); // Output to the root directory
+const outputDir = path.join(__dirname, 'public'); // Output to the root directory
 const templateFile = path.join(__dirname, 'template.html');
 
 // 1. Read the Template
