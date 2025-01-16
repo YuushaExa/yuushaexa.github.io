@@ -37,10 +37,11 @@ async function loadPartials() {
   const partialFiles = {
     base: 'base.html',
     head: 'head.html',
-    header: 'header.html', // Add header.html
+    header: 'header.html',
     footer: 'footer.html',
     aside: 'aside.html',
     index: 'index.html',
+    404: '404.html', // Add 404.html to be loaded
   };
   const partials = {};
 
@@ -57,13 +58,13 @@ async function loadPartials() {
   return partials;
 }
 
-// Function to wrap model content with base and partials (updated for header)
+// Function to wrap model content with base and partials (same as before)
 async function createFullPage(partials, modelContent) {
   const baseTemplate = partials.base;
   try {
     return baseTemplate
       .replace('{{head}}', partials.head)
-      .replace('{{header}}', partials.header) // Add header replacement
+      .replace('{{header}}', partials.header)
       .replace('{{main}}', modelContent)
       .replace('{{footer}}', partials.footer)
       .replace('{{aside}}', partials.aside);
@@ -108,13 +109,26 @@ async function generateIndex(partials) {
   }
 }
 
-// Main function to run the SSG (same as before)
+// Generate 404.html
+async function generate404(partials) {
+  try {
+    const notFoundContent = partials['404']; // Get content from partials
+    const notFoundFilePath = path.join(publicDir, '404.html');
+    await writeFile(notFoundFilePath, notFoundContent);
+    console.log('Generated: 404.html');
+  } catch (err) {
+    throw new Error(`Error generating 404.html: ${err.message}`);
+  }
+}
+
+// Main function to run the SSG (updated to generate 404.html)
 async function runSSG() {
   try {
     await ensureDirectoryExists(publicDir);
     const partials = await loadPartials();
     await processModels(partials);
     await generateIndex(partials);
+    await generate404(partials); // Generate the 404.html page
     console.log('SSG build complete!');
   } catch (err) {
     console.error('SSG build failed:', err.message);
