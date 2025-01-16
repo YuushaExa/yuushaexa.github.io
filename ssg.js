@@ -1,11 +1,11 @@
-const fs = require('fs').promises; // Use fs.promises for async/await
+const fs = require('fs').promises;
 const path = require('path');
 
-const modelsDir = path.join(__dirname, 'model');
+const modelsDir = path.join(__dirname, 'models');
 const partialsDir = path.join(__dirname, 'partials');
 const publicDir = path.join(__dirname, 'public');
 
-// Helper functions (now asynchronous)
+// Helper functions (same as before)
 async function readFile(filePath) {
   try {
     return await fs.readFile(filePath, 'utf-8');
@@ -23,21 +23,21 @@ async function writeFile(filePath, content) {
 }
 
 async function ensureDirectoryExists(dirPath) {
-    try {
-      await fs.mkdir(dirPath, { recursive: true }); // Create directory if it doesn't exist
-    } catch (err) {
-      if (err.code !== 'EEXIST') {
-        // Ignore error if directory already exists
-        throw new Error(`Error creating directory ${dirPath}: ${err.message}`);
-      }
+  try {
+    await fs.mkdir(dirPath, { recursive: true });
+  } catch (err) {
+    if (err.code !== 'EEXIST') {
+      throw new Error(`Error creating directory ${dirPath}: ${err.message}`);
     }
   }
+}
 
-// Load partials (now asynchronous)
+// Load partials (including header.html)
 async function loadPartials() {
   const partialFiles = {
     base: 'base.html',
     head: 'head.html',
+    header: 'header.html', // Add header.html
     footer: 'footer.html',
     aside: 'aside.html',
     index: 'index.html',
@@ -57,12 +57,13 @@ async function loadPartials() {
   return partials;
 }
 
-// Function to wrap model content with base and partials (now asynchronous)
+// Function to wrap model content with base and partials (updated for header)
 async function createFullPage(partials, modelContent) {
   const baseTemplate = partials.base;
   try {
     return baseTemplate
       .replace('{{head}}', partials.head)
+      .replace('{{header}}', partials.header) // Add header replacement
       .replace('{{main}}', modelContent)
       .replace('{{footer}}', partials.footer)
       .replace('{{aside}}', partials.aside);
@@ -71,7 +72,7 @@ async function createFullPage(partials, modelContent) {
   }
 }
 
-// Process models and generate pages (now asynchronous)
+// Process models and generate pages (same as before)
 async function processModels(partials) {
   try {
     const modelFiles = await fs.readdir(modelsDir);
@@ -95,7 +96,7 @@ async function processModels(partials) {
   }
 }
 
-// Generate index.html (now asynchronous)
+// Generate index.html (same as before)
 async function generateIndex(partials) {
   try {
     const indexOutputContent = await createFullPage(partials, partials.index);
@@ -107,17 +108,17 @@ async function generateIndex(partials) {
   }
 }
 
-// Main function to run the SSG (now asynchronous)
+// Main function to run the SSG (same as before)
 async function runSSG() {
   try {
-    await ensureDirectoryExists(publicDir); // Create public directory if it doesn't exist
+    await ensureDirectoryExists(publicDir);
     const partials = await loadPartials();
     await processModels(partials);
     await generateIndex(partials);
     console.log('SSG build complete!');
   } catch (err) {
     console.error('SSG build failed:', err.message);
-    process.exit(1); // Exit with a non-zero code to indicate failure
+    process.exit(1);
   }
 }
 
