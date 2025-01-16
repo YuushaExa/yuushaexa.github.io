@@ -5,12 +5,11 @@ const modelsDir = path.join(__dirname, 'models');
 const partialsDir = path.join(__dirname, 'partials');
 const publicDir = path.join(__dirname, 'public');
 
-// Helper function to read file contents
+// Helper functions (same as before)
 function readFile(filePath) {
   return fs.readFileSync(filePath, 'utf-8');
 }
 
-// Helper function to write file contents
 function writeFile(filePath, content) {
   fs.writeFileSync(filePath, content, 'utf-8');
 }
@@ -20,31 +19,35 @@ if (!fs.existsSync(publicDir)) {
   fs.mkdirSync(publicDir);
 }
 
-// Load partials
+// Load partials (including main.html)
 const partials = {
   base: readFile(path.join(partialsDir, 'base.html')),
   head: readFile(path.join(partialsDir, 'head.html')),
   footer: readFile(path.join(partialsDir, 'footer.html')),
   aside: readFile(path.join(partialsDir, 'aside.html')),
+  main: readFile(path.join(partialsDir, 'main.html')), // Load main.html
   index: readFile(path.join(partialsDir, 'index.html')),
 };
 
-// Function to replace placeholders in content with partials
+// Updated function to replace placeholders, now using main.html
 function replacePartials(content, modelContent = '') {
-    let replacedContent = content
-      .replace('{{head}}', partials.head)
-      .replace('{{footer}}', partials.footer)
-      .replace('{{aside}}', partials.aside);
-  
-    if (modelContent) {
-      replacedContent = replacedContent.replace('{{content}}', modelContent);
-    }
-  
-    return replacedContent;
-  }
-  
+  let replacedContent = content
+    .replace('{{head}}', partials.head)
+    .replace('{{footer}}', partials.footer)
+    .replace('{{aside}}', partials.aside);
 
-// 1. Process models and generate pages
+  // Replace {{content}} in main.html with model content 
+  if (modelContent) {
+    const mainContent = partials.main.replace('{{content}}', modelContent);
+    replacedContent = replacedContent.replace('{{main}}', mainContent);
+  } else {
+    replacedContent = replacedContent.replace('{{main}}', '');
+  }
+
+  return replacedContent;
+}
+
+// Process models and generate pages
 fs.readdir(modelsDir, (err, modelFiles) => {
   if (err) {
     console.error('Error reading models directory:', err);
@@ -55,11 +58,11 @@ fs.readdir(modelsDir, (err, modelFiles) => {
     const modelFilePath = path.join(modelsDir, modelFile);
     const modelContent = readFile(modelFilePath);
 
-    // Combine base template with model content and partials
+    // Combine base, main (with model content), and other partials
     const outputContent = replacePartials(partials.base, modelContent);
 
     // Write the generated HTML to the public directory
-    const outputFileName = modelFile; // Keep the same name as the model file
+    const outputFileName = modelFile;
     const outputFilePath = path.join(publicDir, outputFileName);
     writeFile(outputFilePath, outputContent);
 
@@ -67,7 +70,7 @@ fs.readdir(modelsDir, (err, modelFiles) => {
   });
 });
 
-// 2. Generate index.html (using the 'index' partial)
+// Generate index.html (using the 'index' partial)
 const indexOutputContent = replacePartials(partials.index);
 const indexOutputFilePath = path.join(publicDir, 'index.html');
 writeFile(indexOutputFilePath, indexOutputContent);
