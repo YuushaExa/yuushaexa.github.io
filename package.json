@@ -1,12 +1,22 @@
 {
-  "name": "my-ssg",
+  "name": "your-project",
   "version": "1.0.0",
-  "description": "A simple static site generator",
+  "description": "",
   "main": "ssg.js",
   "scripts": {
-    "build": "node ssg.js"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "node ssg.js",
+    "build:codeMirror": "esbuild src/codeMirror.js --bundle --outfile=public/codeMirror.bundle.js --minify"
   },
-  "license": "MIT",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
   "dependencies": {
+    "@codemirror/basic-setup": "^0.20.0",
+    "@codemirror/commands": "^6.2.4",
+    "@codemirror/language": "^6.7.0",
+    "@codemirror/state": "^6.2.1",
+    "@codemirror/view": "^6.13.2",
+    "esbuild": "^0.18.6"
   }
 }
