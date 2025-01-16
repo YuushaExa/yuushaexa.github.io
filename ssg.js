@@ -6,32 +6,48 @@ const fm = require('front-matter');
 const modelDir = path.join(__dirname, 'model');
 const templateFile = path.join(__dirname, 'template.html');
 
+// Function to ensure directory exists
+function ensureDirectoryExists(directory) {
+  if (!fs.existsSync(directory)) {
+    fs.mkdirSync(directory, { recursive: true });
+  }
+}
+
 // 1. Read the Template
 const template = fs.readFileSync(templateFile, 'utf-8');
 
-// 2. Read Markdown Files
-fs.readdir(modelDir, async (err, files) => {
-  if (err) throw err;
+// 2. Determine Output Directory
+let outputDir;
+if (process.env.GITHUB_WORKSPACE) {
+  // GitHub Actions: Use a subdirectory within GITHUB_WORKSPACE
+  outputDir = path.join(process.env.GITHUB_WORKSPACE, 'public');
+} else if (process.env.RUNNER_TEMP) {
+  // Other CI/CD or local environment with RUNNER_TEMP set (e.g. Azure DevOps, GitHub Self-hosted Runners)
+  outputDir = path.join(process.env.RUNNER_TEMP, 'public'); 
+}
+else {
+  // Fallback: Local 'public' directory
+  outputDir = path.join(__dirname, 'public');
+}
 
-  // Get the runner's temporary directory from environment variable
-  const runnerTemp = process.env.RUNNER_TEMP;
-  if (!runnerTemp) {
-    throw new Error('RUNNER_TEMP environment variable not set.');
+ensureDirectoryExists(outputDir);
+
+// 3. Read and Process Markdown Files
+fs.readdir(modelDir, (err, files) => {
+  if (err) {
+    console.error('Error reading model directory:', err);
+    process.exit(1);
   }
-
-  // Create the 'public' directory inside the runner's temporary directory
-  const tempPublicDir = path.join(runnerTemp, 'public');
-  fs.mkdirSync(tempPublicDir, { recursive: true }); // Use recursive for nested directories if needed
 
   for (const file of files.filter(file => path.extname(file) === '.md')) {
     const filePath = path.join(modelDir, file);
     const fileContent = fs.readFileSync(filePath, 'utf-8');
 
-    // 3. Extract Front Matter and Parse Markdown
+    // 4. Extract Front Matter and Parse Markdown
     const { attributes, body } = fm(fileContent);
     const htmlContent = marked.parse(body);
 
-    // 4. Create HTML Output
+    // 5. Create HTML Output
     let output = template.replace(
       '<!-- Add header content like logo, navigation, etc. -->',
       attributes.title ? `<h1>${attributes.title}</h1>` : '<h1>Page Title'
@@ -45,9 +61,9 @@ fs.readdir(modelDir, async (err, files) => {
       htmlContent
     );
 
-    // 5. Write HTML to the 'public' directory inside the runner's temporary directory
+    // 6. Write HTML to the output directory
     const outputFileName = path.basename(file, '.md') + '.html';
-    const outputFilePath = path.join(tempPublicDir, outputFileName);
+    const outputFilePath = path.join(outputDir, outputFileName);
     fs.writeFileSync(outputFilePath, output);
 
     console.log(`Generated: ${outputFileName} in ${outputFilePath}`);
