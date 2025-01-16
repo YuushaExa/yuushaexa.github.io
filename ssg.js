@@ -5,7 +5,7 @@ const modelsDir = path.join(__dirname, 'models');
 const partialsDir = path.join(__dirname, 'partials');
 const publicDir = path.join(__dirname, 'public');
 
-// Helper functions (same as before)
+// Helper functions
 function readFile(filePath) {
   return fs.readFileSync(filePath, 'utf-8');
 }
@@ -19,32 +19,25 @@ if (!fs.existsSync(publicDir)) {
   fs.mkdirSync(publicDir);
 }
 
-// Load partials (including main.html)
+// Load partials (excluding main.html)
 const partials = {
   base: readFile(path.join(partialsDir, 'base.html')),
   head: readFile(path.join(partialsDir, 'head.html')),
   footer: readFile(path.join(partialsDir, 'footer.html')),
   aside: readFile(path.join(partialsDir, 'aside.html')),
-  main: readFile(path.join(partialsDir, 'main.html')), // Load main.html
   index: readFile(path.join(partialsDir, 'index.html')),
 };
 
-// Updated function to replace placeholders, now using main.html
-function replacePartials(content, modelContent = '') {
-  let replacedContent = content
+// Function to wrap model content with base and partials
+function createFullPage(modelContent) {
+  const baseTemplate = partials.base;
+  const fullPage = baseTemplate
     .replace('{{head}}', partials.head)
+    .replace('{{main}}', modelContent) // Treat model content as main
     .replace('{{footer}}', partials.footer)
     .replace('{{aside}}', partials.aside);
 
-  // Replace {{content}} in main.html with model content 
-  if (modelContent) {
-    const mainContent = partials.main.replace('{{content}}', modelContent);
-    replacedContent = replacedContent.replace('{{main}}', mainContent);
-  } else {
-    replacedContent = replacedContent.replace('{{main}}', '');
-  }
-
-  return replacedContent;
+  return fullPage;
 }
 
 // Process models and generate pages
@@ -58,8 +51,8 @@ fs.readdir(modelsDir, (err, modelFiles) => {
     const modelFilePath = path.join(modelsDir, modelFile);
     const modelContent = readFile(modelFilePath);
 
-    // Combine base, main (with model content), and other partials
-    const outputContent = replacePartials(partials.base, modelContent);
+    // Create a full page using the model content
+    const outputContent = createFullPage(modelContent);
 
     // Write the generated HTML to the public directory
     const outputFileName = modelFile;
@@ -71,7 +64,7 @@ fs.readdir(modelsDir, (err, modelFiles) => {
 });
 
 // Generate index.html (using the 'index' partial)
-const indexOutputContent = replacePartials(partials.index);
+const indexOutputContent = createFullPage(partials.index); // Wrap index partial as a full page
 const indexOutputFilePath = path.join(publicDir, 'index.html');
 writeFile(indexOutputFilePath, indexOutputContent);
 console.log('Generated: index.html');
