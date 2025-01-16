@@ -4,9 +4,8 @@
   "description": "",
   "main": "ssg.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "build": "node ssg.js",
-    "build:codeMirror": "esbuild src/codeMirror.js --bundle --outfile=public/codeMirror.bundle.js --minify"
+    "build:codeMirror": "cd .. && esbuild src/codeMirror.js --bundle --outfile=public/codeMirror.bundle.js --minify"
   },
   "keywords": [],
   "author": "",
