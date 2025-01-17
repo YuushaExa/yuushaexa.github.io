@@ -17,6 +17,6 @@
     "@codemirror/state": "^6.2.1",
     "@codemirror/view": "^6.13.2",
     "@codemirror/lang-javascript": "^6.2.2",
-    "esbuild": "^0.18.6"
+    "esbuild": "^0.24.2"
   }
 }
