@@ -5,7 +5,7 @@
   "main": "ssg.js",
   "scripts": {
     "build": "node ssg.js",
-    "build:codeMirror": "esbuild src/codeMirror.js --bundle --outfile=public/codeMirror.bundle.js"
+    "build:codeMirror": "rollup -c rollup.config.js"
   },
   "keywords": [],
   "author": "",
