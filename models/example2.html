@@ -264,6 +264,36 @@
       let chatHistory = [];
       let messageIdCounter = 0; // Counter for unique message IDs
 
+      // Mutation Observer for new code blocks
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.addedNodes && mutation.addedNodes.length > 0) {
+            mutation.addedNodes.forEach((node) => {
+              if (node.nodeType === Node.ELEMENT_NODE) {
+                const codeBlocks = node.querySelectorAll('pre code');
+                codeBlocks.forEach((codeBlock, index) => {
+                  initializeCodeMirrorOnBlock(codeBlock, index);
+                });
+              }
+            });
+          }
+        });
+      });
+
+      // Start observing the messages container
+      observer.observe(messagesContainer, { childList: true, subtree: true });
+
+      function initializeCodeMirrorOnBlock(codeBlock, index) {
+        // Check if CodeMirror is already initialized on this block
+        if (!codeBlock.classList.contains('cm-editor')) {
+          const editorId = `code-mirror-editor-${messageIdCounter}-${index}`;
+          codeBlock.setAttribute('id', editorId);
+          const detectedLanguage = codeBlock.className.replace('language-', '') || 'javascript';
+          window.initCodeMirror(editorId, codeBlock.textContent, detectedLanguage);
+          addCodeBlockButtons(codeBlock);
+        }
+      }
+
       function updateChatDisplay() {
         messagesContainer.innerHTML = "";
         const fragment = document.createDocumentFragment();
@@ -278,24 +308,7 @@
             const formattedContent = marked.parse(message.parts[0].text);
             messageElement.innerHTML = formattedContent;
 
-            // Highlight code blocks with CodeMirror after a short delay
-            setTimeout(() => {
-              const codeBlocks = messageElement.querySelectorAll('pre code');
-              codeBlocks.forEach((codeBlock, index) => {
-                // Create a unique ID for each CodeMirror instance
-                const editorId = `code-mirror-editor-${message.id}-${index}`;
-                codeBlock.setAttribute('id', editorId);
-
-                // Get the detected language or use a default
-                const detectedLanguage = codeBlock.className.replace('language-', '') || 'javascript';
-
-                // Initialize CodeMirror
-                window.initCodeMirror(editorId, codeBlock.textContent, detectedLanguage);
-
-                // Add buttons after initializing CodeMirror
-                addCodeBlockButtons(codeBlock);
-              });
-            }, 50);
+            // CodeMirror initialization is now handled by MutationObserver
           } else {
             messageElement.textContent = message.parts[0].text;
           }
@@ -365,21 +378,24 @@
         messagesContainer.appendChild(modelMessageElement);
 
         try {
-      const apiChatHistory = chatHistory.map(message => ({
-      role: message.role,
-      parts: message.parts, // 'parts' should already be in the correct format
-    }));
+          // Remove the 'id' field from the chat history before sending it to the API
+          const apiChatHistory = chatHistory.map(message => ({
+            role: message.role,
+            parts: message.parts, // 'parts' should already be in the correct format
+          }));
 
-    const response = await fetch(
-      "https://chatai-flame-eta.vercel.app/api/generate", // Your API endpoint
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ chatHistory: apiChatHistory }), // Send the modified history
-      }
-    );
+          const response = await fetch(
+            "https://chatai-flame-eta.vercel.app/api/generate", // Your API endpoint
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ chatHistory: apiChatHistory }), // Send the modified history
+            }
+          );
 
           if (!response.ok) {
+            const errorData = await response.json();
+            console.error("Error from Gemini API:", errorData); // Log the detailed error
             throw new Error(`HTTP error! status: ${response.status}`);
           }
 
@@ -403,7 +419,7 @@
                 if (jsonData.text) {
                   accumulatedResponse += jsonData.text;
 
-                  // Replace <pre><code> with <pre><code id="some-id">
+                  // Parse the accumulated response with marked
                   let formattedResponse = marked.parse(accumulatedResponse);
 
                   // Update the content in real-time
