@@ -5,7 +5,7 @@
   "main": "ssg.js",
   "scripts": {
     "build": "node ssg.js",
-    "build:codeMirror": "rollup -c rollup.config.js"
+  "build:codeMirror": "rollup -c rollup.config.mjs"
   },
   "keywords": [],
   "author": "",
