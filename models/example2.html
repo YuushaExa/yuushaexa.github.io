@@ -247,18 +247,6 @@
   <script>
 (function () {
 
-const marked = require('marked');
-marked.setOptions({
-  // Enable GitHub-flavored markdown (GFM)
-  gfm: true,
-  // Enable tables in markdown
-  tables: true,
-  // Enable smartypants (converts quotes, dashes, etc.)
-  smartypants: true,
-  // Sanitize HTML to prevent XSS attacks
-  sanitize: false, // Set to true if you want to sanitize HTML
-});
-  
   
   /* Main chat code */
   function initializeChat() {
@@ -327,13 +315,8 @@ function updateChatDisplay() {
       message.role === "user" ? "user-message" : "model-message"
     );
 
-    if (message.role === "model") {
-      // Parse the message content with marked.js
-      const formattedContent = marked.parse(message.parts[0].text);
-      messageElement.innerHTML = formattedContent;
-    } else {
-      messageElement.textContent = message.parts[0].text;
-    }
+    // Directly set the text content without parsing Markdown
+    messageElement.textContent = message.parts[0].text;
 
     fragment.appendChild(messageElement);
   }
@@ -396,74 +379,69 @@ function updateChatDisplay() {
         URL.revokeObjectURL(link.href);
       }
 
-      async function getModelResponse(prompt) {
-        addMessageToChatHistory("user", prompt);
-        const modelMessageElement = document.createElement("div");
-        modelMessageElement.classList.add("model-message");
-        messagesContainer.appendChild(modelMessageElement);
+    async function getModelResponse(prompt) {
+  addMessageToChatHistory("user", prompt);
+  const modelMessageElement = document.createElement("div");
+  modelMessageElement.classList.add("model-message");
+  messagesContainer.appendChild(modelMessageElement);
 
-        try {
-          // Remove the 'id' field from the chat history before sending it to the API
-          const apiChatHistory = chatHistory.map(message => ({
-            role: message.role,
-            parts: message.parts, // 'parts' should already be in the correct format
-          }));
+  try {
+    const apiChatHistory = chatHistory.map(message => ({
+      role: message.role,
+      parts: message.parts,
+    }));
 
-          const response = await fetch(
-            "https://chatai-flame-eta.vercel.app/api/generate", // Your API endpoint
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ chatHistory: apiChatHistory }), // Send the modified history
-            }
-          );
+    const response = await fetch(
+      "https://chatai-flame-eta.vercel.app/api/generate",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chatHistory: apiChatHistory }),
+      }
+    );
 
-          if (!response.ok) {
-            const errorData = await response.json();
-            console.error("Error from Gemini API:", errorData); // Log the detailed error
-            throw new Error(`HTTP error! status: ${response.status}`);
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Error from Gemini API:", errorData);
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const reader = response.body.getReader();
+    const textDecoder = new TextDecoder();
+    let accumulatedResponse = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const textChunk = textDecoder.decode(value);
+      const dataChunks = textChunk
+        .split("\n\n")
+        .filter((chunk) => chunk.trim() !== "");
+
+      for (const dataChunk of dataChunks) {
+        const dataEvent = dataChunk.split(":")[0].trim();
+        if (dataEvent === "data") {
+          const jsonData = JSON.parse(dataChunk.substring(5).trim());
+          if (jsonData.text) {
+            accumulatedResponse += jsonData.text;
+
+            // Directly set the text content without parsing Markdown
+            modelMessageElement.textContent = accumulatedResponse;
           }
-
-          const reader = response.body.getReader();
-          const textDecoder = new TextDecoder();
-          let accumulatedResponse = "";
-
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-
-            const textChunk = textDecoder.decode(value);
-            const dataChunks = textChunk
-              .split("\n\n")
-              .filter((chunk) => chunk.trim() !== "");
-
-            for (const dataChunk of dataChunks) {
-              const dataEvent = dataChunk.split(":")[0].trim();
-              if (dataEvent === "data") {
-                const jsonData = JSON.parse(dataChunk.substring(5).trim());
-                if (jsonData.text) {
-                  accumulatedResponse += jsonData.text;
-
-                  // Parse the accumulated response with marked
-                  let formattedResponse = marked.parse(accumulatedResponse);
-
-                  // Update the content in real-time
-                  modelMessageElement.innerHTML = formattedResponse;
-                }
-              } else if (dataEvent === "event" && dataChunk.includes("end")) {
-                console.log("Stream ended");
-                break;
-              }
-            }
-          }
-
-          addMessageToChatHistory("model", accumulatedResponse);
-        } catch (error) {
-          console.error("Error:", error);
-          modelMessageElement.textContent = `Error: ${error.message}`;
+        } else if (dataEvent === "event" && dataChunk.includes("end")) {
+          console.log("Stream ended");
+          break;
         }
       }
+    }
 
+    addMessageToChatHistory("model", accumulatedResponse);
+  } catch (error) {
+    console.error("Error:", error);
+    modelMessageElement.textContent = `Error: ${error.message}`;
+  }
+}
       // --- Event Listeners ---
 
       runButton.addEventListener("click", async () => {
