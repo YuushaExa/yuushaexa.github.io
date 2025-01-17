@@ -1,14 +1,20 @@
-const fs = require('fs').promises;
-const path = require('path');
-const { exec } = require('child_process'); // Import child_process.exec
-const rootDir = path.join(__dirname); // Path to your project root
+import fs from 'fs/promises';
+import path from 'path';
+import { exec } from 'child_process';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const rootDir = path.join(__dirname);
 
 const modelsDir = path.join(__dirname, 'models');
 const partialsDir = path.join(__dirname, 'partials');
 const publicDir = path.join(__dirname, 'public');
-const srcDir = path.join(__dirname, 'src'); // Path to your source directory
+const srcDir = path.join(__dirname, 'src');
 
-// Helper functions (same as before)
+// Helper functions
 async function readFile(filePath) {
   try {
     return await fs.readFile(filePath, 'utf-8');
@@ -35,7 +41,7 @@ async function ensureDirectoryExists(dirPath) {
   }
 }
 
-// Load partials (including header.html)
+// Load partials
 async function loadPartials() {
   const partialFiles = {
     base: 'base.html',
@@ -44,24 +50,26 @@ async function loadPartials() {
     footer: 'footer.html',
     aside: 'aside.html',
     index: 'index.html',
-    404: '404.html', // Add 404.html to be loaded
+    404: '404.html',
   };
   const partials = {};
 
-  const promises = Object.entries(partialFiles).map(async ([key, fileName]) => {
-    const filePath = path.join(partialsDir, fileName);
-    try {
-      partials[key] = await readFile(filePath);
-    } catch (err) {
-      throw new Error(`Error loading partial ${fileName}: ${err.message}`);
+  const promises = Object.entries(partialFiles).map(
+    async ([key, fileName]) => {
+      const filePath = path.join(partialsDir, fileName);
+      try {
+        partials[key] = await readFile(filePath);
+      } catch (err) {
+        throw new Error(`Error loading partial ${fileName}: ${err.message}`);
+      }
     }
-  });
+  );
 
   await Promise.all(promises);
   return partials;
 }
 
-// Function to wrap model content with base and partials (same as before)
+// Function to wrap model content with base and partials
 async function createFullPage(partials, modelContent) {
   const baseTemplate = partials.base;
   try {
@@ -76,7 +84,7 @@ async function createFullPage(partials, modelContent) {
   }
 }
 
-// Process models and generate pages (same as before)
+// Process models and generate pages
 async function processModels(partials) {
   try {
     const modelFiles = await fs.readdir(modelsDir);
@@ -100,7 +108,7 @@ async function processModels(partials) {
   }
 }
 
-// Generate index.html (same as before)
+// Generate index.html
 async function generateIndex(partials) {
   try {
     const indexOutputContent = await createFullPage(partials, partials.index);
@@ -115,7 +123,7 @@ async function generateIndex(partials) {
 // Generate 404.html
 async function generate404(partials) {
   try {
-    const notFoundContent = partials['404']; // Get content from partials
+    const notFoundContent = partials['404'];
     const notFoundFilePath = path.join(publicDir, '404.html');
     await writeFile(notFoundFilePath, notFoundContent);
     console.log('Generated: 404.html');
@@ -136,14 +144,13 @@ function runCommand(command) {
   });
 }
 
-// Main function to run the SSG (updated to build and copy CodeMirror bundle)
+// Main function to run the SSG
 async function runSSG() {
   try {
     await ensureDirectoryExists(publicDir);
 
-    // Build CodeMirror bundle using the npm script
     console.log('Building CodeMirror bundle...');
-    await runCommand('npm run build:codeMirror', rootDir);
+    await runCommand('npm run build:codeMirror');
     console.log('CodeMirror bundle built successfully!');
 
     const partials = await loadPartials();
