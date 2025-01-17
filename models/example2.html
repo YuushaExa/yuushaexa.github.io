@@ -1,7 +1,6 @@
 
   <title>Chat AI</title>
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.11/dist/clipboard.min.js"></script>
+
   <style>
     /* Combined and Minified CSS */
     *, *::before, *::after {
@@ -247,191 +246,212 @@
   </div>
 
   <script>
-    (function () {
-      /* Main chat code */
-      function initializeChat() {
-        (async function () {
-          // --- DOM Element Access ---
+(function () {
+  /* Main chat code */
+  function initializeChat() {
+    (async function () {
+      // --- DOM Element Access ---
 
-          const chatContainer = document.querySelector(".chat-container");
-          const messagesContainer = document.querySelector(".messages-container");
-          const inputTextArea = document.querySelector(".input-textarea");
-          const runButton = document.querySelector(".run-button");
-          const clearButton = document.querySelector(".clear-button");
-          const inputListSelect = document.querySelector(".input-list");
+      const chatContainer = document.querySelector(".chat-container");
+      const messagesContainer = document.querySelector(".messages-container");
+      const inputTextArea = document.querySelector(".input-textarea");
+      const runButton = document.querySelector(".run-button");
+      const clearButton = document.querySelector(".clear-button");
+      const inputListSelect = document.querySelector(".input-list");
 
-          // --- Chat Logic ---
+      // --- Chat Logic ---
 
-          let chatHistory = [];
-          
-          // Initialize Clipboard.js
-          new ClipboardJS('.copy-button');
+      let chatHistory = [];
+      let messageIdCounter = 0; // Counter for unique message IDs
 
-          function updateChatDisplay() {
-            messagesContainer.innerHTML = "";
-            const fragment = document.createDocumentFragment();
+      function updateChatDisplay() {
+        messagesContainer.innerHTML = "";
+        const fragment = document.createDocumentFragment();
 
-            for (const message of chatHistory) {
-              const messageElement = document.createElement("div");
-              messageElement.classList.add(
-                message.role === "user" ? "user-message" : "model-message"
-              );
+        for (const message of chatHistory) {
+          const messageElement = document.createElement("div");
+          messageElement.classList.add(
+            message.role === "user" ? "user-message" : "model-message"
+          );
 
-              if (message.role === "model") {
-                const formattedContent = marked.parse(message.parts[0].text);
-                messageElement.innerHTML = formattedContent;
+          if (message.role === "model") {
+            const formattedContent = marked.parse(message.parts[0].text);
+            messageElement.innerHTML = formattedContent;
 
-                // Highlight code blocks and add buttons after a short delay
-                setTimeout(() => {
-                  const codeBlocks = messageElement.querySelectorAll('pre code');
-                  codeBlocks.forEach((codeBlock) => {
-                    hljs.highlightElement(codeBlock);
-                    addCodeBlockButtons(codeBlock);
-                  });
-                }, 50);
+            // Highlight code blocks with CodeMirror after a short delay
+            setTimeout(() => {
+              const codeBlocks = messageElement.querySelectorAll('pre code');
+              codeBlocks.forEach((codeBlock, index) => {
+                // Create a unique ID for each CodeMirror instance
+                const editorId = `code-mirror-editor-${message.id}-${index}`;
+                codeBlock.setAttribute('id', editorId);
 
-              } else {
-                messageElement.textContent = message.parts[0].text;
-              }
+                // Get the detected language or use a default
+                const detectedLanguage = codeBlock.className.replace('language-', '') || 'javascript';
 
-              fragment.appendChild(messageElement);
-            }
+                // Initialize CodeMirror
+                window.initCodeMirror(editorId, codeBlock.textContent, detectedLanguage);
 
-            messagesContainer.appendChild(fragment);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                // Add buttons after initializing CodeMirror
+                addCodeBlockButtons(codeBlock);
+              });
+            }, 50);
+          } else {
+            messageElement.textContent = message.parts[0].text;
           }
 
-          function addMessageToChatHistory(role, content) {
-            chatHistory.push({ role, parts: [{ text: content }] });
-            updateChatDisplay();
-          }
+          fragment.appendChild(messageElement);
+        }
 
-          // Function to add copy and download buttons to code blocks
-          function addCodeBlockButtons(codeBlock) {
-            const preElement = codeBlock.parentNode;
-            const container = document.createElement('div');
-            container.classList.add('code-block-container');
-            preElement.parentNode.insertBefore(container, preElement);
-            container.appendChild(preElement);
-
-            // Copy button
-            const copyButton = document.createElement('button');
-            copyButton.classList.add('copy-button');
-            copyButton.textContent = 'Copy';
-            copyButton.dataset.clipboardText = codeBlock.textContent;
-            container.appendChild(copyButton);
-
-            // Download button
-            const downloadButton = document.createElement('button');
-            downloadButton.classList.add('download-button');
-            downloadButton.textContent = 'Download';
-            downloadButton.addEventListener('click', () => {
-              downloadCode(codeBlock.textContent, 'downloaded_code.txt');
-            });
-            container.appendChild(downloadButton);
-          }
-
-          // Function to download code
-          function downloadCode(code, filename) {
-            const blob = new Blob([code], { type: 'text/plain' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = filename;
-            link.click();
-            URL.revokeObjectURL(link.href);
-          }
-
-          async function getModelResponse(prompt) {
-            addMessageToChatHistory("user", prompt);
-            const modelMessageElement = document.createElement("div");
-            modelMessageElement.classList.add("model-message");
-            messagesContainer.appendChild(modelMessageElement);
-
-            try {
-              const response = await fetch(
-                "https://chatai-flame-eta.vercel.app/api/generate",
-                {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ chatHistory }),
-                }
-              );
-
-              if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-              }
-
-              const reader = response.body.getReader();
-              const textDecoder = new TextDecoder();
-              let accumulatedResponse = "";
-
-              while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-
-                const textChunk = textDecoder.decode(value);
-                const dataChunks = textChunk
-                  .split("\n\n")
-                  .filter((chunk) => chunk.trim() !== "");
-
-                for (const dataChunk of dataChunks) {
-                  const dataEvent = dataChunk.split(":")[0].trim();
-                  if (dataEvent === "data") {
-                    const jsonData = JSON.parse(dataChunk.substring(5).trim());
-                    if (jsonData.text) {
-                      accumulatedResponse += jsonData.text;
-                      // Parse and update the content in real-time using marked
-                      modelMessageElement.innerHTML = marked.parse(accumulatedResponse);
-                    }
-                  } else if (dataEvent === "event" && dataChunk.includes("end")) {
-                    console.log("Stream ended");
-                    break;
-                  }
-                }
-              }
-
-              addMessageToChatHistory("model", accumulatedResponse);
-            } catch (error) {
-              console.error("Error:", error);
-              modelMessageElement.textContent = `Error: ${error.message}`;
-            }
-          }
-
-          // --- Event Listeners ---
-
-          runButton.addEventListener("click", async () => {
-            const prompt = inputTextArea.value.trim();
-            if (prompt === "") {
-              alert("Please enter a prompt.");
-              return;
-            }
-
-            runButton.disabled = true;
-            runButton.innerText = "Running...";
-
-            await getModelResponse(prompt);
-
-            runButton.disabled = false;
-            runButton.innerText = "Run";
-            inputTextArea.value = "";
-          });
-
-          clearButton.addEventListener("click", () => {
-            chatHistory = [];
-            updateChatDisplay();
-          });
-
-          inputListSelect.addEventListener("change", () => {
-            inputTextArea.value = inputListSelect.value;
-          });
-
-          chatContainer.style.display = "block";
-        })();
+        messagesContainer.appendChild(fragment);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
       }
 
-      /* Initialize the chat directly */
-      initializeChat();
-    })();
+      // Add a unique ID to each message
+      function addMessageToChatHistory(role, content) {
+        const messageId = messageIdCounter++;
+        chatHistory.push({ id: messageId, role, parts: [{ text: content }] });
+        updateChatDisplay();
+      }
 
+      // Function to add copy and download buttons to code blocks
+      function addCodeBlockButtons(codeBlock) {
+        const preElement = codeBlock.closest('pre'); // Get the parent <pre> element
+        const container = document.createElement('div');
+        container.classList.add('code-block-container');
+        preElement.parentNode.insertBefore(container, preElement);
+        container.appendChild(preElement);
+
+        // Copy button
+        const copyButton = document.createElement('button');
+        copyButton.classList.add('copy-button');
+        copyButton.textContent = 'Copy';
+        copyButton.addEventListener('click', () => {
+          // Use navigator.clipboard.writeText for copying
+          navigator.clipboard.writeText(codeBlock.textContent).then(() => {
+            // Optional: Display a success message or change button text
+            copyButton.textContent = 'Copied!';
+            setTimeout(() => copyButton.textContent = 'Copy', 1500);
+          }).catch(err => {
+            console.error('Failed to copy text: ', err);
+          });
+        });
+        container.appendChild(copyButton);
+
+        // Download button
+        const downloadButton = document.createElement('button');
+        downloadButton.classList.add('download-button');
+        downloadButton.textContent = 'Download';
+        downloadButton.addEventListener('click', () => {
+          downloadCode(codeBlock.textContent, 'downloaded_code.txt');
+        });
+        container.appendChild(downloadButton);
+      }
+
+      // Function to download code
+      function downloadCode(code, filename) {
+        const blob = new Blob([code], { type: 'text/plain' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        link.click();
+        URL.revokeObjectURL(link.href);
+      }
+
+      async function getModelResponse(prompt) {
+        addMessageToChatHistory("user", prompt);
+        const modelMessageElement = document.createElement("div");
+        modelMessageElement.classList.add("model-message");
+        messagesContainer.appendChild(modelMessageElement);
+
+        try {
+          const response = await fetch(
+            "https://chatai-flame-eta.vercel.app/api/generate",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ chatHistory }),
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const reader = response.body.getReader();
+          const textDecoder = new TextDecoder();
+          let accumulatedResponse = "";
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            const textChunk = textDecoder.decode(value);
+            const dataChunks = textChunk
+              .split("\n\n")
+              .filter((chunk) => chunk.trim() !== "");
+
+            for (const dataChunk of dataChunks) {
+              const dataEvent = dataChunk.split(":")[0].trim();
+              if (dataEvent === "data") {
+                const jsonData = JSON.parse(dataChunk.substring(5).trim());
+                if (jsonData.text) {
+                  accumulatedResponse += jsonData.text;
+
+                  // Replace <pre><code> with <pre><code id="some-id">
+                  let formattedResponse = marked.parse(accumulatedResponse);
+
+                  // Update the content in real-time
+                  modelMessageElement.innerHTML = formattedResponse;
+                }
+              } else if (dataEvent === "event" && dataChunk.includes("end")) {
+                console.log("Stream ended");
+                break;
+              }
+            }
+          }
+
+          addMessageToChatHistory("model", accumulatedResponse);
+        } catch (error) {
+          console.error("Error:", error);
+          modelMessageElement.textContent = `Error: ${error.message}`;
+        }
+      }
+
+      // --- Event Listeners ---
+
+      runButton.addEventListener("click", async () => {
+        const prompt = inputTextArea.value.trim();
+        if (prompt === "") {
+          alert("Please enter a prompt.");
+          return;
+        }
+
+        runButton.disabled = true;
+        runButton.innerText = "Running...";
+
+        await getModelResponse(prompt);
+
+        runButton.disabled = false;
+        runButton.innerText = "Run";
+        inputTextArea.value = "";
+      });
+
+      clearButton.addEventListener("click", () => {
+        chatHistory = [];
+        updateChatDisplay();
+      });
+
+      inputListSelect.addEventListener("change", () => {
+        inputTextArea.value = inputListSelect.value;
+      });
+
+      chatContainer.style.display = "block";
+    })();
+  }
+
+  /* Initialize the chat directly */
+  initializeChat();
+})();
 
   </script>
