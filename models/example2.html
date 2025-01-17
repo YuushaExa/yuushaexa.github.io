@@ -1,5 +1,6 @@
   <title>Chat AI</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
     /* Combined and Minified CSS */
     *, *::before, *::after {
@@ -315,8 +316,8 @@ function updateChatDisplay() {
       message.role === "user" ? "user-message" : "model-message"
     );
 
-    // Directly set the text content without parsing Markdown
-    messageElement.textContent = message.parts[0].text;
+    // Parse Markdown content using marked
+    messageElement.innerHTML = marked.parse(message.parts[0].text);
 
     fragment.appendChild(messageElement);
   }
