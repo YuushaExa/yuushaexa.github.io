@@ -246,6 +246,20 @@
 
   <script>
 (function () {
+
+import { marked } from 'marked';
+marked.setOptions({
+  // Enable GitHub-flavored markdown (GFM)
+  gfm: true,
+  // Enable tables in markdown
+  tables: true,
+  // Enable smartypants (converts quotes, dashes, etc.)
+  smartypants: true,
+  // Sanitize HTML to prevent XSS attacks
+  sanitize: false, // Set to true if you want to sanitize HTML
+});
+  
+  
   /* Main chat code */
   function initializeChat() {
     (async function () {
@@ -303,7 +317,7 @@ const observer = new MutationObserver((mutations) => {
 // Start observing the messages container
 observer.observe(messagesContainer, { childList: true, subtree: true });
 
-   function updateChatDisplay() {
+function updateChatDisplay() {
   messagesContainer.innerHTML = "";
   const fragment = document.createDocumentFragment();
 
@@ -314,6 +328,7 @@ observer.observe(messagesContainer, { childList: true, subtree: true });
     );
 
     if (message.role === "model") {
+      // Parse the message content with marked.js
       const formattedContent = marked.parse(message.parts[0].text);
       messageElement.innerHTML = formattedContent;
     } else {
@@ -326,7 +341,6 @@ observer.observe(messagesContainer, { childList: true, subtree: true });
   messagesContainer.appendChild(fragment);
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
-
       // Add a unique ID to each message
       function addMessageToChatHistory(role, content) {
         const messageId = messageIdCounter++;
