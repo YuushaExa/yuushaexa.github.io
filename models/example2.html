@@ -1,4 +1,5 @@
-
+import { marked } from 'marked'; 
+const formattedContent = marked.parse(message.parts[0].text);
   <title>Chat AI</title>
 
   <style>
