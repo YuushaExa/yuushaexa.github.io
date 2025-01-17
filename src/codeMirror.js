@@ -43,7 +43,7 @@ window.initCodeMirror = (elementId, code, language) => {
         basicSetup,
         languageExtension,
         oneDark,
-        EditorView.readOnly.of(true),
+        EditorView.editable.of(false), // Correct way to make it read-only
       ],
     }),
     parent: document.getElementById(elementId),
