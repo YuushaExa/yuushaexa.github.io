@@ -365,14 +365,19 @@
         messagesContainer.appendChild(modelMessageElement);
 
         try {
-          const response = await fetch(
-            "https://chatai-flame-eta.vercel.app/api/generate",
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ chatHistory }),
-            }
-          );
+      const apiChatHistory = chatHistory.map(message => ({
+      role: message.role,
+      parts: message.parts, // 'parts' should already be in the correct format
+    }));
+
+    const response = await fetch(
+      "https://chatai-flame-eta.vercel.app/api/generate", // Your API endpoint
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chatHistory: apiChatHistory }), // Send the modified history
+      }
+    );
 
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
