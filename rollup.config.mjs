@@ -11,7 +11,7 @@ export default {
   plugins: [
     nodeResolve(),
     css({
-      output: 'codeMirror.bundle.css', 
+      output: '/codeMirror.bundle.css', 
     }),
   ],
 };
