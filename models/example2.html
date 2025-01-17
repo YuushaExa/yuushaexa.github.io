@@ -264,35 +264,45 @@
       let chatHistory = [];
       let messageIdCounter = 0; // Counter for unique message IDs
 
-      // Mutation Observer for new code blocks
-      const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-          if (mutation.addedNodes && mutation.addedNodes.length > 0) {
-            mutation.addedNodes.forEach((node) => {
-              if (node.nodeType === Node.ELEMENT_NODE) {
-                const codeBlocks = node.querySelectorAll('pre code');
-                codeBlocks.forEach((codeBlock, index) => {
-                  initializeCodeMirrorOnBlock(codeBlock, index);
-                });
-              }
-            });
-          }
-        });
-      });
+   function initializeCodeMirrorOnBlock(codeBlock, index) {
+  // Check if CodeMirror is already initialized on this block
+  if (codeBlock.closest('.cm-editor')) {
+    return; // Skip if CodeMirror is already initialized
+  }
 
-      // Start observing the messages container
-      observer.observe(messagesContainer, { childList: true, subtree: true });
+  const editorId = `code-mirror-editor-${messageIdCounter}-${index}`;
+  codeBlock.setAttribute('id', editorId);
+  const detectedLanguage = codeBlock.className.replace('language-', '') || 'javascript';
 
-      function initializeCodeMirrorOnBlock(codeBlock, index) {
-        // Check if CodeMirror is already initialized on this block
-        if (!codeBlock.classList.contains('cm-editor')) {
-          const editorId = `code-mirror-editor-${messageIdCounter}-${index}`;
-          codeBlock.setAttribute('id', editorId);
-          const detectedLanguage = codeBlock.className.replace('language-', '') || 'javascript';
-          window.initCodeMirror(editorId, codeBlock.textContent, detectedLanguage);
-          addCodeBlockButtons(codeBlock);
+  // Temporarily disconnect the observer
+  observer.disconnect();
+
+  // Initialize CodeMirror
+  window.initCodeMirror(editorId, codeBlock.textContent, detectedLanguage);
+  addCodeBlockButtons(codeBlock);
+
+  // Reconnect the observer
+  observer.observe(messagesContainer, { childList: true, subtree: true });
+}
+
+// Mutation Observer for new code blocks
+const observer = new MutationObserver((mutations) => {
+  mutations.forEach((mutation) => {
+    if (mutation.addedNodes && mutation.addedNodes.length > 0) {
+      mutation.addedNodes.forEach((node) => {
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          const codeBlocks = node.querySelectorAll('pre code');
+          codeBlocks.forEach((codeBlock, index) => {
+            initializeCodeMirrorOnBlock(codeBlock, index);
+          });
         }
-      }
+      });
+    }
+  });
+});
+
+// Start observing the messages container
+observer.observe(messagesContainer, { childList: true, subtree: true });
 
       function updateChatDisplay() {
         messagesContainer.innerHTML = "";
