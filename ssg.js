@@ -1,5 +1,6 @@
 const fs = require('fs').promises;
 const path = require('path');
+const fastify = require('fastify')({ logger: true });
 
 const articlesDir = path.join(__dirname, 'articles');
 const partialsDir = path.join(__dirname, 'partials');
@@ -50,12 +51,14 @@ async function loadPartials() {
 
 // Function to wrap main content with base and partials (same as before)
 async function createFullPage(partials, mainContent) {
+  const baseTemplate = partials.base;
   try {
-    return partials.base.replace(/\{\{(head|header|footer|aside|main)\}\}/g, (match, key) => {
-      if (key === 'main') return mainContent;
-      if (!partials[key]) throw new Error(`Partial '${key}' not found.`);
-      return partials[key];
-    });
+    return baseTemplate
+      .replace('{{head}}', partials.head)
+      .replace('{{header}}', partials.header)
+      .replace('{{main}}', mainContent)
+      .replace('{{footer}}', partials.footer)
+      .replace('{{aside}}', partials.aside);
   } catch (err) {
     throw new Error(`Error creating full page: ${err.message}`);
   }
@@ -108,6 +111,7 @@ async function generate404(partials) {
     throw new Error(`Error generating 404.html: ${err.message}`);
   }
 }
+
 // Main function to run the SSG (updated to generate 404.html)
 async function runSSG() {
   try {
@@ -123,5 +127,30 @@ async function runSSG() {
   }
 }
 
-// Run the SSG
-runSSG();
+// Serve the static files using Fastify
+async function serveStaticFiles() {
+  fastify.register(require('fastify-static'), {
+    root: publicDir,
+    prefix: '/',
+  });
+
+  fastify.setNotFoundHandler((request, reply) => {
+    reply.sendFile('404.html');
+  });
+
+  try {
+    await fastify.listen(3000);
+    console.log('Server is running on http://localhost:3000');
+  } catch (err) {
+    fastify.log.error(err);
+    process.exit(1);
+  }
+}
+
+// Run the SSG and then serve the static files
+async function main() {
+  await runSSG();
+  await serveStaticFiles();
+}
+
+main();
