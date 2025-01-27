@@ -1,0 +1,46 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: ["main"]  # Change this to your default branch if it's different
+  workflow_dispatch:  # Allows manual triggering
+
+permissions:
+  contents: read  # Allow reading repository contents
+  pages: write    # Allow writing to GitHub Pages
+  id-token: write # Required for GitHub Pages deployment
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 1  # Limit the checkout to the latest commit
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'  # Specify the Node.js version
+
+      - name: Install dependencies
+        run: npm install  # Install dependencies before running the script
+
+      - name: Run ssg script
+        run: node ssg.js  # Your script to generate posts
+        
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public  # Path to the directory containing your generated files
+          
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
