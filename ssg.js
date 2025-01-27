@@ -32,7 +32,7 @@ async function ensureDirectoryExists(dirPath) {
   }
 }
 
-// Load partials (including header.html)
+// Load partials 
 async function loadPartials() {
   const partials = {};
   try {
@@ -52,17 +52,17 @@ async function loadPartials() {
 async function createFullPage(partials, mainContent) {
   const baseTemplate = partials.base;
   try {
-    let fullPage = baseTemplate.replace('{{main}}', mainContent);
-    for (const [key, value] of Object.entries(partials)) {
-      if (key !== 'base') { // Skip the base template itself
-        fullPage = fullPage.replace(new RegExp(`{{${key}}}`, 'g'), value);
-      }
-    }
-    return fullPage;
+    return baseTemplate
+      .replace('{{head}}', partials.head)
+      .replace('{{header}}', partials.header)
+      .replace('{{main}}', mainContent)
+      .replace('{{footer}}', partials.footer)
+      .replace('{{aside}}', partials.aside);
   } catch (err) {
     throw new Error(`Error creating full page: ${err.message}`);
   }
 }
+
 // Process articles and generate pages (same as before)
 async function processarticles(partials) {
   try {
