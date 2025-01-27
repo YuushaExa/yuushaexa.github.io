@@ -115,12 +115,14 @@ async function runSSG() {
   try {
     await ensureDirectoryExists(publicDir);
     const partials = await loadPartials();
-    await processarticles(partials);
-    await generateIndex(partials);
-    await generate404(partials); // Generate the 404.html page
+    await Promise.all([
+      processarticles(partials),
+      generateIndex(partials),
+      generate404(partials),
+    ]);
     console.log('SSG build complete!');
   } catch (err) {
-    console.error('SSG build failed:', err.message);
+    console.error('SSG build failed:', err.stack || err.message);
     process.exit(1);
   }
 }
