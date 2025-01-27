@@ -34,27 +34,17 @@ async function ensureDirectoryExists(dirPath) {
 
 // Load partials (including header.html)
 async function loadPartials() {
-  const partialFiles = {
-    base: 'base.html',
-    head: 'head.html',
-    header: 'header.html',
-    footer: 'footer.html',
-    aside: 'aside.html',
-    index: 'index.html',
-    404: '404.html', // Add 404.html to be loaded
-  };
   const partials = {};
-
-  const promises = Object.entries(partialFiles).map(async ([key, fileName]) => {
-    const filePath = path.join(partialsDir, fileName);
-    try {
-      partials[key] = await readFile(filePath);
-    } catch (err) {
-      throw new Error(`Error loading partial ${fileName}: ${err.message}`);
-    }
-  });
-
-  await Promise.all(promises);
+  try {
+    const files = await fs.readdir(partialsDir);
+    const htmlFiles = files.filter(file => file.endsWith('.html'));
+    await Promise.all(htmlFiles.map(async file => {
+      const key = path.basename(file, '.html');
+      partials[key] = await readFile(path.join(partialsDir, file));
+    }));
+  } catch (err) {
+    throw new Error(`Error loading partials: ${err.message}`);
+  }
   return partials;
 }
 
