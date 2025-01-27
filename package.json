@@ -7,6 +7,8 @@
     "build": "node ssg.js"
   },
   "license": "MIT",
-  "dependencies": {
-  }
+ "dependencies": {
+  "fastify": "^4.0.0", // or the latest version
+  "fastify-static": "^5.0.0" // or the latest version
+}
 }
