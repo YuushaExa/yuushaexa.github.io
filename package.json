@@ -1,0 +1,12 @@
+{
+  "name": "my-ssg",
+  "version": "1.0.0",
+  "description": "A simple static site generator",
+  "main": "ssg.js",
+  "scripts": {
+    "build": "node ssg.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+  }
+}
