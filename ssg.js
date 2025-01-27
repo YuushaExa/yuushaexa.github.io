@@ -5,7 +5,7 @@ const articlesDir = path.join(__dirname, 'articles');
 const partialsDir = path.join(__dirname, 'partials');
 const publicDir = path.join(__dirname, 'public');
 
-// Helper functions
+// Helper functions (same as before)
 async function readFile(filePath) {
   try {
     return await fs.readFile(filePath, 'utf-8');
@@ -23,7 +23,13 @@ async function writeFile(filePath, content) {
 }
 
 async function ensureDirectoryExists(dirPath) {
-  await fs.mkdir(dirPath, { recursive: true });
+  try {
+    await fs.mkdir(dirPath, { recursive: true });
+  } catch (err) {
+    if (err.code !== 'EEXIST') {
+      throw new Error(`Error creating directory ${dirPath}: ${err.message}`);
+    }
+  }
 }
 
 // Load partials 
@@ -36,14 +42,13 @@ async function loadPartials() {
       const key = path.basename(file, '.html');
       partials[key] = await readFile(path.join(partialsDir, file));
     }));
-    if (!partials.base) throw new Error('Base template not found in partials.');
   } catch (err) {
     throw new Error(`Error loading partials: ${err.message}`);
   }
   return partials;
 }
 
-// Function to wrap main content with base and partials
+// Function to wrap main content with base and partials (same as before)
 async function createFullPage(partials, mainContent) {
   try {
     return partials.base.replace(/\{\{(head|header|footer|aside|main)\}\}/g, (match, key) => {
@@ -56,30 +61,36 @@ async function createFullPage(partials, mainContent) {
   }
 }
 
-// Process articles and generate pages
-async function processArticles(partials) {
-  console.time('processArticles');
+// Process articles and generate pages (same as before)
+async function processarticles(partials) {
   try {
-    const mainFiles = (await fs.readdir(articlesDir)).filter(file => file.endsWith('.html'));
-    await Promise.all(mainFiles.map(async file => {
-      const mainContent = await readFile(path.join(articlesDir, file));
+    const mainFiles = await fs.readdir(articlesDir);
+
+    const promises = mainFiles.map(async mainFile => {
+      const mainFilePath = path.join(articlesDir, mainFile);
+      const mainContent = await readFile(mainFilePath);
+
       const outputContent = await createFullPage(partials, mainContent);
-      const outputPath = path.join(publicDir, file);
-      await writeFile(outputPath, outputContent);
-      console.log(`Generated: ${file}`);
-    }));
+
+      const outputFileName = mainFile;
+      const outputFilePath = path.join(publicDir, outputFileName);
+      await writeFile(outputFilePath, outputContent);
+
+      console.log(`Generated: ${outputFileName}`);
+    });
+
+    await Promise.all(promises);
   } catch (err) {
     throw new Error(`Error processing articles: ${err.message}`);
-  } finally {
-    console.timeEnd('processArticles');
   }
 }
 
-// Generate index.html
+// Generate index.html (same as before)
 async function generateIndex(partials) {
   try {
-    const indexContent = await createFullPage(partials, partials.index || '');
-    await writeFile(path.join(publicDir, 'index.html'), indexContent);
+    const indexOutputContent = await createFullPage(partials, partials.index);
+    const indexOutputFilePath = path.join(publicDir, 'index.html');
+    await writeFile(indexOutputFilePath, indexOutputContent);
     console.log('Generated: index.html');
   } catch (err) {
     throw new Error(`Error generating index.html: ${err.message}`);
@@ -89,29 +100,26 @@ async function generateIndex(partials) {
 // Generate 404.html
 async function generate404(partials) {
   try {
-    const notFoundContent = await createFullPage(partials, partials['404'] || '');
-    await writeFile(path.join(publicDir, '404.html'), notFoundContent);
+    const notFoundContent = partials['404']; // Get content from partials
+    const notFoundFilePath = path.join(publicDir, '404.html');
+    await writeFile(notFoundFilePath, notFoundContent);
     console.log('Generated: 404.html');
   } catch (err) {
     throw new Error(`Error generating 404.html: ${err.message}`);
   }
 }
-
-// Main function to run the SSG
+// Main function to run the SSG (updated to generate 404.html)
 async function runSSG() {
-  console.time('runSSG');
   try {
     await ensureDirectoryExists(publicDir);
     const partials = await loadPartials();
-    await processArticles(partials);
+    await processarticles(partials);
     await generateIndex(partials);
-    await generate404(partials);
+    await generate404(partials); // Generate the 404.html page
     console.log('SSG build complete!');
   } catch (err) {
     console.error('SSG build failed:', err.message);
     process.exit(1);
-  } finally {
-    console.timeEnd('runSSG');
   }
 }
 
