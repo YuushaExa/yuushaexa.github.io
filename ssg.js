@@ -63,8 +63,10 @@ async function createFullPage(partials, mainContent) {
   }
 }
 
-// Process articles and generate pages (same as before)
+// Process articles and generate pages (updated to log speed)
 async function processarticles(partials) {
+  console.time('processarticles'); // Start the timer
+
   try {
     const mainFiles = await fs.readdir(articlesDir);
 
@@ -84,6 +86,8 @@ async function processarticles(partials) {
     await Promise.all(promises);
   } catch (err) {
     throw new Error(`Error processing articles: ${err.message}`);
+  } finally {
+    console.timeEnd('processarticles'); // End the timer and log the duration
   }
 }
 
@@ -110,8 +114,10 @@ async function generate404(partials) {
     throw new Error(`Error generating 404.html: ${err.message}`);
   }
 }
-// Main function to run the SSG (updated to generate 404.html)
+// Main function to run the SSG (updated to log total build time)
 async function runSSG() {
+  console.time('runSSG'); // Start the timer for the entire SSG process
+
   try {
     await ensureDirectoryExists(publicDir);
     const partials = await loadPartials();
@@ -122,6 +128,8 @@ async function runSSG() {
   } catch (err) {
     console.error('SSG build failed:', err.message);
     process.exit(1);
+  } finally {
+    console.timeEnd('runSSG'); // End the timer and log the total duration
   }
 }
 
