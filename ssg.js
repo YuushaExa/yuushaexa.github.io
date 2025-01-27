@@ -48,33 +48,33 @@ async function loadPartials() {
   return partials;
 }
 
-// Function to wrap model content with base and partials (same as before)
-async function createFullPage(partials, modelContent) {
+// Function to wrap main content with base and partials (same as before)
+async function createFullPage(partials, mainContent) {
   const baseTemplate = partials.base;
   try {
-    return baseTemplate
-      .replace('{{head}}', partials.head)
-      .replace('{{header}}', partials.header)
-      .replace('{{main}}', modelContent)
-      .replace('{{footer}}', partials.footer)
-      .replace('{{aside}}', partials.aside);
+    let fullPage = baseTemplate.replace('{{main}}', mainContent);
+    for (const [key, value] of Object.entries(partials)) {
+      if (key !== 'base') { // Skip the base template itself
+        fullPage = fullPage.replace(new RegExp(`{{${key}}}`, 'g'), value);
+      }
+    }
+    return fullPage;
   } catch (err) {
     throw new Error(`Error creating full page: ${err.message}`);
   }
 }
-
 // Process articles and generate pages (same as before)
 async function processarticles(partials) {
   try {
-    const modelFiles = await fs.readdir(articlesDir);
+    const mainFiles = await fs.readdir(articlesDir);
 
-    const promises = modelFiles.map(async modelFile => {
-      const modelFilePath = path.join(articlesDir, modelFile);
-      const modelContent = await readFile(modelFilePath);
+    const promises = mainFiles.map(async mainFile => {
+      const mainFilePath = path.join(articlesDir, mainFile);
+      const mainContent = await readFile(mainFilePath);
 
-      const outputContent = await createFullPage(partials, modelContent);
+      const outputContent = await createFullPage(partials, mainContent);
 
-      const outputFileName = modelFile;
+      const outputFileName = mainFile;
       const outputFilePath = path.join(publicDir, outputFileName);
       await writeFile(outputFilePath, outputContent);
 
