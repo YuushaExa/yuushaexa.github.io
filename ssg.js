@@ -1,6 +1,5 @@
 const fs = require('fs').promises;
 const path = require('path');
-const fastify = require('fastify')({ logger: true });
 
 const articlesDir = path.join(__dirname, 'articles');
 const partialsDir = path.join(__dirname, 'partials');
@@ -111,7 +110,6 @@ async function generate404(partials) {
     throw new Error(`Error generating 404.html: ${err.message}`);
   }
 }
-
 // Main function to run the SSG (updated to generate 404.html)
 async function runSSG() {
   try {
@@ -127,30 +125,5 @@ async function runSSG() {
   }
 }
 
-// Serve the static files using Fastify
-async function serveStaticFiles() {
-  fastify.register(require('fastify-static'), {
-    root: publicDir,
-    prefix: '/',
-  });
-
-  fastify.setNotFoundHandler((request, reply) => {
-    reply.sendFile('404.html');
-  });
-
-  try {
-    await fastify.listen(3000);
-    console.log('Server is running on http://localhost:3000');
-  } catch (err) {
-    fastify.log.error(err);
-    process.exit(1);
-  }
-}
-
-// Run the SSG and then serve the static files
-async function main() {
-  await runSSG();
-  await serveStaticFiles();
-}
-
-main();
+// Run the SSG
+runSSG();
