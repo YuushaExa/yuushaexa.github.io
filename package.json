@@ -8,7 +8,5 @@
   },
   "license": "MIT",
  "dependencies": {
-  "fastify": "^5.2.1", 
-  "@fastify/static": "^8.0.4" 
 }
 }
