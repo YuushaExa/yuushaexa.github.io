@@ -6,46 +6,45 @@ const partialsDir = path.join(__dirname, 'partials');
 const publicDir = path.join(__dirname, 'public');
 
 // Helper functions (same as before)
-async function readFile(filePath) {
+async function fileOperation(mode, filePath, content) {
   try {
-    return await fs.readFile(filePath, 'utf-8');
-  } catch (err) {
-    throw new Error(`Error reading file ${filePath}: ${err.message}`);
-  }
-}
-
-async function writeFile(filePath, content) {
-  try {
-    await fs.writeFile(filePath, content, 'utf-8');
-  } catch (err) {
-    throw new Error(`Error writing file ${filePath}: ${err.message}`);
-  }
-}
-
-async function ensureDirectoryExists(dirPath) {
-  try {
-    await fs.mkdir(dirPath, { recursive: true });
-  } catch (err) {
-    if (err.code !== 'EEXIST') {
-      throw new Error(`Error creating directory ${dirPath}: ${err.message}`);
+    switch (mode) {
+      case 'read':
+        return await fs.readFile(filePath, 'utf-8');
+      case 'write':
+        await fs.writeFile(filePath, content, 'utf-8');
+        return; 
+      case 'ensureDir':
+        await fs.mkdir(filePath, { recursive: true });
+        return; 
+      default:
+        throw new Error(`Invalid mode: ${mode}`);
     }
+  } catch (err) {
+    if (mode === 'ensureDir' && err.code === 'EEXIST') {
+      return; 
+    }
+    throw new Error(`Error during ${mode} operation on ${filePath}: ${err.message}`);
   }
 }
 
 // Load partials 
 async function loadPartials() {
-  const partials = {};
-  try {
+  return withErrorHandling(async () => {
     const files = await fs.readdir(partialsDir);
-    const htmlFiles = files.filter(file => file.endsWith('.html'));
-    await Promise.all(htmlFiles.map(async file => {
-      const key = path.basename(file, '.html');
-      partials[key] = await readFile(path.join(partialsDir, file));
-    }));
-  } catch (err) {
-    throw new Error(`Error loading partials: ${err.message}`);
-  }
-  return partials;
+    const partials = {};
+
+    await Promise.all(
+      files
+        .filter(file => file.endsWith('.html'))
+        .map(async file => {
+          const key = path.basename(file, '.html');
+          partials[key] = await readFile(path.join(partialsDir, file));
+        })
+    );
+
+    return partials;
+  }, 'Error loading partials');
 }
 
 // Function to wrap main content with base and partials (same as before)
@@ -115,15 +114,16 @@ async function runSSG() {
   try {
     await ensureDirectoryExists(publicDir);
     const partials = await loadPartials();
-    await processarticles(partials);
-    await generateIndex(partials);
-    await generate404(partials); // Generate the 404.html page
+    await Promise.all([
+      processarticles(partials),
+      generateIndex(partials),
+      generate404(partials),
+    ]);
     console.log('SSG build complete!');
   } catch (err) {
-    console.error('SSG build failed:', err.message);
+    console.error('SSG build failed:', err);
     process.exit(1);
   }
 }
-
 // Run the SSG
 runSSG();
