@@ -1,7 +1,7 @@
 const fs = require('fs').promises;
 const path = require('path');
 
-const modelsDir = path.join(__dirname, 'models');
+const articlesDir = path.join(__dirname, 'articles');
 const partialsDir = path.join(__dirname, 'partials');
 const publicDir = path.join(__dirname, 'public');
 
@@ -73,13 +73,13 @@ async function createFullPage(partials, modelContent) {
   }
 }
 
-// Process models and generate pages (same as before)
-async function processModels(partials) {
+// Process articles and generate pages (same as before)
+async function processarticles(partials) {
   try {
-    const modelFiles = await fs.readdir(modelsDir);
+    const modelFiles = await fs.readdir(articlesDir);
 
     const promises = modelFiles.map(async modelFile => {
-      const modelFilePath = path.join(modelsDir, modelFile);
+      const modelFilePath = path.join(articlesDir, modelFile);
       const modelContent = await readFile(modelFilePath);
 
       const outputContent = await createFullPage(partials, modelContent);
@@ -93,7 +93,7 @@ async function processModels(partials) {
 
     await Promise.all(promises);
   } catch (err) {
-    throw new Error(`Error processing models: ${err.message}`);
+    throw new Error(`Error processing articles: ${err.message}`);
   }
 }
 
@@ -125,7 +125,7 @@ async function runSSG() {
   try {
     await ensureDirectoryExists(publicDir);
     const partials = await loadPartials();
-    await processModels(partials);
+    await processarticles(partials);
     await generateIndex(partials);
     await generate404(partials); // Generate the 404.html page
     console.log('SSG build complete!');
