@@ -1,8 +1,47 @@
 <p>© 2025 My Website</p>
-<script>
-// Get accurate document referrer
+// Advanced tracker with performance metrics
+class AnalyticsClient {
+  constructor(endpoint) {
+    this.endpoint = endpoint;
+    this.sessionId = this.generateSessionId();
+  }
 
+  generateSessionId() {
+    return Math.random().toString(36).substr(2, 9);
+  }
 
-// Send tracking request
-new Image().src = `https://imager-psi.vercel.app/track`;
-</script>
+  async track(eventType, metadata = {}) {
+    const payload = {
+      url: encodeURIComponent(window.location.href),
+      referrer: encodeURIComponent(document.referrer || 'direct'),
+      session: this.sessionId,
+      event: eventType,
+      ...metadata
+    };
+
+    try {
+      const params = new URLSearchParams(payload).toString();
+      await fetch(`${this.endpoint}?${params}`);
+    } catch (error) {
+      console.error('Tracking error:', error);
+    }
+  }
+
+  init() {
+    // Track initial page view
+    this.track('pageview', {
+      loadTime: performance.timing.loadEventEnd - performance.timing.navigationStart
+    });
+
+    // Track visibility changes
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') {
+        this.track('unload');
+      }
+    });
+  }
+}
+
+// Usage
+const analytics = new AnalyticsClient('https://imager-psi.vercel.app/track');
+analytics.init();
