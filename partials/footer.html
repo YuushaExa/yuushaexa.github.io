@@ -1,20 +1,10 @@
 <p>© 2025 My Website</p>
 <script>
-        // Collect client-side data
-        const screenWidth = window.screen.width;
-        const screenHeight = window.screen.height;
-        const userAgent = navigator.userAgent;
+// Capture current page information
+const currentUrl = window.location.href;
+const referrer = document.referrer;
 
-        // Send data to the backend
-        fetch('https://imager-psi.vercel.app/track', {
-            method: 'GET',
-            headers: {
-                'User-Agent': userAgent,
-                'Referer': document.referrer,
-                'Content-Type': 'application/json',
-            },
-        })
-        .then(response => response.text())
-        .then(data => console.log(data))
-        .catch(error => console.error('Error:', error));
-    </script>
+// Create tracking pixel
+const img = new Image();
+img.src = `https://imager-psi.vercel.app/track?url=${encodeURIComponent(currentUrl)}&referrer=${encodeURIComponent(referrer)}`;
+</script>
