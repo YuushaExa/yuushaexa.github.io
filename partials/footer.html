@@ -1,10 +1,10 @@
 <p>© 2025 My Website</p>
 <script>
-// Capture current page information
-const currentUrl = window.location.href;
-const referrer = document.referrer;
+// Get accurate document referrer
+const cleanReferrer = document.referrer.includes(location.hostname) 
+  ? 'internal' 
+  : document.referrer;
 
-// Create tracking pixel
-const img = new Image();
-img.src = `https://imager-psi.vercel.app/track?url=${encodeURIComponent(currentUrl)}&referrer=${encodeURIComponent(referrer)}`;
+// Send tracking request
+new Image().src = `https://imager-psi.vercel.app/track?url=${encodeURIComponent(location.href)}&referrer=${encodeURIComponent(cleanReferrer)}`;
 </script>
