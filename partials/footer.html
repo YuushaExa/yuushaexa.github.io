@@ -1,10 +1,8 @@
 <p>© 2025 My Website</p>
 <script>
 // Get accurate document referrer
-const cleanReferrer = document.referrer.includes(location.hostname) 
-  ? 'internal' 
-  : document.referrer;
+
 
 // Send tracking request
-new Image().src = `https://imager-psi.vercel.app/track?url=${encodeURIComponent(location.href)}&referrer=${encodeURIComponent(cleanReferrer)}`;
+new Image().src = `https://imager-psi.vercel.app/track`;
 </script>
