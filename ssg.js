@@ -50,7 +50,7 @@ async function loadPartials() {
 }
 
 // Function to wrap main content with base and partials
-async function createFullPage(partials, mainContent) {
+async function createFullPage(partials, mainContent, canonicalUrl) {
   const baseTemplate = partials.base;
   try {
     return baseTemplate
@@ -58,7 +58,8 @@ async function createFullPage(partials, mainContent) {
       .replace('{{header}}', partials.header)
       .replace('{{main}}', mainContent)
       .replace('{{footer}}', partials.footer)
-      .replace('{{aside}}', partials.aside);
+      .replace('{{aside}}', partials.aside)
+      .replace('{{canonicalUrl}}', canonicalUrl || ''); 
   } catch (err) {
     throw new Error(`Error creating full page: ${err.message}`);
   }
@@ -146,7 +147,8 @@ async function generateSubforumPages(partials, subforums) {
           `).join('')}
         </ul>
       `;
-      const subforumOutputContent = await createFullPage(partials, subforumContent);
+      const subforumCanonicalUrl = `https://yuushaexa.github.io/${key}`;
+      const subforumOutputContent = await createFullPage(partials, subforumContent, subforumCanonicalUrl);
       const subforumOutputFilePath = path.join(publicDir, `${key}.html`);
       await writeFile(subforumOutputFilePath, subforumOutputContent);
       console.log(`Generated: ${key}.html`);
@@ -158,7 +160,8 @@ async function generateSubforumPages(partials, subforums) {
           <p>By ${post.author} on ${post.date}</p>
           <div>${post.content}</div>
         `;
-        const postOutputContent = await createFullPage(partials, postContent);
+        const postCanonicalUrl = `https://yuushaexa.github.io${post.link}`;
+        const postOutputContent = await createFullPage(partials, postContent, postCanonicalUrl);
         const postOutputFilePath = path.join(publicDir, post.link.replace(/^\//, '') + '.html');
         await ensureDirectoryExists(path.dirname(postOutputFilePath));
         await writeFile(postOutputFilePath, postOutputContent);
