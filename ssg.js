@@ -50,7 +50,7 @@ async function loadPartials() {
 }
 
 // Function to wrap main content with base and partials
-async function createFullPage(partials, mainContent, canonicalUrl) {
+async function createFullPage(partials, mainContent, canonicalUrl, title = 'Default Title') {
   const baseTemplate = partials.base;
   try {
     return baseTemplate
