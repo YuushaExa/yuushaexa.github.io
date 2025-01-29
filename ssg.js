@@ -50,7 +50,7 @@ async function loadPartials() {
 }
 
 // Function to wrap main content with base and partials
-async function createFullPage(partials, mainContent, canonicalUrl, title = 'Default Title') {
+async function createFullPage(partials, mainContent, canonicalUrl, title) {
   const baseTemplate = partials.base;
   try {
     return baseTemplate
@@ -155,9 +155,9 @@ async function generateSubforumPages(partials, subforums) {
         subforumCanonicalUrl,
         subforum.title // Pass the subforum title
       );
-      const subforumOutputFilePath = path.join(publicDir, key, 'index.html');
+       const subforumOutputFilePath = path.join(publicDir, `${key}.html`);
       await writeFile(subforumOutputFilePath, subforumOutputContent);
-      console.log(`Generated: ${key}/index.html`);
+      console.log(`Generated: ${key}.html`);
 
       // Generate individual post pages
       await Promise.all(subforum.posts.map(async post => {
@@ -173,15 +173,17 @@ async function generateSubforumPages(partials, subforums) {
           postCanonicalUrl,
           post.title // Pass the post title
         );
-        const postOutputFilePath = path.join(publicDir, post.link.replace(/^\//, ''), 'index.html');
+       const postOutputFilePath = path.join(publicDir, post.link.replace(/^\//, '') + '.html');
+        await ensureDirectoryExists(path.dirname(postOutputFilePath));
         await writeFile(postOutputFilePath, postOutputContent);
-        console.log(`Generated: ${post.link.replace(/^\//, '')}/index.html`);
+        console.log(`Generated: ${post.link.replace(/^\//, '')}.html`);
       }));
     }));
   } catch (err) {
     throw new Error(`Error generating subforum pages: ${err.message}`);
   }
 }
+
 
 // Main function to run the SSG
 async function runSSG() {
