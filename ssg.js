@@ -4,8 +4,9 @@ const path = require('path');
 const articlesDir = path.join(__dirname, 'articles');
 const partialsDir = path.join(__dirname, 'partials');
 const publicDir = path.join(__dirname, 'public');
+const subforumsDir = path.join(__dirname, 'subforums');
 
-// Helper functions (same as before)
+// Helper functions
 async function readFile(filePath) {
   try {
     return await fs.readFile(filePath, 'utf-8');
@@ -48,7 +49,7 @@ async function loadPartials() {
   return partials;
 }
 
-// Function to wrap main content with base and partials (same as before)
+// Function to wrap main content with base and partials
 async function createFullPage(partials, mainContent) {
   const baseTemplate = partials.base;
   try {
@@ -63,7 +64,7 @@ async function createFullPage(partials, mainContent) {
   }
 }
 
-// Process articles and generate pages (same as before)
+// Process articles and generate pages
 async function processarticles(partials) {
   try {
     const mainFiles = await fs.readdir(articlesDir);
@@ -87,7 +88,7 @@ async function processarticles(partials) {
   }
 }
 
-// Generate index.html (same as before)
+// Generate index.html
 async function generateIndex(partials) {
   try {
     const indexOutputContent = await createFullPage(partials, partials.index);
@@ -110,15 +111,76 @@ async function generate404(partials) {
     throw new Error(`Error generating 404.html: ${err.message}`);
   }
 }
-// Main function to run the SSG (updated to generate 404.html)
+
+// Load subforums
+async function loadSubforums() {
+  const subforums = {};
+  try {
+    const files = await fs.readdir(subforumsDir);
+    const jsonFiles = files.filter(file => file.endsWith('.json'));
+    await Promise.all(jsonFiles.map(async file => {
+      const key = path.basename(file, '.json');
+      const filePath = path.join(subforumsDir, file);
+      const content = await readFile(filePath);
+      subforums[key] = JSON.parse(content);
+    }));
+  } catch (err) {
+    throw new Error(`Error loading subforums: ${err.message}`);
+  }
+  return subforums;
+}
+
+// Generate subforum and post pages
+async function generateSubforumPages(partials, subforums) {
+  try {
+    await Promise.all(Object.entries(subforums).map(async ([key, subforum]) => {
+      // Generate the subforum page
+      const subforumContent = `
+        <h1>${subforum.title}</h1>
+        <p>${subforum.description}</p>
+        <ul>
+          ${subforum.posts.map(post => `
+            <li>
+              <a href="${post.link}">${post.title}</a> by ${post.author} on ${post.date}
+            </li>
+          `).join('')}
+        </ul>
+      `;
+      const subforumOutputContent = await createFullPage(partials, subforumContent);
+      const subforumOutputFilePath = path.join(publicDir, `${key}.html`);
+      await writeFile(subforumOutputFilePath, subforumOutputContent);
+      console.log(`Generated: ${key}.html`);
+
+      // Generate individual post pages
+      await Promise.all(subforum.posts.map(async post => {
+        const postContent = `
+          <h1>${post.title}</h1>
+          <p>By ${post.author} on ${post.date}</p>
+          <div>${post.content}</div>
+        `;
+        const postOutputContent = await createFullPage(partials, postContent);
+        const postOutputFilePath = path.join(publicDir, post.link.replace(/^\//, '') + '.html');
+        await ensureDirectoryExists(path.dirname(postOutputFilePath));
+        await writeFile(postOutputFilePath, postOutputContent);
+        console.log(`Generated: ${post.link.replace(/^\//, '')}.html`);
+      }));
+    }));
+  } catch (err) {
+    throw new Error(`Error generating subforum pages: ${err.message}`);
+  }
+}
+
+// Main function to run the SSG
 async function runSSG() {
   try {
     await ensureDirectoryExists(publicDir);
     const partials = await loadPartials();
+    const subforums = await loadSubforums();
     await Promise.all([
       processarticles(partials),
       generateIndex(partials),
       generate404(partials),
+      generateSubforumPages(partials, subforums),
     ]);
     console.log('SSG build complete!');
   } catch (err) {
