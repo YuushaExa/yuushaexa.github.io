@@ -93,7 +93,7 @@ async function processarticles(partials) {
 // Generate index.html
 async function generateIndex(partials) {
   try {
-    const indexOutputContent = await createFullPage(partials, partials.index);
+    const indexOutputContent = partials['index'];
     const indexOutputFilePath = path.join(publicDir, 'index.html');
     await writeFile(indexOutputFilePath, indexOutputContent);
     console.log('Generated: index.html');
