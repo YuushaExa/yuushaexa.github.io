@@ -59,7 +59,8 @@ async function createFullPage(partials, mainContent, canonicalUrl) {
       .replace('{{main}}', mainContent)
       .replace('{{footer}}', partials.footer)
       .replace('{{aside}}', partials.aside)
-      .replace('{{canonicalUrl}}', canonicalUrl || ''); 
+      .replace('{{canonicalUrl}}', canonicalUrl || '')
+      .replace('{{title}}', title || 'Default Title');
   } catch (err) {
     throw new Error(`Error creating full page: ${err.message}`);
   }
@@ -148,10 +149,15 @@ async function generateSubforumPages(partials, subforums) {
         </ul>
       `;
       const subforumCanonicalUrl = `https://yuushaexa.github.io/${key}`;
-      const subforumOutputContent = await createFullPage(partials, subforumContent, subforumCanonicalUrl);
-      const subforumOutputFilePath = path.join(publicDir, `${key}.html`);
+      const subforumOutputContent = await createFullPage(
+        partials,
+        subforumContent,
+        subforumCanonicalUrl,
+        subforum.title // Pass the subforum title
+      );
+      const subforumOutputFilePath = path.join(publicDir, key, 'index.html');
       await writeFile(subforumOutputFilePath, subforumOutputContent);
-      console.log(`Generated: ${key}.html`);
+      console.log(`Generated: ${key}/index.html`);
 
       // Generate individual post pages
       await Promise.all(subforum.posts.map(async post => {
@@ -161,11 +167,15 @@ async function generateSubforumPages(partials, subforums) {
           <div>${post.content}</div>
         `;
         const postCanonicalUrl = `https://yuushaexa.github.io${post.link}`;
-        const postOutputContent = await createFullPage(partials, postContent, postCanonicalUrl);
-        const postOutputFilePath = path.join(publicDir, post.link.replace(/^\//, '') + '.html');
-        await ensureDirectoryExists(path.dirname(postOutputFilePath));
+        const postOutputContent = await createFullPage(
+          partials,
+          postContent,
+          postCanonicalUrl,
+          post.title // Pass the post title
+        );
+        const postOutputFilePath = path.join(publicDir, post.link.replace(/^\//, ''), 'index.html');
         await writeFile(postOutputFilePath, postOutputContent);
-        console.log(`Generated: ${post.link.replace(/^\//, '')}.html`);
+        console.log(`Generated: ${post.link.replace(/^\//, '')}/index.html`);
       }));
     }));
   } catch (err) {
