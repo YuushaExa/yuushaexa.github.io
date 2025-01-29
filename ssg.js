@@ -134,66 +134,53 @@ async function loadSubforums() {
 
 // Generate subforum and post pages
 async function generateSubforumPages(partials, subforums) {
-  // Helper function to create standardized page paths
-  const resolvePagePath = (basePath, urlPath) => 
-    path.join(basePath, ...urlPath.split('/').filter(Boolean)) + '.html';
-
-  // HTML content generators
-  const createSubforumContent = (subforum) => `
-    <h1>${subforum.title}</h1>
-    <p>${subforum.description}</p>
-    <ul>
-      ${subforum.posts.map(post => `
-        <li>
-          <a href="${post.link}.html">${post.title}</a> 
-          by ${post.author} on ${post.date}
-        </li>
-      `).join('')}
-    </ul>
-  `;
-
-  const createPostContent = (post) => `
-    <h1>${post.title}</h1>
-    <p>By ${post.author} on ${post.date}</p>
-    <div>${post.content}</div>
-  `;
-
-  // Unified page generation function
-  const generatePage = async (content, canonicalUrl, title) => 
-    createFullPage(partials, content, canonicalUrl, title);
-
   try {
     await Promise.all(Object.entries(subforums).map(async ([key, subforum]) => {
-      try {
-        // Generate subforum page
-        const subforumCanonical = `https://yuushaexa.github.io/${key}.html`;
-        const subforumContent = createSubforumContent(subforum);
-        const subforumPage = await generatePage(subforumContent, subforumCanonical, subforum.title);
-        const subforumPath = path.join(publicDir, `${key}.html`);
-        await fs.promises.writeFile(subforumPath, subforumPage);
-        console.log(`Generated subforum: ${key}.html`);
+      // Generate the subforum page
+      const subforumContent = `
+        <h1>${subforum.title}</h1>
+        <p>${subforum.description}</p>
+        <ul>
+          ${subforum.posts.map(post => `
+            <li>
+              <a href="${post.link}">${post.title}</a> by ${post.author} on ${post.date}
+            </li>
+          `).join('')}
+        </ul>
+      `;
+      const subforumCanonicalUrl = `https://yuushaexa.github.io/${key}`;
+      const subforumOutputContent = await createFullPage(
+        partials,
+        subforumContent,
+        subforumCanonicalUrl,
+        subforum.title // Pass the subforum title
+      );
+       const subforumOutputFilePath = path.join(publicDir, `${key}.html`);
+      await writeFile(subforumOutputFilePath, subforumOutputContent);
+      console.log(`Generated: ${key}.html`);
 
-        // Generate post pages
-        await Promise.all(subforum.posts.map(async post => {
-          try {
-            const postCanonical = `https://yuushaexa.github.io${post.link}.html`;
-            const postContent = createPostContent(post);
-            const postPage = await generatePage(postContent, postCanonical, post.title);
-            const postPath = resolvePagePath(publicDir, post.link);
-            
-            await fs.promises.mkdir(path.dirname(postPath), { recursive: true });
-            await fs.promises.writeFile(postPath, postPage);
-            console.log(`Generated post: ${path.relative(publicDir, postPath)}`);
-          } catch (err) {
-            throw new Error(`Failed to generate post ${post.title}: ${err.message}`);
-          }
-        }));
-      } catch (err) {
-        throw new Error(`Failed to process subforum ${key}: ${err.message}`);
-      }
+      // Generate individual post pages
+      await Promise.all(subforum.posts.map(async post => {
+        const postContent = `
+          <h1>${post.title}</h1>
+          <p>By ${post.author} on ${post.date}</p>
+          <div>${post.content}</div>
+        `;
+        const postCanonicalUrl = `https://yuushaexa.github.io${post.link}`;
+        const postOutputContent = await createFullPage(
+          partials,
+          postContent,
+          postCanonicalUrl,
+          post.title // Pass the post title
+        );
+       const postOutputFilePath = path.join(publicDir, post.link.replace(/^\//, '') + '.html');
+        await ensureDirectoryExists(path.dirname(postOutputFilePath));
+        await writeFile(postOutputFilePath, postOutputContent);
+        console.log(`Generated: ${post.link.replace(/^\//, '')}.html`);
+      }));
     }));
   } catch (err) {
-    throw new Error(`Page generation error: ${err.message}`);
+    throw new Error(`Error generating subforum pages: ${err.message}`);
   }
 }
 
