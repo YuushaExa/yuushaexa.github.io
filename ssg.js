@@ -71,6 +71,8 @@ async function generateSubforumPages(partials, subforums) {
       <h1>${subforum.title}</h1>
       <p>${subforum.description}</p>
       <p>${subforum.created_at}</p>
+      <img>${subforum.banner}</img>
+      <img>${subforum.icon}</img>
       <ul>${subforum.posts.map(post => `
         <li>
           <img src="${post.image}" alt="${post.title}" width="50">
