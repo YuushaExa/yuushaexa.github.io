@@ -2,20 +2,27 @@
   "title": "Programming Discussions",
   "link": "/programming",
   "description": "A place to discuss all things related to programming, including languages, frameworks, and best practices.",
+  "created_at": "2025-10-01",
   "posts": [
     {
       "title": "Best Practices for Python Code",
       "link": "/programming/best-practices-python",
       "author": "JohnDoe",
       "date": "2023-10-01",
-      "content": "In this post, we'll explore some of the best practices for writing clean and efficient Python code."
+      "content": "In this post, we'll explore some of the best practices for writing clean and efficient Python code.",
+      "image": "https://picsum.photos/200",
+      "url": "https://example.com",
+      "flair": "Discussion"
     },
     {
       "title": "Introduction to React Hooks",
       "link": "/programming/intro-react-hooks",
       "author": "JaneSmith",
       "date": "2023-10-02",
-      "content": "React Hooks have revolutionized the way we write components in React. Let's dive into the basics."
+      "content": "React Hooks have revolutionized the way we write components in React. Let's dive into the basics.",
+      "image": "https://picsum.photos/200",
+      "url": "https://example.com",
+      "flair": "Discussion"
     }
   ]
 }
