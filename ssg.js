@@ -95,7 +95,7 @@ async function generateSubforumPages(partials, subforums) {
       const postOutputFilePath = path.join(dirs.public, post.link.replace(/^\//, '') + '.html');
       await ensureDirectoryExists(path.dirname(postOutputFilePath));
       await writeFile(postOutputFilePath, postOutputContent);
-      console.log(`Generated: ${post.link.replace(/^//, '')}.html`);
+      console.log(`Generated: ${post.link.replace(/^\//, '')}.html`);
     }));
   }));
 }
