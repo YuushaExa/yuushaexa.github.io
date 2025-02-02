@@ -92,7 +92,7 @@ async function generateSubforumPages(partials, subforums) {
         <p><a href="${post.url}" target="_blank">Read more</a></p>
       `;
       const postOutputContent = await createFullPage(partials, postContent, `https://yuushaexa.github.io${post.link}`, post.title);
-      const postOutputFilePath = path.join(dirs.public, post.link.replace(/^//, '') + '.html');
+      const postOutputFilePath = path.join(dirs.public, post.link.replace(/^\//, '') + '.html');
       await ensureDirectoryExists(path.dirname(postOutputFilePath));
       await writeFile(postOutputFilePath, postOutputContent);
       console.log(`Generated: ${post.link.replace(/^//, '')}.html`);
