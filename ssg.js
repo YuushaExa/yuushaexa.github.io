@@ -2,7 +2,6 @@ const fs = require('fs').promises;
 const path = require('path');
 
 const dirs = {
-  articles: path.join(__dirname, 'articles'),
   partials: path.join(__dirname, 'partials'),
   public: path.join(__dirname, 'public'),
   subforums: path.join(__dirname, 'subforums'),
@@ -60,17 +59,6 @@ async function createFullPage(partials, mainContent, canonicalUrl = '', title = 
     .replace('{{title}}', title);
 }
 
-// Process articles and generate pages
-async function processArticles(partials) {
-  const mainFiles = await fs.readdir(dirs.articles);
-  await Promise.all(mainFiles.map(async file => {
-    const mainContent = await readFile(path.join(dirs.articles, file));
-    const outputContent = await createFullPage(partials, mainContent);
-    await writeFile(path.join(dirs.public, file), outputContent);
-    console.log(`Generated: ${file}`);
-  }));
-}
-
 // Generate special pages (index, 404)
 async function generateSpecialPages(partials) {
   await Promise.all([
@@ -116,7 +104,6 @@ async function runSSG() {
       loadFilesFromDir(dirs.subforums, '.json', JSON.parse),
     ]);
     await Promise.all([
-      processArticles(partials),
       generateSpecialPages(partials),
       generateSubforumPages(partials, subforums),
     ]);
