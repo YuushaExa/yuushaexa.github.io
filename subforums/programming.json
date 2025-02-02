@@ -3,6 +3,8 @@
   "link": "/programming",
   "description": "A place to discuss all things related to programming, including languages, frameworks, and best practices.",
   "created_at": "2025-10-01",
+  "banner": "https://picsum.photos/1072/128",
+  "icon": "https://picsum.photos/88",
   "posts": [
     {
       "title": "Best Practices for Python Code",
