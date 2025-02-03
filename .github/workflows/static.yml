@@ -2,10 +2,8 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches:
-      - main
-    paths:
-      - 'subforums/**'
+    branches: ["main"]  # Change this to your default branch if it's different
+  workflow_dispatch:  # Allows manual triggering
 
 permissions:
   contents: read  # Allow reading repository contents
@@ -35,33 +33,14 @@ jobs:
       - name: Install dependencies
         run: npm install  # Install dependencies before running the script
 
-      - name: Find modified JSON files in the last 5 minutes
-        id: find-modified-json
-        run: |
-          # Get the current timestamp in seconds
-          CURRENT_TIME=$(date +%s)
-          # Calculate the timestamp 5 minutes ago
-          FIVE_MINUTES_AGO=$((CURRENT_TIME - 300))
-          # Find modified JSON files in the subforums directory
-          MODIFIED_FILES=$(find subforums -name '*.json' -type f -newermt "@$FIVE_MINUTES_AGO")
-          # Convert the list of files to a JSON array
-          MODIFIED_FILES_JSON=$(echo "$MODIFIED_FILES" | jq -R -s -c 'split("\n") | map(select(. != ""))')
-          # Output the result as a GitHub Actions output
-          echo "modified_files=$MODIFIED_FILES_JSON" >> $GITHUB_OUTPUT
-
-      - name: Run ssg script with modified files
-        if: steps.find-modified-json.outputs.modified_files != '[]'
-        run: |
-          # Convert the JSON array of modified files to a space-separated list
-          MODIFIED_FILES=$(echo '${{ steps.find-modified-json.outputs.modified_files }}' | jq -r '.[]')
-          # Run the SSG script with the modified files as arguments
-          node ssg.js $MODIFIED_FILES
-
+      - name: Run ssg script
+        run: node ssg.js  # Your script to generate posts
+        
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: public  # Path to the directory containing your generated files
-
+          
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
