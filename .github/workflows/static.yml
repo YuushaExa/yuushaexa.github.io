@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'subforums/**'
+      - 'subforums/**'  # Trigger only when files in the `subforums` folder change
 
 permissions:
   contents: read  # Allow reading repository contents
@@ -34,18 +34,29 @@ jobs:
 
       - name: Install dependencies
         run: npm install  # Install dependencies before running the script
-        
+
+      - name: Verify changed files
+        run: |
+          echo "Changed files in subforums:"
+          git diff --name-only HEAD^ HEAD -- subforums/
+
       - name: Update mtime.json
         run: node update-mtime.js
-      
+
+      - name: Ensure public directory exists
+        run: mkdir -p public  # Create the public directory if it doesn't exist
+
       - name: Run ssg script
         run: node ssg.js  # Your script to generate posts
-        
+
+      - name: Debug public directory
+        run: ls -R public  # List the contents of the public directory for debugging
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: public  # Path to the directory containing your generated files
-          
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
