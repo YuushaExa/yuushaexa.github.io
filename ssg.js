@@ -103,17 +103,28 @@ async function generateSubforumPages(partials, subforums) {
   }));
 }
 
-async function runSSG() {
+async function runSSG(modifiedFiles = []) {
   try {
     await ensureDirectoryExists(dirs.public);
     const [partials, subforums] = await Promise.all([
       loadFilesFromDir(dirs.partials, '.html'),
       loadFilesFromDir(dirs.subforums, '.json', JSON.parse),
     ]);
-    await Promise.all([
-      generateSpecialPages(partials),
-      generateSubforumPages(partials, subforums),
-    ]);
+
+    if (modifiedFiles.length > 0) {
+      // Filter subforums to only include modified files
+      const modifiedSubforums = Object.fromEntries(
+        Object.entries(subforums).filter(([key]) => modifiedFiles.includes(path.join(dirs.subforums, `${key}.json`)))
+      );
+      await generateSubforumPages(partials, modifiedSubforums);
+    } else {
+      // If no modified files, generate all pages
+      await Promise.all([
+        generateSpecialPages(partials),
+        generateSubforumPages(partials, subforums),
+      ]);
+    }
+
     console.log('SSG build complete!');
   } catch (err) {
     console.error('SSG build failed:', err.stack || err.message);
@@ -121,4 +132,6 @@ async function runSSG() {
   }
 }
 
-runSSG();
+// Get modified files from command line arguments
+const modifiedFiles = process.argv.slice(2);
+runSSG(modifiedFiles);
