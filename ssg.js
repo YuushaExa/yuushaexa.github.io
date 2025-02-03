@@ -7,6 +7,48 @@ const dirs = {
   subforums: path.join(__dirname, 'subforums'),
 };
 
+const mtimeCachePath = path.join(__dirname, 'mtime.json');
+
+// Helper function to get file modification times
+async function getFileMtimes(dirPath) {
+  const files = await fs.readdir(dirPath);
+  const mtimes = {};
+  for (const file of files) {
+    if (file.endsWith('.json')) {
+      const filePath = path.join(dirPath, file);
+      const stats = await fs.stat(filePath);
+      mtimes[file] = stats.mtime.toISOString();
+    }
+  }
+  return mtimes;
+}
+
+// Helper function to load cached modification times
+async function loadMtimeCache() {
+  try {
+    const data = await fs.readFile(mtimeCachePath, 'utf-8');
+    return JSON.parse(data);
+  } catch (err) {
+    return {}; // Return empty cache if file doesn't exist
+  }
+}
+
+// Helper function to save modification times to cache
+async function saveMtimeCache(mtimes) {
+  await fs.writeFile(mtimeCachePath, JSON.stringify(mtimes, null, 2), 'utf-8');
+}
+
+// Helper function to find changed files
+async function findChangedFiles(currentMtimes, cachedMtimes) {
+  const changedFiles = [];
+  for (const [file, mtime] of Object.entries(currentMtimes)) {
+    if (cachedMtimes[file] !== mtime) {
+      changedFiles.push(file);
+    }
+  }
+  return changedFiles;
+}
+
 // Helper functions
 async function readFile(filePath) {
   try {
@@ -106,14 +148,35 @@ async function generateSubforumPages(partials, subforums) {
 async function runSSG() {
   try {
     await ensureDirectoryExists(dirs.public);
+
+    // Get current modification times
+    const currentMtimes = await getFileMtimes(dirs.subforums);
+
+    // Load cached modification times
+    const cachedMtimes = await loadMtimeCache();
+
+    // Find changed files
+    const changedFiles = await findChangedFiles(currentMtimes, cachedMtimes);
+
+    // Load partials and subforums
     const [partials, subforums] = await Promise.all([
       loadFilesFromDir(dirs.partials, '.html'),
       loadFilesFromDir(dirs.subforums, '.json', JSON.parse),
     ]);
+
+    // Regenerate only changed subforums
+    const filteredSubforums = changedFiles.length > 0
+      ? Object.fromEntries(Object.entries(subforums).filter(([key]) => changedFiles.includes(`${key}.json`)))
+      : subforums;
+
     await Promise.all([
       generateSpecialPages(partials),
-      generateSubforumPages(partials, subforums),
+      generateSubforumPages(partials, filteredSubforums),
     ]);
+
+    // Save updated modification times to cache
+    await saveMtimeCache(currentMtimes);
+
     console.log('SSG build complete!');
   } catch (err) {
     console.error('SSG build failed:', err.stack || err.message);
