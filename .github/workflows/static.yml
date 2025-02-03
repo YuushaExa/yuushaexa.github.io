@@ -2,8 +2,10 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: ["main"]  # Change this to your default branch if it's different
-  workflow_dispatch:  # Allows manual triggering
+    branches:
+      - main
+    paths:
+      - 'subforums/**'
 
 permissions:
   contents: read  # Allow reading repository contents
@@ -32,7 +34,10 @@ jobs:
 
       - name: Install dependencies
         run: npm install  # Install dependencies before running the script
-
+        
+      - name: Update mtime.json
+        run: node update-mtime.js
+      
       - name: Run ssg script
         run: node ssg.js  # Your script to generate posts
         
