@@ -9,6 +9,15 @@ const dirs = {
 
 const mtimeCachePath = path.join(__dirname, 'mtime.json');
 
+// Helper function to ensure a directory exists
+async function ensureDirectoryExists(dirPath) {
+  try {
+    await fs.mkdir(dirPath, { recursive: true });
+  } catch (err) {
+    if (err.code !== 'EEXIST') throw err;
+  }
+}
+
 // Helper function to get file modification times
 async function getFileMtimes(dirPath) {
   const files = await fs.readdir(dirPath);
@@ -49,37 +58,13 @@ async function findChangedFiles(currentMtimes, cachedMtimes) {
   return changedFiles;
 }
 
-// Helper functions
-async function readFile(filePath) {
-  try {
-    return await fs.readFile(filePath, 'utf-8');
-  } catch (err) {
-    throw new Error(`Error reading file ${filePath}: ${err.message}`);
-  }
-}
-
-async function writeFile(filePath, content) {
-  try {
-    await fs.writeFile(filePath, content, 'utf-8');
-  } catch (err) {
-    throw new Error(`Error writing file ${filePath}: ${err.message}`);
-  }
-}
-
-async function ensureDirectoryExists(dirPath) {
-  try {
-    await fs.mkdir(dirPath, { recursive: true });
-  } catch (err) {
-    if (err.code !== 'EEXIST') throw err;
-  }
-}
-
+// Helper function to load files from a directory
 async function loadFilesFromDir(dirPath, fileType, transform = (data) => data) {
   try {
     const files = await fs.readdir(dirPath);
     const matchingFiles = files.filter(file => file.endsWith(fileType));
     const fileContents = await Promise.all(matchingFiles.map(async file => {
-      const content = await readFile(path.join(dirPath, file));
+      const content = await fs.readFile(path.join(dirPath, file), 'utf-8');
       return { key: path.basename(file, fileType), content: transform(content) };
     }));
     return fileContents.reduce((acc, { key, content }) => ({ ...acc, [key]: content }), {});
@@ -88,6 +73,7 @@ async function loadFilesFromDir(dirPath, fileType, transform = (data) => data) {
   }
 }
 
+// Helper function to create a full HTML page
 async function createFullPage(partials, mainContent, canonicalUrl = '', title = 'Default Title') {
   return partials.base
     .replace('{{head}}', partials.head || '')
@@ -99,22 +85,24 @@ async function createFullPage(partials, mainContent, canonicalUrl = '', title = 
     .replace('{{title}}', title);
 }
 
+// Generate special pages (index.html, 404.html)
 async function generateSpecialPages(partials) {
   await Promise.all([
-    writeFile(path.join(dirs.public, 'index.html'), partials.index),
-    writeFile(path.join(dirs.public, '404.html'), partials['404']),
+    fs.writeFile(path.join(dirs.public, 'index.html'), partials.index, 'utf-8'),
+    fs.writeFile(path.join(dirs.public, '404.html'), partials['404'], 'utf-8'),
   ]);
   console.log('Generated: index.html and 404.html');
 }
 
+// Generate subforum pages
 async function generateSubforumPages(partials, subforums) {
   await Promise.all(Object.entries(subforums).map(async ([key, subforum]) => {
     const subforumContent = `
       <h1>${subforum.title}</h1>
       <p>${subforum.description}</p>
       <p>${subforum.created_at}</p>
-      <img>${subforum.banner}</img>
-      <img>${subforum.icon}</img>
+      <img src="${subforum.banner}" alt="${subforum.title} Banner">
+      <img src="${subforum.icon}" alt="${subforum.title} Icon">
       <ul>${subforum.posts.map(post => `
         <li>
           <img src="${post.image}" alt="${post.title}" width="50">
@@ -125,7 +113,7 @@ async function generateSubforumPages(partials, subforums) {
       `).join('')}</ul>
     `;
     const subforumOutputContent = await createFullPage(partials, subforumContent, `https://yuushaexa.github.io/${key}`, subforum.title);
-    await writeFile(path.join(dirs.public, `${key}.html`), subforumOutputContent);
+    await fs.writeFile(path.join(dirs.public, `${key}.html`), subforumOutputContent, 'utf-8');
     console.log(`Generated: ${key}.html`);
 
     await Promise.all(subforum.posts.map(async post => {
@@ -139,12 +127,13 @@ async function generateSubforumPages(partials, subforums) {
       const postOutputContent = await createFullPage(partials, postContent, `https://yuushaexa.github.io${post.link}`, post.title);
       const postOutputFilePath = path.join(dirs.public, post.link.replace(/^\//, '') + '.html');
       await ensureDirectoryExists(path.dirname(postOutputFilePath));
-      await writeFile(postOutputFilePath, postOutputContent);
+      await fs.writeFile(postOutputFilePath, postOutputContent, 'utf-8');
       console.log(`Generated: ${post.link.replace(/^\//, '')}.html`);
     }));
   }));
 }
 
+// Main SSG logic
 async function runSSG() {
   try {
     await ensureDirectoryExists(dirs.public);
