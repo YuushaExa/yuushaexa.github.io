@@ -7,6 +7,9 @@ const dirs = {
   subforums: path.join(__dirname, 'subforums'),
 };
 
+// File to store the last modification times
+const mtimeFilePath = path.join(__dirname, 'mtime.json');
+
 // Helper functions
 async function readFile(filePath) {
   try {
@@ -103,12 +106,51 @@ async function generateSubforumPages(partials, subforums) {
   }));
 }
 
+async function getFileMtime(filePath) {
+  try {
+    const stats = await fs.stat(filePath);
+    return stats.mtime.toISOString();
+  } catch (err) {
+    throw new Error(`Error getting mtime for file ${filePath}: ${err.message}`);
+  }
+}
+
+async function loadUpdatedSubforums() {
+  try {
+    const files = await fs.readdir(dirs.subforums);
+    const jsonFiles = files.filter(file => file.endsWith('.json'));
+
+    let mtimes = {};
+    try {
+      mtimes = JSON.parse(await readFile(mtimeFilePath));
+    } catch (err) {
+      if (err.code !== 'ENOENT') throw err;
+    }
+
+    const updatedSubforums = {};
+    await Promise.all(jsonFiles.map(async file => {
+      const filePath = path.join(dirs.subforums, file);
+      const currentMtime = await getFileMtime(filePath);
+      if (!mtimes[file] || mtimes[file] !== currentMtime) {
+        const content = await readFile(filePath);
+        updatedSubforums[path.basename(file, '.json')] = JSON.parse(content);
+        mtimes[file] = currentMtime;
+      }
+    }));
+
+    await writeFile(mtimeFilePath, JSON.stringify(mtimes, null, 2));
+    return updatedSubforums;
+  } catch (err) {
+    throw new Error(`Error loading updated subforums: ${err.message}`);
+  }
+}
+
 async function runSSG() {
   try {
     await ensureDirectoryExists(dirs.public);
     const [partials, subforums] = await Promise.all([
       loadFilesFromDir(dirs.partials, '.html'),
-      loadFilesFromDir(dirs.subforums, '.json', JSON.parse),
+      loadUpdatedSubforums(),
     ]);
     await Promise.all([
       generateSpecialPages(partials),
