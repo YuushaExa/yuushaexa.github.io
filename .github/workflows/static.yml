@@ -2,13 +2,15 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: ["main"]  # Change this to your default branch if it's different
-  workflow_dispatch:  # Allows manual triggering
+    branches:
+      - main
+    paths:
+      - 'subforums/**'  # Only trigger if changes are in the `subforums` folder
 
 permissions:
-  contents: read  # Allow reading repository contents
-  pages: write    # Allow writing to GitHub Pages
-  id-token: write # Required for GitHub Pages deployment
+  contents: read
+  pages: write
+  id-token: write
 
 concurrency:
   group: "pages"
@@ -22,25 +24,23 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          submodules: recursive
-          fetch-depth: 1  # Limit the checkout to the latest commit
+          fetch-depth: 2  # Needed to compare changes between commits
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'  # Specify the Node.js version
+          node-version: '20'
 
       - name: Install dependencies
-        run: npm install  # Install dependencies before running the script
+        run: npm install
 
-      - name: Run ssg script
-        run: node ssg.js  # Your script to generate posts
-        
+      - name: Run SSG script
+        run: node ssg.js  # The script will handle ISR logic internally
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: public  # Path to the directory containing your generated files
-          
+          path: public  # Path to the generated static files
+
       - name: Deploy to GitHub Pages
-        id: deployment
         uses: actions/deploy-pages@v4
