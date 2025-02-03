@@ -6,7 +6,39 @@ const dirs = {
   public: path.join(__dirname, 'public'),
   subforums: path.join(__dirname, 'subforums'),
 };
+const subforumsDir = path.join(__dirname, 'subforums');
+const mtimeFilePath = path.join(__dirname, 'mtime.json');
 
+async function getFileModificationTimes(dir) {
+  const files = await fs.readdir(dir);
+  const mtimes = {};
+
+  for (const file of files) {
+    const filePath = path.join(dir, file);
+    const stats = await fs.stat(filePath);
+    mtimes[file] = stats.mtime.toISOString();
+  }
+
+  return mtimes;
+}
+
+async function getChangedFiles() {
+  try {
+    const [currentMtimes, lastMtimes] = await Promise.all([
+      getFileModificationTimes(subforumsDir),
+      fs.readFile(mtimeFilePath, 'utf-8').then(JSON.parse).catch(() => ({})),
+    ]);
+
+    const changedFiles = Object.entries(currentMtimes)
+      .filter(([file, mtime]) => lastMtimes[file] !== mtime)
+      .map(([file]) => file);
+
+    return changedFiles;
+  } catch (err) {
+    console.error('Error getting changed files:', err);
+    process.exit(1);
+  }
+}
 // Helper functions
 async function readFile(filePath) {
   try {
@@ -105,15 +137,31 @@ async function generateSubforumPages(partials, subforums) {
 
 async function runSSG() {
   try {
-    await ensureDirectoryExists(dirs.public);
+    const changedFiles = await getChangedFiles();
+
+    if (changedFiles.length === 0) {
+      console.log('No files changed. Skipping build.');
+      return;
+    }
+
+    console.log('Changed files:', changedFiles);
+
+    // Load partials and subforums
     const [partials, subforums] = await Promise.all([
       loadFilesFromDir(dirs.partials, '.html'),
       loadFilesFromDir(dirs.subforums, '.json', JSON.parse),
     ]);
+
+    // Process only changed files
+    const changedSubforums = Object.fromEntries(
+      Object.entries(subforums).filter(([key]) => changedFiles.includes(`${key}.json`))
+    );
+
     await Promise.all([
       generateSpecialPages(partials),
-      generateSubforumPages(partials, subforums),
+      generateSubforumPages(partials, changedSubforums),
     ]);
+
     console.log('SSG build complete!');
   } catch (err) {
     console.error('SSG build failed:', err.stack || err.message);
