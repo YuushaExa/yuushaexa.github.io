@@ -46,13 +46,21 @@ async function loadFilesFromDir(dirPath, fileType, transform = (data) => data) {
   }
 }
 
-async function createFullPage(partials, mainContent, canonicalUrl = '', title = 'Default Title') {
+async function createFullPage(partials, mainContent, canonicalUrl = '', title = 'Default Title', description = '', image = '') {
+  // Replace placeholders in the head template
+  const headContent = (partials.head || '')
+    .replace(/{{title}}/g, title)
+    .replace(/{{description}}/g, description)
+    .replace(/{{canonicalUrl}}/g, canonicalUrl)
+    .replace(/{{image}}/g, image);
+
+  // Replace placeholders in the base template
   return partials.base
-    .replace('{{head}}', partials.head || '')
-    .replace('{{header}}', partials.header || '')
-    .replace('{{main}}', mainContent)
-    .replace('{{footer}}', partials.footer || '')
-    .replace('{{aside}}', partials.aside || '')
+    .replace(/{{head}}/g, headContent)
+    .replace(/{{header}}/g, partials.header || '')
+    .replace(/{{main}}/g, mainContent)
+    .replace(/{{footer}}/g, partials.footer || '')
+    .replace(/{{aside}}/g, partials.aside || '')
     .replace(/{{canonicalUrl}}/g, canonicalUrl)
     .replace(/{{title}}/g, title);
 }
