@@ -79,8 +79,8 @@ async function generateSubforumPages(partials, subforums) {
       <h1>${subforum.title}</h1>
       <p>${subforum.description}</p>
       <p>${subforum.created_at}</p>
-      <img>${subforum.banner}</img>
-      <img>${subforum.icon}</img>
+      <img src="${subforum.banner}" alt="${subforum.title}">
+      <img src="${subforum.icon}" alt="${subforum.title}">
       <ul>${subforum.posts.map(post => `
         <li>
           <img src="${post.image}" alt="${post.title}" width="50">
@@ -90,10 +90,20 @@ async function generateSubforumPages(partials, subforums) {
         </li>
       `).join('')}</ul>
     `;
-    const subforumOutputContent = await createFullPage(partials, subforumContent, `https://yuushaexa.github.io/${key}`, subforum.title);
+
+    // Generate subforum page with fallbacks
+    const subforumOutputContent = await createFullPage(
+      partials,
+      subforumContent,
+      `https://yuushaexa.github.io/${key}`,
+      subforum.title,
+      subforum.description, // Description for subforum page
+      subforum.banner       // Image for subforum page
+    );
     await writeFile(path.join(dirs.public, `${key}.html`), subforumOutputContent);
     console.log(`Generated: ${key}.html`);
 
+    // Generate individual post pages
     await Promise.all(subforum.posts.map(async post => {
       const postContent = `
         <h1>${post.title}</h1>
@@ -102,7 +112,16 @@ async function generateSubforumPages(partials, subforums) {
         <p>${post.content}</p>
         <p><a href="${post.url}" target="_blank">Read more</a></p>
       `;
-      const postOutputContent = await createFullPage(partials, postContent, `https://yuushaexa.github.io${post.link}`, post.title);
+
+      // Generate post page with fallbacks
+      const postOutputContent = await createFullPage(
+        partials,
+        postContent,
+        `https://yuushaexa.github.io${post.link}`,
+        post.title,
+        post.content || subforum.description, // Fallback to subforum description if post.content is missing
+        post.image || subforum.icon           // Fallback to subforum icon if post.image is missing
+      );
       const postOutputFilePath = path.join(dirs.public, post.link.replace(/^\//, '') + '.html');
       await ensureDirectoryExists(path.dirname(postOutputFilePath));
       await writeFile(postOutputFilePath, postOutputContent);
