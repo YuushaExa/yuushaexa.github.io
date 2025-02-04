@@ -92,7 +92,7 @@ function generateRSSFeed(subforum, baseurl) {
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>${subforum.title}</title>
-    <link>${baseurl}${subforum.key}.html</link>
+    <link>${baseurl}${subforum.link}.html</link>
     <description>${subforum.description}</description>
     <atom:link href="${feedUrl}" rel="self" type="application/rss+xml" />
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
