@@ -77,7 +77,7 @@ async function generateSpecialPages(partials) {
 }
 
 function generateRSSFeed(subforum, baseurl) {
-  const feedUrl = `${baseurl}${subforum.link}.rss`; // URL of the RSS feed itself
+  const feedUrl = `${baseurl}${subforum.link.replace(/^\//, '')}.rss`; // URL of the RSS feed itself
   const items = subforum.posts.map(post => `
     <item>
       <title>${post.title}</title>
@@ -92,7 +92,7 @@ function generateRSSFeed(subforum, baseurl) {
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>${subforum.title}</title>
-    <link>${baseurl}${subforum.link}.html</link>
+    <link>${baseurl}${subforum.link.replace(/^\//, '')}.html</link>
     <description>${subforum.description}</description>
     <atom:link href="${feedUrl}" rel="self" type="application/rss+xml" />
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
