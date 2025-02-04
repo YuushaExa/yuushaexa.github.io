@@ -92,7 +92,7 @@ function generateRSSFeed(subforum, baseurl) {
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>${subforum.title}</title>
-    <link>${baseurl}${subforum.key}.html</link>
+    <link>${baseurl}${subforum.link}.html</link>
     <description>${subforum.description}</description>
     <atom:link href="${feedUrl}" rel="self" type="application/rss+xml" />
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
@@ -126,7 +126,8 @@ async function generateSubforumPages(partials, subforums) {
       `${baseurl}${key}`, // Use baseurl here
       subforum.title,
       subforum.description, // Description for subforum page
-      subforum.banner       // Image for subforum page
+      subforum.banner,       // Image for subforum page
+      subforum.link
     );
     await writeFile(path.join(dirs.public, `${key}.html`), subforumOutputContent);
     console.log(`Generated: ${key}.html`);
