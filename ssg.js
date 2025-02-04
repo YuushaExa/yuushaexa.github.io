@@ -75,7 +75,9 @@ async function generateSpecialPages(partials) {
   ]);
   console.log('Generated: index.html and 404.html');
 }
+
 function generateRSSFeed(subforum, baseurl) {
+  const feedUrl = `${baseurl}${subforum.key}.rss`; // URL of the RSS feed itself
   const items = subforum.posts.map(post => `
     <item>
       <title>${post.title}</title>
@@ -87,16 +89,18 @@ function generateRSSFeed(subforum, baseurl) {
   `).join('');
 
   return `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>${subforum.title}</title>
     <link>${baseurl}${subforum.key}.html</link>
     <description>${subforum.description}</description>
+    <atom:link href="${feedUrl}" rel="self" type="application/rss+xml" />
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
     ${items}
   </channel>
 </rss>`;
 }
+
 async function generateSubforumPages(partials, subforums) {
   await Promise.all(Object.entries(subforums).map(async ([key, subforum]) => {
     const subforumContent = `
