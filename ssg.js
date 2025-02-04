@@ -1,6 +1,9 @@
 const fs = require('fs').promises;
 const path = require('path');
 
+// Define the base URL
+const baseurl = 'https://yuushaexa.github.io/'; // You can change this to any base URL
+
 const dirs = {
   partials: path.join(__dirname, 'partials'),
   public: path.join(__dirname, 'public'),
@@ -95,7 +98,7 @@ async function generateSubforumPages(partials, subforums) {
     const subforumOutputContent = await createFullPage(
       partials,
       subforumContent,
-      `https://yuushaexa.github.io/${key}`,
+      `${baseurl}${key}`, // Use baseurl here
       subforum.title,
       subforum.description, // Description for subforum page
       subforum.banner       // Image for subforum page
@@ -117,7 +120,7 @@ async function generateSubforumPages(partials, subforums) {
       const postOutputContent = await createFullPage(
         partials,
         postContent,
-        `https://yuushaexa.github.io${post.link}`,
+        `${baseurl}${post.link.replace(/^\//, '')}`, // Use baseurl here
         post.title,
         post.content || subforum.description, // Fallback to subforum description if post.content is missing
         post.image || subforum.icon           // Fallback to subforum icon if post.image is missing
