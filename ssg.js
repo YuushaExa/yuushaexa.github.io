@@ -75,7 +75,28 @@ async function generateSpecialPages(partials) {
   ]);
   console.log('Generated: index.html and 404.html');
 }
+function generateRSSFeed(subforum, baseurl) {
+  const items = subforum.posts.map(post => `
+    <item>
+      <title>${post.title}</title>
+      <link>${baseurl}${post.link.replace(/^\//, '')}.html</link>
+      <description>${post.content || ''}</description>
+      <pubDate>${new Date(post.date).toUTCString()}</pubDate>
+      <guid>${baseurl}${post.link.replace(/^\//, '')}.html</guid>
+    </item>
+  `).join('');
 
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>${subforum.title}</title>
+    <link>${baseurl}${subforum.key}.html</link>
+    <description>${subforum.description}</description>
+    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
+    ${items}
+  </channel>
+</rss>`;
+}
 async function generateSubforumPages(partials, subforums) {
   await Promise.all(Object.entries(subforums).map(async ([key, subforum]) => {
     const subforumContent = `
@@ -106,6 +127,12 @@ async function generateSubforumPages(partials, subforums) {
     await writeFile(path.join(dirs.public, `${key}.html`), subforumOutputContent);
     console.log(`Generated: ${key}.html`);
 
+// Generate RSS feed for the subforum
+    const rssFeed = generateRSSFeed(subforum, baseurl);
+    const rssFilePath = path.join(dirs.public, `${key}.rss`);
+    await writeFile(rssFilePath, rssFeed);
+    console.log(`Generated: ${key}.rss`);
+    
     // Generate individual post pages
     await Promise.all(subforum.posts.map(async post => {
       const postContent = `
