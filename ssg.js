@@ -77,7 +77,7 @@ async function generateSpecialPages(partials) {
 }
 
 function generateRSSFeed(subforum, baseurl) {
-  const feedUrl = `${baseurl}${subforum.key}.rss`; // URL of the RSS feed itself
+  const feedUrl = `${baseurl}${subforum.link}.rss`; // URL of the RSS feed itself
   const items = subforum.posts.map(post => `
     <item>
       <title>${post.title}</title>
