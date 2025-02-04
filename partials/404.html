@@ -25,4 +25,10 @@
     <p>The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.</p>
     <p><a href="/">Go to the homepage</a></p>
 </body>
+<script>
+if (window.location.pathname.endsWith('/') && window.location.pathname !== '/') {
+    const newUrl = window.location.pathname.slice(0, -1) + window.location.search + window.location.hash;
+    window.location.replace(newUrl);
+}
+    </script>
 </html>
