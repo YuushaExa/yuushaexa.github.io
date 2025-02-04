@@ -53,8 +53,8 @@ async function createFullPage(partials, mainContent, canonicalUrl = '', title = 
     .replace('{{main}}', mainContent)
     .replace('{{footer}}', partials.footer || '')
     .replace('{{aside}}', partials.aside || '')
-    .replace(/{{canonicalUrl}}/g, canonicalUrl) // Global replacement
-    .replace(/{{title}}/g, title); // Global replacement
+    .replace(/{{canonicalUrl}}/g, canonicalUrl)
+    .replace(/{{title}}/g, title);
 }
 
 async function generateSpecialPages(partials) {
