@@ -101,9 +101,15 @@ function generateRSSFeed(subforum, baseurl) {
 </rss>`;
 }
 
-async function generateSubforumPages(partials, subforums, updatedSubforums) {
-  await Promise.all(Object.entries(subforums).map(async ([key, subforum]) => {
-    if (!updatedSubforums.includes(key)) return;
+async function generateSubforumPages(partials, subforums, filesToProcess) {
+  await Promise.all(filesToProcess.map(async file => {
+    const key = path.basename(file, '.json');
+    const subforum = subforums[key];
+
+    if (!subforum) {
+      console.warn(`Subforum ${key} not found in loaded subforums. Skipping.`);
+      return;
+    }
 
     const subforumContent = `
       <h1>${subforum.title}</h1>
@@ -167,63 +173,39 @@ async function generateSubforumPages(partials, subforums, updatedSubforums) {
   }));
 }
 
-async function getUpdatedSubforums(lastProcessedTime, filesToProcess) {
-  const files = await fs.readdir(dirs.subforums);
-  const jsonFiles = files.filter(file => file.endsWith('.json'));
-  const updatedSubforums = [];
-
-  await Promise.all(jsonFiles.map(async file => {
-    const filePath = path.join(dirs.subforums, file);
-    const stats = await fs.stat(filePath);
-
-    // If the file is explicitly listed in filesToProcess or has been modified since lastProcessedTime
-    if (filesToProcess.includes(file) || stats.mtime > lastProcessedTime) {
-      updatedSubforums.push(path.basename(file, '.json'));
-    }
-  }));
-
-  return updatedSubforums;
-}
-
 async function runSSG() {
   try {
     await ensureDirectoryExists(dirs.public);
 
-    // Read the time.txt file
-    let lastProcessedTime = new Date(0);
+    // Read the time.txt file to get the list of JSON files to process
     let filesToProcess = [];
     try {
       const timeText = await readFile(path.join(__dirname, 'time.txt'));
-      const lines = timeText.split('\n').filter(line => line.trim() !== '');
-
-      // First line is the timestamp
-      if (lines.length > 0) {
-        lastProcessedTime = new Date(lines[0].trim());
-      }
-
-      // Subsequent lines are files to process
-      if (lines.length > 1) {
-        filesToProcess = lines.slice(1).map(line => line.trim());
-      }
+      filesToProcess = timeText.split('\n').filter(line => line.trim() !== '');
     } catch (err) {
       if (err.code !== 'ENOENT') throw err;
     }
 
+    // Load all partials and subforums
     const [partials, subforums] = await Promise.all([
       loadFilesFromDir(dirs.partials, '.html'),
       loadFilesFromDir(dirs.subforums, '.json', JSON.parse),
     ]);
 
-    const updatedSubforums = await getUpdatedSubforums(lastProcessedTime, filesToProcess);
+    // Generate special pages (index.html and 404.html)
+    await generateSpecialPages(partials);
 
-    await Promise.all([
-      generateSpecialPages(partials),
-      generateSubforumPages(partials, subforums, updatedSubforums),
-    ]);
+    // If time.txt exists, only process the listed JSON files
+    // Otherwise, process all JSON files
+    const jsonFiles = Object.keys(subforums).map(key => `${key}.json`);
+    const filesToRegenerate = filesToProcess.length > 0 ? filesToProcess : jsonFiles;
 
-    // Update the time.txt file with the current timestamp
-    const currentTime = new Date();
-    await writeFile(path.join(__dirname, 'time.txt'), currentTime.toISOString());
+    // Generate pages for the selected JSON files
+    await generateSubforumPages(partials, subforums, filesToRegenerate);
+
+    // Update time.txt with the current timestamp
+    const currentTime = new Date().toISOString();
+    await writeFile(path.join(__dirname, 'time.txt'), currentTime);
 
     console.log('SSG build complete!');
   } catch (err) {
