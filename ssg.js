@@ -39,16 +39,32 @@ async function loadFilesFromDir(dirPath, fileType, transform = (data) => data) {
   try {
     const files = await fs.readdir(dirPath);
     const matchingFiles = files.filter(file => file.endsWith(fileType));
-    const fileContents = await Promise.all(matchingFiles.map(async file => {
-      const content = await readFile(path.join(dirPath, file));
-      return { key: path.basename(file, fileType), content: transform(content) };
+
+    // Group files by their base name (e.g., games, games2, etc.)
+    const groupedFiles = matchingFiles.reduce((acc, file) => {
+      const baseName = path.basename(file, fileType).replace(/\d+$/, ''); // Remove trailing numbers
+      if (!acc[baseName]) acc[baseName] = [];
+      acc[baseName].push(file);
+      return acc;
+    }, {});
+
+    // Load and concatenate files with the same base name
+    const fileContents = await Promise.all(Object.entries(groupedFiles).map(async ([baseName, files]) => {
+      const concatenatedContent = await files.reduce(async (accPromise, file) => {
+        const acc = await accPromise;
+        const content = await readFile(path.join(dirPath, file));
+        const transformedContent = transform(content);
+        return [...acc, ...transformedContent]; // Concatenate arrays
+      }, Promise.resolve([]));
+
+      return { key: baseName, content: concatenatedContent };
     }));
+
     return fileContents.reduce((acc, { key, content }) => ({ ...acc, [key]: content }), {});
   } catch (err) {
     throw new Error(`Error loading files from ${dirPath}: ${err.message}`);
   }
 }
-
 async function createFullPage(partials, mainContent, canonicalUrl = '', title = 'Default Title', description = '', image = '') {
   // Replace placeholders in the head template
   const headContent = (partials.head || '')
@@ -103,6 +119,7 @@ function generateRSSFeed(subforum, baseurl) {
 
 async function generateSubforumPages(partials, subforums) {
   await Promise.all(Object.entries(subforums).map(async ([key, subforum]) => {
+    // Assuming subforum is now an array of posts
     const subforumContent = `
       <h1>${subforum.title}</h1>
       <p>${subforum.description}</p>
@@ -132,12 +149,12 @@ async function generateSubforumPages(partials, subforums) {
     await writeFile(path.join(dirs.public, `${key}.html`), subforumOutputContent);
     console.log(`Generated: ${key}.html`);
 
-// Generate RSS feed for the subforum
+    // Generate RSS feed for the subforum
     const rssFeed = generateRSSFeed(subforum, baseurl);
     const rssFilePath = path.join(dirs.public, `${key}.rss`);
     await writeFile(rssFilePath, rssFeed);
     console.log(`Generated: ${key}.rss`);
-    
+
     // Generate individual post pages
     await Promise.all(subforum.posts.map(async post => {
       const postContent = `
