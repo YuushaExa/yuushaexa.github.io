@@ -99,9 +99,16 @@ function generateRSSFeed(subforum, baseurl) {
 
 async function generateSubforumPages(partials) {
   try {
-    console.log('Reading subforums directory...');
+    console.log('Starting generateSubforumPages...');
+
+    // Step 1: Read the subforums directory
+    console.log('Reading subforums directory:', dirs.subforums);
     const subforumDirs = await fs.readdir(dirs.subforums, { withFileTypes: true });
-    const subforumFolders = subforumDirs.filter(dir => dir.isDirectory()).map(dir => dir.name);
+
+    // Step 2: Filter out only directories
+    const subforumFolders = subforumDirs
+      .filter(dir => dir.isDirectory())
+      .map(dir => dir.name);
 
     console.log('Subforum folders found:', subforumFolders);
 
@@ -110,30 +117,53 @@ async function generateSubforumPages(partials) {
       return;
     }
 
-    await Promise.all(subforumFolders.map(async folder => {
-      console.log(`Processing folder: ${folder}`);
+    // Step 3: Process each subforum folder
+    for (const folder of subforumFolders) {
+      console.log(`\nProcessing subforum folder: ${folder}`);
+
       const subforumPath = path.join(dirs.subforums, folder);
+      console.log(`Subforum path: ${subforumPath}`);
+
+      // Step 4: Read the template.html file
       const templatePath = path.join(subforumPath, 'template.html');
-
       console.log(`Reading template file: ${templatePath}`);
-      const templateContent = await readFile(templatePath);
 
-      console.log(`Reading JSON files in folder: ${folder}`);
+      let templateContent;
+      try {
+        templateContent = await readFile(templatePath);
+        console.log('Template content loaded successfully.');
+      } catch (err) {
+        console.error(`Error reading template file: ${err.message}`);
+        continue; // Skip this folder if the template file is missing
+      }
+
+      // Step 5: Read all JSON files in the folder
       const jsonFiles = (await fs.readdir(subforumPath)).filter(file => file.endsWith('.json'));
+      console.log(`JSON files found: ${jsonFiles}`);
 
       if (jsonFiles.length === 0) {
         console.error(`No JSON files found in folder: ${folder}`);
-        return;
+        continue; // Skip this folder if no JSON files are found
       }
 
-      await Promise.all(jsonFiles.map(async jsonFile => {
+      // Step 6: Process each JSON file
+      for (const jsonFile of jsonFiles) {
+        console.log(`\nProcessing JSON file: ${jsonFile}`);
+
         const jsonFilePath = path.join(subforumPath, jsonFile);
-        console.log(`Processing JSON file: ${jsonFilePath}`);
-        const subforumData = JSON.parse(await readFile(jsonFilePath));
+        console.log(`JSON file path: ${jsonFilePath}`);
 
-        console.log(`Subforum data: ${JSON.stringify(subforumData, null, 2)}`);
+        let subforumData;
+        try {
+          subforumData = JSON.parse(await readFile(jsonFilePath));
+          console.log('Subforum data loaded successfully:', subforumData);
+        } catch (err) {
+          console.error(`Error parsing JSON file: ${err.message}`);
+          continue; // Skip this JSON file if it's invalid
+        }
 
-        // Generate subforum page
+        // Step 7: Replace placeholders in the template with subforum data
+        console.log('Replacing placeholders in template...');
         const subforumContent = templateContent
           .replace(/\${subforum\.posts}/g, subforumData.posts.map(post => `
             <li>
@@ -144,8 +174,9 @@ async function generateSubforumPages(partials) {
             </li>
           `).join(''));
 
-        console.log(`Generated subforum content: ${subforumContent}`);
+        console.log('Generated subforum content:', subforumContent);
 
+        // Step 8: Create the full HTML page
         const subforumOutputContent = await createFullPage(
           partials,
           subforumContent,
@@ -153,24 +184,27 @@ async function generateSubforumPages(partials) {
           folder, // Use folder name as title
           `Discussions about ${folder}` // Use folder name as description
         );
+
+        // Step 9: Write the subforum HTML file
         const outputFilePath = path.join(dirs.public, `${folder}.html`);
         await ensureDirectoryExists(path.dirname(outputFilePath));
         await writeFile(outputFilePath, subforumOutputContent);
-        console.log(`Generated: ${folder}.html`);
+        console.log(`Generated: ${outputFilePath}`);
 
-        // Generate RSS feed
+        // Step 10: Generate RSS feed
         const rssFeed = generateRSSFeed({
           title: folder,
           link: `/${folder}`,
           description: `Discussions about ${folder}`,
           posts: subforumData.posts,
         }, baseurl);
+
         const rssFilePath = path.join(dirs.public, `${folder}.rss`);
         await writeFile(rssFilePath, rssFeed);
-        console.log(`Generated: ${folder}.rss`);
+        console.log(`Generated: ${rssFilePath}`);
 
-        // Generate individual post pages
-        await Promise.all(subforumData.posts.map(async post => {
+        // Step 11: Generate individual post pages
+        for (const post of subforumData.posts) {
           const postContent = `
             <h1>${post.title}</h1>
             <p>By ${post.author} on ${post.date}</p>
@@ -187,13 +221,16 @@ async function generateSubforumPages(partials) {
             post.content || `Discussions about ${folder}`,
             post.image
           );
+
           const postOutputFilePath = path.join(dirs.public, post.link.replace(/^\//, '') + '.html');
           await ensureDirectoryExists(path.dirname(postOutputFilePath));
           await writeFile(postOutputFilePath, postOutputContent);
-          console.log(`Generated: ${post.link.replace(/^\//, '')}.html`);
-        }));
-      }));
-    }));
+          console.log(`Generated: ${postOutputFilePath}`);
+        }
+      }
+    }
+
+    console.log('Finished generating subforum pages.');
   } catch (err) {
     console.error('Error in generateSubforumPages:', err.stack || err.message);
   }
