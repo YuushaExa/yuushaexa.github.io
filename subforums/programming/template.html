@@ -1,0 +1,15 @@
+<h1>Games Discussions</h1>
+<p>A place to discuss all things related to PROG</p>
+<p>2025-10-02</p>
+<img src="https://picsum.photos/1072/128" alt="Games Banner">
+<img src="https://picsum.photos/88" alt="Games Icon">
+<ul>
+  ${subforum.posts.map(post => `
+    <li>
+      <img src="${post.image}" alt="${post.title}" width="50">
+      <a href="${post.link}">${post.title}</a>
+      <span>(${post.flair})</span>
+      <br>By ${post.author} on ${post.date}
+    </li>
+  `).join('')}
+</ul>
