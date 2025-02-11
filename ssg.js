@@ -39,27 +39,10 @@ async function loadFilesFromDir(dirPath, fileType, transform = (data) => data) {
   try {
     const files = await fs.readdir(dirPath);
     const matchingFiles = files.filter(file => file.endsWith(fileType));
-
-    // Group files by their base name (e.g., games, games2, etc.)
-    const groupedFiles = matchingFiles.reduce((acc, file) => {
-      const baseName = path.basename(file, fileType).replace(/\d+$/, ''); // Remove trailing numbers
-      if (!acc[baseName]) acc[baseName] = [];
-      acc[baseName].push(file);
-      return acc;
-    }, {});
-
-    // Load and merge files with the same base name
-    const fileContents = await Promise.all(Object.entries(groupedFiles).map(async ([baseName, files]) => {
-      const mergedContent = await files.reduce(async (accPromise, file) => {
-        const acc = await accPromise;
-        const content = await readFile(path.join(dirPath, file));
-        const transformedContent = transform(content);
-        return { ...acc, ...transformedContent }; // Merge objects
-      }, Promise.resolve({}));
-
-      return { key: baseName, content: mergedContent };
+    const fileContents = await Promise.all(matchingFiles.map(async file => {
+      const content = await readFile(path.join(dirPath, file));
+      return { key: path.basename(file, fileType), content: transform(content) };
     }));
-
     return fileContents.reduce((acc, { key, content }) => ({ ...acc, [key]: content }), {});
   } catch (err) {
     throw new Error(`Error loading files from ${dirPath}: ${err.message}`);
