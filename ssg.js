@@ -101,16 +101,8 @@ function generateRSSFeed(subforum, baseurl) {
 </rss>`;
 }
 
-async function generateSubforumPages(partials, subforums, filesToProcess) {
-  await Promise.all(filesToProcess.map(async file => {
-    const key = path.basename(file, '.json');
-    const subforum = subforums[key];
-
-    if (!subforum) {
-      console.warn(`Subforum ${key} not found in loaded subforums. Skipping.`);
-      return;
-    }
-
+async function generateSubforumPages(partials, subforums) {
+  await Promise.all(Object.entries(subforums).map(async ([key, subforum]) => {
     const subforumContent = `
       <h1>${subforum.title}</h1>
       <p>${subforum.description}</p>
@@ -140,7 +132,7 @@ async function generateSubforumPages(partials, subforums, filesToProcess) {
     await writeFile(path.join(dirs.public, `${key}.html`), subforumOutputContent);
     console.log(`Generated: ${key}.html`);
 
-    // Generate RSS feed for the subforum
+// Generate RSS feed for the subforum
     const rssFeed = generateRSSFeed(subforum, baseurl);
     const rssFilePath = path.join(dirs.public, `${key}.rss`);
     await writeFile(rssFilePath, rssFeed);
@@ -176,37 +168,14 @@ async function generateSubforumPages(partials, subforums, filesToProcess) {
 async function runSSG() {
   try {
     await ensureDirectoryExists(dirs.public);
-
-    // Read the time.txt file to get the list of JSON files to process
-    let filesToProcess = [];
-    try {
-      const timeText = await readFile(path.join(__dirname, 'time.txt'));
-      filesToProcess = timeText.split('\n').filter(line => line.trim() !== '');
-    } catch (err) {
-      if (err.code !== 'ENOENT') throw err;
-    }
-
-    // Load all partials and subforums
     const [partials, subforums] = await Promise.all([
       loadFilesFromDir(dirs.partials, '.html'),
       loadFilesFromDir(dirs.subforums, '.json', JSON.parse),
     ]);
-
-    // Generate special pages (index.html and 404.html)
-    await generateSpecialPages(partials);
-
-    // If time.txt exists, only process the listed JSON files
-    // Otherwise, process all JSON files
-    const jsonFiles = Object.keys(subforums).map(key => `${key}.json`);
-    const filesToRegenerate = filesToProcess.length > 0 ? filesToProcess : jsonFiles;
-
-    // Generate pages for the selected JSON files
-    await generateSubforumPages(partials, subforums, filesToRegenerate);
-
-    // Update time.txt with the current timestamp
-    const currentTime = new Date().toISOString();
-    await writeFile(path.join(__dirname, 'time.txt'), currentTime);
-
+    await Promise.all([
+      generateSpecialPages(partials),
+      generateSubforumPages(partials, subforums),
+    ]);
     console.log('SSG build complete!');
   } catch (err) {
     console.error('SSG build failed:', err.stack || err.message);
