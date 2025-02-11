@@ -101,8 +101,10 @@ function generateRSSFeed(subforum, baseurl) {
 </rss>`;
 }
 
-async function generateSubforumPages(partials, subforums) {
+async function generateSubforumPages(partials, subforums, updatedSubforums) {
   await Promise.all(Object.entries(subforums).map(async ([key, subforum]) => {
+    if (!updatedSubforums.includes(key)) return;
+
     const subforumContent = `
       <h1>${subforum.title}</h1>
       <p>${subforum.description}</p>
@@ -132,7 +134,7 @@ async function generateSubforumPages(partials, subforums) {
     await writeFile(path.join(dirs.public, `${key}.html`), subforumOutputContent);
     console.log(`Generated: ${key}.html`);
 
-// Generate RSS feed for the subforum
+    // Generate RSS feed for the subforum
     const rssFeed = generateRSSFeed(subforum, baseurl);
     const rssFilePath = path.join(dirs.public, `${key}.rss`);
     await writeFile(rssFilePath, rssFeed);
@@ -165,17 +167,51 @@ async function generateSubforumPages(partials, subforums) {
   }));
 }
 
+async function getUpdatedSubforums(lastProcessedTime) {
+  const files = await fs.readdir(dirs.subforums);
+  const jsonFiles = files.filter(file => file.endsWith('.json'));
+  const updatedSubforums = [];
+
+  await Promise.all(jsonFiles.map(async file => {
+    const filePath = path.join(dirs.subforums, file);
+    const stats = await fs.stat(filePath);
+    if (stats.mtime > lastProcessedTime) {
+      updatedSubforums.push(path.basename(file, '.json'));
+    }
+  }));
+
+  return updatedSubforums;
+}
+
 async function runSSG() {
   try {
     await ensureDirectoryExists(dirs.public);
+
+    // Read the last processed time from time.txt
+    let lastProcessedTime = new Date(0);
+    try {
+      const timeText = await readFile(path.join(__dirname, 'time.txt'));
+      lastProcessedTime = new Date(timeText.trim());
+    } catch (err) {
+      if (err.code !== 'ENOENT') throw err;
+    }
+
     const [partials, subforums] = await Promise.all([
       loadFilesFromDir(dirs.partials, '.html'),
       loadFilesFromDir(dirs.subforums, '.json', JSON.parse),
     ]);
+
+    const updatedSubforums = await getUpdatedSubforums(lastProcessedTime);
+
     await Promise.all([
       generateSpecialPages(partials),
-      generateSubforumPages(partials, subforums),
+      generateSubforumPages(partials, subforums, updatedSubforums),
     ]);
+
+    // Update the time.txt file with the current timestamp
+    const currentTime = new Date();
+    await writeFile(path.join(__dirname, 'time.txt'), currentTime.toISOString());
+
     console.log('SSG build complete!');
   } catch (err) {
     console.error('SSG build failed:', err.stack || err.message);
