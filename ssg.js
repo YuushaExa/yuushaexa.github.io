@@ -167,7 +167,7 @@ async function generateSubforumPages(partials, subforums, updatedSubforums) {
   }));
 }
 
-async function getUpdatedSubforums(lastProcessedTime) {
+async function getUpdatedSubforums(lastProcessedTime, filesToProcess) {
   const files = await fs.readdir(dirs.subforums);
   const jsonFiles = files.filter(file => file.endsWith('.json'));
   const updatedSubforums = [];
@@ -175,7 +175,9 @@ async function getUpdatedSubforums(lastProcessedTime) {
   await Promise.all(jsonFiles.map(async file => {
     const filePath = path.join(dirs.subforums, file);
     const stats = await fs.stat(filePath);
-    if (stats.mtime > lastProcessedTime) {
+
+    // If the file is explicitly listed in filesToProcess or has been modified since lastProcessedTime
+    if (filesToProcess.includes(file) || stats.mtime > lastProcessedTime) {
       updatedSubforums.push(path.basename(file, '.json'));
     }
   }));
@@ -187,11 +189,22 @@ async function runSSG() {
   try {
     await ensureDirectoryExists(dirs.public);
 
-    // Read the last processed time from time.txt
+    // Read the time.txt file
     let lastProcessedTime = new Date(0);
+    let filesToProcess = [];
     try {
       const timeText = await readFile(path.join(__dirname, 'time.txt'));
-      lastProcessedTime = new Date(timeText.trim());
+      const lines = timeText.split('\n').filter(line => line.trim() !== '');
+
+      // First line is the timestamp
+      if (lines.length > 0) {
+        lastProcessedTime = new Date(lines[0].trim());
+      }
+
+      // Subsequent lines are files to process
+      if (lines.length > 1) {
+        filesToProcess = lines.slice(1).map(line => line.trim());
+      }
     } catch (err) {
       if (err.code !== 'ENOENT') throw err;
     }
@@ -201,7 +214,7 @@ async function runSSG() {
       loadFilesFromDir(dirs.subforums, '.json', JSON.parse),
     ]);
 
-    const updatedSubforums = await getUpdatedSubforums(lastProcessedTime);
+    const updatedSubforums = await getUpdatedSubforums(lastProcessedTime, filesToProcess);
 
     await Promise.all([
       generateSpecialPages(partials),
