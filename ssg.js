@@ -72,6 +72,31 @@ async function generateSpecialPages(partials) {
   console.log('Generated: index.html and 404.html');
 }
 
+function generateRSSFeed(subforum, baseurl) {
+  const feedUrl = `${baseurl}${subforum.link.replace(/^\//, '')}.rss`;
+  const items = subforum.posts.map(post => `
+    <item>
+      <title>${post.title}</title>
+      <link>${baseurl}${post.link.replace(/^\//, '')}.html</link>
+      <description>${post.content || ''}</description>
+      <pubDate>${new Date(post.date).toUTCString()}</pubDate>
+      <guid>${baseurl}${post.link.replace(/^\//, '')}.html</guid>
+    </item>
+  `).join('');
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>${subforum.title}</title>
+    <link>${baseurl}${subforum.link.replace(/^\//, '')}.html</link>
+    <description>${subforum.description}</description>
+    <atom:link href="${feedUrl}" rel="self" type="application/rss+xml" />
+    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
+    ${items}
+  </channel>
+</rss>`;
+}
+
 async function generateSubforumPages(partials) {
   const subforumDirs = await fs.readdir(dirs.subforums, { withFileTypes: true });
   const subforumFolders = subforumDirs.filter(dir => dir.isDirectory()).map(dir => dir.name);
