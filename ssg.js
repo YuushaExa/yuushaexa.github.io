@@ -98,88 +98,121 @@ function generateRSSFeed(subforum, baseurl) {
 }
 
 async function generateSubforumPages(partials) {
-  const subforumDirs = await fs.readdir(dirs.subforums, { withFileTypes: true });
-  const subforumFolders = subforumDirs.filter(dir => dir.isDirectory()).map(dir => dir.name);
+  try {
+    console.log('Reading subforums directory...');
+    const subforumDirs = await fs.readdir(dirs.subforums, { withFileTypes: true });
+    const subforumFolders = subforumDirs.filter(dir => dir.isDirectory()).map(dir => dir.name);
 
-  await Promise.all(subforumFolders.map(async folder => {
-    const subforumPath = path.join(dirs.subforums, folder);
-    const templatePath = path.join(subforumPath, 'template.html');
-    const templateContent = await readFile(templatePath);
+    console.log('Subforum folders found:', subforumFolders);
 
-    const jsonFiles = (await fs.readdir(subforumPath)).filter(file => file.endsWith('.json'));
-    await Promise.all(jsonFiles.map(async jsonFile => {
-      const jsonFilePath = path.join(subforumPath, jsonFile);
-      const subforumData = JSON.parse(await readFile(jsonFilePath));
+    if (subforumFolders.length === 0) {
+      console.error('No subforum folders found in the subforums directory.');
+      return;
+    }
 
-      // Generate subforum page
-      const subforumContent = templateContent
-        .replace(/\${subforum\.posts}/g, subforumData.posts.map(post => `
-          <li>
-            <img src="${post.image}" alt="${post.title}" width="50">
-            <a href="${post.link}">${post.title}</a>
-            <span>(${post.flair})</span>
-            <br>By ${post.author} on ${post.date}
-          </li>
-        `).join(''));
+    await Promise.all(subforumFolders.map(async folder => {
+      console.log(`Processing folder: ${folder}`);
+      const subforumPath = path.join(dirs.subforums, folder);
+      const templatePath = path.join(subforumPath, 'template.html');
 
-      const subforumOutputContent = await createFullPage(
-        partials,
-        subforumContent,
-        `${baseurl}${folder}`,
-        folder, // Use folder name as title
-        `Discussions about ${folder}` // Use folder name as description
-      );
-      const outputFilePath = path.join(dirs.public, `${folder}.html`);
-      await ensureDirectoryExists(path.dirname(outputFilePath));
-      await writeFile(outputFilePath, subforumOutputContent);
-      console.log(`Generated: ${folder}.html`);
+      console.log(`Reading template file: ${templatePath}`);
+      const templateContent = await readFile(templatePath);
 
-      // Generate RSS feed
-      const rssFeed = generateRSSFeed({
-        title: folder,
-        link: `/${folder}`,
-        description: `Discussions about ${folder}`,
-        posts: subforumData.posts,
-      }, baseurl);
-      const rssFilePath = path.join(dirs.public, `${folder}.rss`);
-      await writeFile(rssFilePath, rssFeed);
-      console.log(`Generated: ${folder}.rss`);
+      console.log(`Reading JSON files in folder: ${folder}`);
+      const jsonFiles = (await fs.readdir(subforumPath)).filter(file => file.endsWith('.json'));
 
-      // Generate individual post pages
-      await Promise.all(subforumData.posts.map(async post => {
-        const postContent = `
-          <h1>${post.title}</h1>
-          <p>By ${post.author} on ${post.date}</p>
-          <img src="${post.image}" alt="${post.title}" width="200">
-          <p>${post.content}</p>
-          <p><a href="${post.url}" target="_blank">Read more</a></p>
-        `;
+      if (jsonFiles.length === 0) {
+        console.error(`No JSON files found in folder: ${folder}`);
+        return;
+      }
 
-        const postOutputContent = await createFullPage(
+      await Promise.all(jsonFiles.map(async jsonFile => {
+        const jsonFilePath = path.join(subforumPath, jsonFile);
+        console.log(`Processing JSON file: ${jsonFilePath}`);
+        const subforumData = JSON.parse(await readFile(jsonFilePath));
+
+        console.log(`Subforum data: ${JSON.stringify(subforumData, null, 2)}`);
+
+        // Generate subforum page
+        const subforumContent = templateContent
+          .replace(/\${subforum\.posts}/g, subforumData.posts.map(post => `
+            <li>
+              <img src="${post.image}" alt="${post.title}" width="50">
+              <a href="${post.link}">${post.title}</a>
+              <span>(${post.flair})</span>
+              <br>By ${post.author} on ${post.date}
+            </li>
+          `).join(''));
+
+        console.log(`Generated subforum content: ${subforumContent}`);
+
+        const subforumOutputContent = await createFullPage(
           partials,
-          postContent,
-          `${baseurl}${post.link.replace(/^\//, '')}`,
-          post.title,
-          post.content || `Discussions about ${folder}`,
-          post.image
+          subforumContent,
+          `${baseurl}${folder}`,
+          folder, // Use folder name as title
+          `Discussions about ${folder}` // Use folder name as description
         );
-        const postOutputFilePath = path.join(dirs.public, post.link.replace(/^\//, '') + '.html');
-        await ensureDirectoryExists(path.dirname(postOutputFilePath));
-        await writeFile(postOutputFilePath, postOutputContent);
-        console.log(`Generated: ${post.link.replace(/^\//, '')}.html`);
+        const outputFilePath = path.join(dirs.public, `${folder}.html`);
+        await ensureDirectoryExists(path.dirname(outputFilePath));
+        await writeFile(outputFilePath, subforumOutputContent);
+        console.log(`Generated: ${folder}.html`);
+
+        // Generate RSS feed
+        const rssFeed = generateRSSFeed({
+          title: folder,
+          link: `/${folder}`,
+          description: `Discussions about ${folder}`,
+          posts: subforumData.posts,
+        }, baseurl);
+        const rssFilePath = path.join(dirs.public, `${folder}.rss`);
+        await writeFile(rssFilePath, rssFeed);
+        console.log(`Generated: ${folder}.rss`);
+
+        // Generate individual post pages
+        await Promise.all(subforumData.posts.map(async post => {
+          const postContent = `
+            <h1>${post.title}</h1>
+            <p>By ${post.author} on ${post.date}</p>
+            <img src="${post.image}" alt="${post.title}" width="200">
+            <p>${post.content}</p>
+            <p><a href="${post.url}" target="_blank">Read more</a></p>
+          `;
+
+          const postOutputContent = await createFullPage(
+            partials,
+            postContent,
+            `${baseurl}${post.link.replace(/^\//, '')}`,
+            post.title,
+            post.content || `Discussions about ${folder}`,
+            post.image
+          );
+          const postOutputFilePath = path.join(dirs.public, post.link.replace(/^\//, '') + '.html');
+          await ensureDirectoryExists(path.dirname(postOutputFilePath));
+          await writeFile(postOutputFilePath, postOutputContent);
+          console.log(`Generated: ${post.link.replace(/^\//, '')}.html`);
+        }));
       }));
     }));
-  }));
+  } catch (err) {
+    console.error('Error in generateSubforumPages:', err.stack || err.message);
+  }
 }
 
 async function runSSG() {
   try {
+    console.log('Ensuring public directory exists...');
     await ensureDirectoryExists(dirs.public);
+
+    console.log('Loading partials...');
     const partials = await loadFilesFromDir(dirs.partials, '.html');
-    await Promise.all([
-      generateSpecialPages(partials),
-      generateSubforumPages(partials),
-    ]);
+
+    console.log('Generating special pages...');
+    await generateSpecialPages(partials);
+
+    console.log('Generating subforum pages...');
+    await generateSubforumPages(partials);
+
     console.log('SSG build complete!');
   } catch (err) {
     console.error('SSG build failed:', err.stack || err.message);
