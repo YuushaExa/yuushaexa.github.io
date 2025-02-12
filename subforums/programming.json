@@ -6,6 +6,7 @@
   "banner": "https://picsum.photos/1072/128",
   "icon": "https://picsum.photos/88",
   "highlights": "",
+  "template": "programmingTemplate",
   "posts": [
     {
       "title": "Best Practices for Python Code",
