@@ -54,7 +54,7 @@ async function loadSubforumData(subforum) {
 
   const dataFiles = Array.isArray(subforum.data) ? subforum.data : [subforum.data];
   const posts = await Promise.all(dataFiles.map(async file => {
-    const filePath = path.join(dirs.subforums, file);
+    const filePath = path.join(dirs.subforums, file); // Resolve path relative to subforums directory
     const content = await readFile(filePath);
     return JSON.parse(content);
   }));
