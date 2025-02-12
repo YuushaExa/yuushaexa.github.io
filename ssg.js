@@ -142,7 +142,7 @@ const templates = {
           <a href="${post.link}">${post.title}</a>
           <span>(${post.flair})</span>
           <br>By ${post.author} on ${post.date}
-          <p>${post.content}</p>
+          <p>${post.content1}</p>
         </li>
       `).join('')}</ul>
     `,
@@ -151,7 +151,7 @@ const templates = {
       <h1>${post.title}</h1>
       <p>By ${post.author} on ${post.date}</p>
       <img src="${post.image}" alt="${post.title}" width="200">
-      <p>${post.content}</p>
+      <p>${post.content1}</p>
       <p><a href="${post.url}" target="_blank">Read more</a></p>
       <p><strong>Related to:</strong> ${subforum.title}</p>
     `,
@@ -162,7 +162,7 @@ const templates = {
         <item>
           <title>${post.title}</title>
           <link>${baseurl}${post.link.replace(/^\//, '')}.html</link>
-          <description>${post.content || ''}</description>
+          <description>${post.content1 || ''}</description>
           <pubDate>${new Date(post.date).toUTCString()}</pubDate>
           <guid>${baseurl}${post.link.replace(/^\//, '')}.html</guid>
           <category>${post.flair}</category>
