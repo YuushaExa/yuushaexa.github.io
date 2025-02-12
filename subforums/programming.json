@@ -13,7 +13,7 @@
       "link": "/programming/best-practices-python",
       "author": "JohnDoe",
       "date": "2023-10-01",
-      "content": "In this post, we'll explore some of the best practices for writing clean and efficient Python code.",
+      "content1": "In this post, we'll explore some of the best practices for writing clean and efficient Python code.",
       "image": "https://picsum.photos/200",
       "url": "https://example.com",
       "flair": "Discussion"
