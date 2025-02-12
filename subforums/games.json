@@ -7,26 +7,5 @@
   "icon": "https://picsum.photos/88",
   "highlights": "",
   "template": "gamesTemplate",
-  "posts": [
-    {
-      "title": "Best Strategies for Competitive Gaming",
-      "link": "/games/best-strategies-competitive",
-      "author": "JohnDoe",
-      "date": "2023-10-01",
-      "content": "In this post, we'll explore some of the best strategies for excelling in competitive gaming.",
-      "image": "https://picsum.photos/200",
-      "url": "https://example.com",
-      "flair": "Discussion"
-    },
-    {
-      "title": "Top 10 Board Games of 2023",
-      "link": "/games/top-board-games-2023",
-      "author": "JaneSmith",
-      "date": "2023-10-02",
-      "content": "Let's take a look at the top 10 board games that have been making waves in 2023.",
-      "image": "https://picsum.photos/200",
-      "url": "https://example.com",
-      "flair": "Discussion"
-    }
-  ]
+  "data": ["gamesdate.json", "gamesdate1.json"]
 }
