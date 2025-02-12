@@ -49,6 +49,19 @@ async function loadFilesFromDir(dirPath, fileType, transform = (data) => data) {
   }
 }
 
+async function loadSubforumData(subforum) {
+  if (!subforum.data) return []; // If no data files are specified, return an empty array
+
+  const dataFiles = Array.isArray(subforum.data) ? subforum.data : [subforum.data];
+  const posts = await Promise.all(dataFiles.map(async file => {
+    const filePath = path.join(dirs.subforums, file);
+    const content = await readFile(filePath);
+    return JSON.parse(content);
+  }));
+
+  return posts.flat(); // Flatten the array of posts
+}
+
 async function createFullPage(partials, mainContent, canonicalUrl = '', title = 'Default Title', description = '', image = '') {
   // Replace placeholders in the head template
   const headContent = (partials.head || '')
@@ -142,7 +155,7 @@ const templates = {
           <a href="${post.link}">${post.title}</a>
           <span>(${post.flair})</span>
           <br>By ${post.author} on ${post.date}
-          <p>${post.content1}</p>
+          <p>${post.content}</p>
         </li>
       `).join('')}</ul>
     `,
@@ -151,7 +164,7 @@ const templates = {
       <h1>${post.title}</h1>
       <p>By ${post.author} on ${post.date}</p>
       <img src="${post.image}" alt="${post.title}" width="200">
-      <p>${post.content1}</p>
+      <p>${post.content}</p>
       <p><a href="${post.url}" target="_blank">Read more</a></p>
       <p><strong>Related to:</strong> ${subforum.title}</p>
     `,
@@ -162,7 +175,7 @@ const templates = {
         <item>
           <title>${post.title}</title>
           <link>${baseurl}${post.link.replace(/^\//, '')}.html</link>
-          <description>${post.content1 || ''}</description>
+          <description>${post.content || ''}</description>
           <pubDate>${new Date(post.date).toUTCString()}</pubDate>
           <guid>${baseurl}${post.link.replace(/^\//, '')}.html</guid>
           <category>${post.flair}</category>
@@ -190,6 +203,10 @@ async function generateSubforumPages(partials, subforums) {
     if (!template) {
       throw new Error(`Template ${subforum.template} not found for subforum ${key}`);
     }
+
+    // Load posts from data files
+    const posts = await loadSubforumData(subforum);
+    subforum.posts = posts; // Attach posts to the subforum object
 
     // Generate subforum page
     const subforumContent = template.generateSubforumPage(subforum, baseurl);
