@@ -7,5 +7,5 @@
   "icon": "https://picsum.photos/88",
   "highlights": "",
   "template": "gamesTemplate",
-  "data": "gamesdate.json"
+  "data": "data/gamesdate.json"
 }
