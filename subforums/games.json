@@ -7,5 +7,5 @@
   "icon": "https://picsum.photos/88",
   "highlights": "",
   "template": "gamesTemplate",
-  "data": ["data/games/gamesdate.json", "data/games/gamesdate1.json"]
+  "data": ["https://raw.githubusercontent.com/YuushaExa/yuushaexa.github.io/refs/heads/main/subforums/data/games/gamesdate.json", "data/games/gamesdate1.json"]
 }
