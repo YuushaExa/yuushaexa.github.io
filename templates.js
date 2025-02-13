@@ -108,7 +108,7 @@ const templates = {
 
   // test temp
 
-   testTemplate: {
+ testTemplate: {
     generateSubforumPage: (subforum, baseurl) => `
       <h1>${subforum.title}</h1>
       <p>${subforum.description}</p>
@@ -117,8 +117,8 @@ const templates = {
       <img src="${subforum.icon}" alt="${subforum.title}">
       <ul>${subforum.posts.map(post => `
         <li>
-          <img src="${post.image}" alt="${post.name}" width="50">
-          <a href="${post.link}">${post.name}</a>
+          <img src="${post.image}" alt="${post.title}" width="50">
+          <a href="${post.link}">${post.title}</a>
           <span>(${post.flair})</span>
           <br>By ${post.author} on ${post.date}
         </li>
@@ -126,10 +126,10 @@ const templates = {
     `,
 
     generatePostPage: (post, subforum, baseurl) => `
-      <h1>${post.name}</h1>
+      <h1>${post.title}</h1>
       <p>By ${post.author} on ${post.date}</p>
-      <img src="${post.image}" alt="${post.name}" width="200">
-      <p>${post.storyline}</p>
+      <img src="${post.image}" alt="${post.title}" width="200">
+      <p>${post.content}</p>
       <p><a href="${post.url}" target="_blank">Read more</a></p>
     `,
 
@@ -137,9 +137,9 @@ const templates = {
       const feedUrl = `${baseurl}${subforum.link.replace(/^\//, '')}.rss`;
       const items = subforum.posts.map(post => `
         <item>
-          <title>${post.name}</title>
+          <title>${post.title}</title>
           <link>${baseurl}${post.link.replace(/^\//, '')}.html</link>
-          <description>${post.storyline || ''}</description>
+          <description>${post.content || ''}</description>
           <pubDate>${new Date(post.date).toUTCString()}</pubDate>
           <guid>${baseurl}${post.link.replace(/^\//, '')}.html</guid>
         </item>
@@ -148,9 +148,9 @@ const templates = {
       return `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>${subforum.name}</title>
+    <title>${subforum.title}</title>
     <link>${baseurl}${subforum.link.replace(/^\//, '')}.html</link>
-    <description>${subforum.storyline}</description>
+    <description>${subforum.description}</description>
     <atom:link href="${feedUrl}" rel="self" type="application/rss+xml" />
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
     ${items}
