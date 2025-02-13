@@ -7,5 +7,14 @@
       "image": "https://picsum.photos/200",
       "url": "https://example.com",
       "flair": "Discussion"
-        }
+        },
+    {
+      "title": "Introduction to React Hooks",
+      "author": "JaneSmith",
+      "date": "2023-10-02",
+      "content1": "React Hooks have revolutionized the way we write components in React. Let's dive into the basics.",
+      "image": "https://picsum.photos/200",
+      "url": "https://example.com",
+      "flair": "Discussion"
+    }
   ]
