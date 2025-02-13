@@ -48,6 +48,15 @@ async function loadFilesFromDir(dirPath, fileType, transform = (data) => data) {
   }
 }
 
+function generateSlug(title) {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+    .replace(/\s+/g, '-')         // Replace spaces with hyphens
+    .replace(/-+/g, '-')          // Replace multiple hyphens with a single one
+    .trim();
+}
+
 async function loadSubforumData(subforum) {
   if (!subforum.data) return []; // If no data files are specified, return an empty array
 
@@ -55,7 +64,12 @@ async function loadSubforumData(subforum) {
   const posts = await Promise.all(dataFiles.map(async file => {
     const filePath = path.join(dirs.subforums, file); // Resolve path relative to subforums directory
     const content = await readFile(filePath);
-    return JSON.parse(content);
+    const parsedPosts = JSON.parse(content);
+
+    return parsedPosts.map(post => ({
+      ...post,
+      link: post.link || `/posts/${generateSlug(post.title)}`
+    }));
   }));
 
   return posts.flat(); // Flatten the array of posts
