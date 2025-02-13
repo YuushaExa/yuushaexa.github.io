@@ -68,7 +68,7 @@ async function loadSubforumData(subforum) {
 
     return parsedPosts.map(post => ({
       ...post,
-      link: post.link || `/posts/${generateSlug(post.title)}`
+      link: post.link || `/${subforumKey}/${generateSlug(post.title)}`
     }));
   }));
 
@@ -109,9 +109,9 @@ async function generateSubforumPages(partials, subforums) {
       throw new Error(`Template ${subforum.template} not found for subforum ${key}`);
     }
 
-    // Load posts from data files
-    const posts = await loadSubforumData(subforum);
-    subforum.posts = posts; // Attach posts to the subforum object
+    // Load posts with folder-based links
+    const posts = await loadSubforumData(subforum, key);
+    subforum.posts = posts;
 
     // Generate subforum page
     const subforumContent = template.generateSubforumPage(subforum, baseurl);
@@ -121,23 +121,20 @@ async function generateSubforumPages(partials, subforums) {
       `${baseurl}${key}`,
       subforum.title,
       subforum.description,
-      subforum.banner,
-      subforum.link
+      subforum.banner
     );
     await writeFile(path.join(dirs.public, `${key}.html`), subforumOutputContent);
     console.log(`Generated: ${key}.html`);
 
-    // Generate RSS feed for the subforum
+    // Generate RSS feed
     const rssFeed = template.generateRSSFeed(subforum, baseurl);
-    const rssFilePath = path.join(dirs.public, `${key}.rss`);
-    await writeFile(rssFilePath, rssFeed);
+    await writeFile(path.join(dirs.public, `${key}.rss`), rssFeed);
     console.log(`Generated: ${key}.rss`);
 
     // Generate individual post pages
     await Promise.all(subforum.posts.map(async post => {
       const postContent = template.generatePostPage(post, subforum, baseurl);
 
-      // Generate post page with fallbacks
       const postOutputContent = await createFullPage(
         partials,
         postContent,
@@ -146,13 +143,15 @@ async function generateSubforumPages(partials, subforums) {
         post.content || subforum.description,
         post.image || subforum.icon
       );
-      const postOutputFilePath = path.join(dirs.public, post.link.replace(/^\//, '') + '.html');
+
+      const postOutputFilePath = path.join(dirs.public, `${post.link.replace(/^\//, '')}.html`);
       await ensureDirectoryExists(path.dirname(postOutputFilePath));
       await writeFile(postOutputFilePath, postOutputContent);
       console.log(`Generated: ${post.link.replace(/^\//, '')}.html`);
     }));
   }));
 }
+
 
 async function runSSG() {
   try {
