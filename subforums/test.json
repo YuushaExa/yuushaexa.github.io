@@ -7,5 +7,5 @@
   "icon": "https://picsum.photos/88",
   "highlights": "",
   "template": "testTemplate",
-  "data": ["https://raw.githubusercontent.com/YuushaExa/Full-website/refs/heads/main/prebuild/data/games.json?token=GHSAT0AAAAAACUG2FYQ5RQ67ADV72Y76E46Z5OM5IA"]
+  "data": ["data/test/test.json"]
 }
