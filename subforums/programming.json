@@ -6,5 +6,6 @@
   "banner": "https://picsum.photos/1072/128",
   "icon": "https://picsum.photos/88",
   "highlights": "",
-  "template": "programmingTemplate"
+  "template": "programmingTemplate",
+  "data": ["data/programming/progdata.json"]
 }
