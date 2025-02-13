@@ -1,7 +1,6 @@
     [
         {
       "title": "Best Practices for Python Code",
-      "link": "/programming/best-practices-python",
       "author": "JohnDoe",
       "date": "2023-10-01",
       "content1": "In this post, we'll explore some of the best practices for writing clean and efficient Python code.",
@@ -11,7 +10,6 @@
     },
     {
       "title": "Introduction to React Hooks",
-      "link": "/programming/intro-react-hooks",
       "author": "JaneSmith",
       "date": "2023-10-02",
       "content1": "React Hooks have revolutionized the way we write components in React. Let's dive into the basics.",
