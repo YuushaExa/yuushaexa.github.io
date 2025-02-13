@@ -1,5 +1,11 @@
   [
         {
-      "title": "test"
+       "title": "Introdjjkjtion to React Hooks",
+      "author": "JaneSmith",
+      "date": "2023-10-02",
+      "content": "Reacjjkt Hooks have revolutionized the way we write components in React. Let's dive into the basics.",
+      "image": "https://picsum.photos/200",
+      "url": "https://example.com",
+      "flair": "Discussion"
         }
   ]
