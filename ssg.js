@@ -81,7 +81,7 @@ async function loadSubforumData(subforum, subforumKey) {
       // Auto-generate links with the subforum key
       return parsedPosts.map(post => ({
         ...post,
-        link: post.link || `/${subforumKey}/${generateSlug(post.title)}`
+        link: post.link || `/${subforumKey}/${generateSlug(post.name)}`
       }));
     } catch (err) {
       console.error(`Error loading data from ${file}:`, err.message);
