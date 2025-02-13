@@ -57,7 +57,7 @@ function generateSlug(title) {
     .trim();
 }
 
-async function loadSubforumData(subforum) {
+async function loadSubforumData(subforum, subforumKey) {
   if (!subforum.data) return []; // If no data files are specified, return an empty array
 
   const dataFiles = Array.isArray(subforum.data) ? subforum.data : [subforum.data];
