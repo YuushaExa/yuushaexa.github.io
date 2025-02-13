@@ -1,0 +1,11 @@
+{
+  "title": "Games",
+  "link": "/test",
+  "description": "Games DB",
+  "created_at": "2025-10-12",
+  "banner": "https://picsum.photos/1072/128",
+  "icon": "https://picsum.photos/88",
+  "highlights": "",
+  "template": "testTemplate",
+  "data": ["https://raw.githubusercontent.com/YuushaExa/Full-website/refs/heads/main/prebuild/data/games.json?token=GHSAT0AAAAAACUG2FYQWW2QWM4CTVC72LJKZ5OMSXA"]
+}
