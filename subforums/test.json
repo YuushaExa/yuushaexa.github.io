@@ -6,6 +6,6 @@
   "banner": "https://picsum.photos/1072/128",
   "icon": "https://picsum.photos/88",
   "highlights": "",
-  "template": "testTemplate",
+  "template": "gamesTemplate",
   "data": ["data/test/test2.json"]
 }
