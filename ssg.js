@@ -1,6 +1,5 @@
 const fs = require('fs').promises;
 const path = require('path');
-const fetch = require('node-fetch');
 const templates = require('./templates');
 const baseurl = 'https://yuushaexa.github.io/'; // You can change this to any base URL
 
@@ -58,10 +57,6 @@ function generateSlug(title) {
     .trim();
 }
 
-function isUrl(path) {
-  return /^https?:\/\//.test(path);
-}
-
 async function loadSubforumData(subforum, subforumKey) {
   if (!subforum.data) return [];
 
@@ -70,7 +65,7 @@ async function loadSubforumData(subforum, subforumKey) {
   const posts = await Promise.all(dataFiles.map(async (file) => {
     try {
       let content;
-      if (isUrl(file)) {
+      if (file.startsWith('http://') || file.startsWith('https://')) {
         // Fetch remote JSON file
         const response = await fetch(file);
         if (!response.ok) throw new Error(`Failed to fetch ${file}: ${response.statusText}`);
@@ -83,7 +78,7 @@ async function loadSubforumData(subforum, subforumKey) {
 
       const parsedPosts = JSON.parse(content);
 
-      // Auto-generate links based on subforum key
+      // Auto-generate links with the subforum key
       return parsedPosts.map(post => ({
         ...post,
         link: post.link || `/${subforumKey}/${generateSlug(post.title)}`
