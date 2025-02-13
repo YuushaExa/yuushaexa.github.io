@@ -50,11 +50,7 @@ async function loadFilesFromDir(dirPath, fileType, transform = (data) => data) {
 
 function generateSlug(title) {
   return title
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
-    .replace(/\s+/g, '-')         // Replace spaces with hyphens
-    .replace(/-+/g, '-')          // Replace multiple hyphens with a single one
-    .trim();
+
 }
 
 async function loadSubforumData(subforum, subforumKey) {
