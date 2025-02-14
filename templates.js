@@ -109,7 +109,11 @@ const templates = {
   },
 
   testTemplate: {
-    generatePostLink: (subforumKey, post) => `/${subforumKey}/${generateSlug(post.title)}`,
+  generatePostLink: (subforumKey, post) => {
+      // Ensure post.title is not missing
+      const title = post.title || "Untitled Post";
+      return `/${subforumKey}/${generateSlug(title)}`;
+    },
 
     generateSubforumPage: (subforum, baseurl) => `
       <h1>${subforum.title}</h1>
@@ -182,14 +186,6 @@ function generateSlug(text) {
   titleCounts[baseSlug] += 1;
 
   return titleCounts[baseSlug] === 1 ? baseSlug : `${baseSlug}-${titleCounts[baseSlug]}`;
-}
-
-function generateLinkText(text) {
-  const defaultTitle = "untitled-post";
-  const title = text || defaultTitle;
-  return title
-    .trim()
-    .substring(0, 40); // Optionally truncate for display
 }
 
 module.exports = templates;
