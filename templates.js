@@ -163,16 +163,36 @@ const templates = {
 };
 
 // Helper function to generate slugs
-function generateSlug(text, counter) {
+function generateSlug(text, counter = 0) {
   const defaultTitle = "untitled-post";
-  const title = text ? `${text}-${counter}` : `${defaultTitle}-${counter}`;
-  return title
+  const title = text || defaultTitle;
+
+  // Append the counter only if it's greater than 0
+  const slugBase = counter > 0 ? `${title}-${counter}` : title;
+
+  return slugBase
     .toLowerCase()
     .replace(/[\s-]/, '') // Remove first -
     .replace(/\s+/g, '-') // Replace spaces with hyphens
     .replace(/-+/g, '-')  // Replace multiple hyphens with a single one
     .trim()
     .substring(0, 40);
+
+  const slugMap = new Map(); // Track used slugs
+
+posts.forEach((post, index) => {
+  let slug = generateSlug(post.title);
+  let counter = 1;
+
+  // Check if the slug is already used
+  while (slugMap.has(slug)) {
+    slug = generateSlug(post.title, counter); // Append counter to the slug
+    counter++;
+  }
+
+  slugMap.set(slug, true); // Mark the slug as used
+  post.slug = slug; // Add the slug to the post object
+});
 }
 
 
