@@ -70,7 +70,7 @@ async function loadSubforumData(subforum, subforumKey) {
 
       return parsedPosts.map(post => ({
         ...post,
-        link: post.link || template.generatePostLink(subforumKey, post.title)
+        link: post.link || template.generatePostLink(subforumKey, post) 
       }));
     } catch (err) {
       console.error(`Error loading data from ${file}:`, err.message);
