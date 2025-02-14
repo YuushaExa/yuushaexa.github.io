@@ -170,7 +170,7 @@ function generateSlug(text) {
     .replace(/\s+/g, '-')         // Replace spaces with hyphens
     .replace(/-+/g, '-')          // Replace multiple hyphens with a single one
     .trim()
-    .substring(0, 4);    
+    .substring(0, 40);    
 }
 
 
