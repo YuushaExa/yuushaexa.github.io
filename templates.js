@@ -120,7 +120,7 @@ const templates = {
  <ul>${subforum.posts.map(post => `
         <li>
           <img src="${post.image}" alt="${post.title}" width="50">
-          <a href="${post.link}">${post.title}</a>
+          <a href="${post.link}">${post.title || 'Default Title'}</a>
           <span>(${post.flair})</span>
           <br>By ${post.author} on ${post.date}
         </li>
@@ -168,18 +168,12 @@ const titleCounts = {};
 function generateSlug(text) {
   const defaultTitle = "untitled-post";
   const title = (text || defaultTitle).toLowerCase(); // Normalize title and convert to lowercase
-
-  // Generate base slug: replace spaces with hyphens, collapse multiple hyphens, trim, and limit length
   const baseSlug = title
     .replace(/\s+/g, '-') // Replace spaces with hyphens
     .replace(/-+/g, '-') // Collapse multiple hyphens into one
     .trim() // Trim leading/trailing spaces
     .substring(0, 40); // Limit to 40 characters
-
-  // Ensure the slug is unique
   titleCounts[baseSlug] = (titleCounts[baseSlug] || 0) + 1;
-
-  // Append a counter if the slug is not unique
   return titleCounts[baseSlug] === 1 ? baseSlug : `${baseSlug}-${titleCounts[baseSlug]}`;
 }
 module.exports = templates;
