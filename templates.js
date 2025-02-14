@@ -117,9 +117,8 @@ const templates = {
       <p>${subforum.created_at}</p>
       <img src="${subforum.banner}" alt="${subforum.title}">
       <img src="${subforum.icon}" alt="${subforum.title}">
-  <ul>${subforum.posts.map(post => {
-          const title = post.title || 'untitled'; // Fallback to 'untitled' if title is missing
-          return `        <li>
+ <ul>${subforum.posts.map(post => `
+        <li>
           <img src="${post.image}" alt="${post.title}" width="50">
           <a href="${post.link}">${post.title}</a>
           <span>(${post.flair})</span>
@@ -164,7 +163,7 @@ const templates = {
 };
 
 // Helper function to generate slugs
-function generateSlug(text, existingSlugs = []) {
+function generateSlug(text) {
   let slug = text
     .toLowerCase()
     .replace(/[\s-]/, '') // Remove first -
@@ -173,10 +172,6 @@ function generateSlug(text, existingSlugs = []) {
     .trim()
     .substring(0, 40);
 
-  // If the slug is empty, provide a fallback
-  if (!slug) {
-    slug = 'untitled';
-  }
 }
 
 module.exports = templates;
