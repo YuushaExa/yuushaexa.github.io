@@ -181,6 +181,8 @@ function generateSlug(text, existingSlugs = []) {
   // Check for duplicates and append a suffix if necessary
   let uniqueSlug = slug;
   let counter = 1;
+
+  // Keep generating a new slug until it's unique
   while (existingSlugs.includes(uniqueSlug)) {
     uniqueSlug = `${slug}-${counter}`;
     counter++;
