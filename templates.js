@@ -108,7 +108,7 @@ const templates = {
     },
   },
 
-  testTemplate: {
+   testTemplate: {
     generatePostLink: (subforumKey, post) => `/${subforumKey}/${generateSlug(post.title)}`,
 
     generateSubforumPage: (subforum, baseurl) => `
@@ -120,7 +120,7 @@ const templates = {
  <ul>${subforum.posts.map(post => `
         <li>
           <img src="${post.image}" alt="${post.title}" width="50">
-          <a href="${post.link}">${post?.title ?? 'Default Title'}</a>
+          <a href="${post.link}">${post.title}</a>
           <span>(${post.flair})</span>
           <br>By ${post.author} on ${post.date}
         </li>
@@ -128,7 +128,7 @@ const templates = {
     `,
 
     generatePostPage: (post, subforum, baseurl) => `
-      <h1>${post?.title ?? 'Default Title'}</h1>
+      <h1>${post.title}</h1>
       <p>By ${post.author} on ${post.date}</p>
       <img src="${post.image}" alt="${post.title}" width="200">
       <p>${post.content}</p>
