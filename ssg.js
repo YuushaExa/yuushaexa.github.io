@@ -48,40 +48,29 @@ async function loadFilesFromDir(dirPath, fileType, transform = (data) => data) {
   }
 }
 
-function generateSlug(title) {
-  return title
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
-    .replace(/\s+/g, '-')         // Replace spaces with hyphens
-    .replace(/-+/g, '-')          // Replace multiple hyphens with a single one
-    .trim();
-}
-
 async function loadSubforumData(subforum, subforumKey) {
   if (!subforum.data) return [];
 
   const dataFiles = Array.isArray(subforum.data) ? subforum.data : [subforum.data];
+  const template = templates[subforum.template];
 
   const posts = await Promise.all(dataFiles.map(async (file) => {
     try {
       let content;
       if (file.startsWith('http://') || file.startsWith('https://')) {
-        // Fetch remote JSON file
         const response = await fetch(file);
         if (!response.ok) throw new Error(`Failed to fetch ${file}: ${response.statusText}`);
         content = await response.text();
       } else {
-        // Read local JSON file
         const filePath = path.join(dirs.subforums, file);
         content = await readFile(filePath);
       }
 
       const parsedPosts = JSON.parse(content);
 
-      // Auto-generate links with the subforum key
       return parsedPosts.map(post => ({
         ...post,
-        link: post.link || `/${subforumKey}/${generateSlug(post.title)}`
+        link: post.link || template.generatePostLink(subforumKey, post.title)
       }));
     } catch (err) {
       console.error(`Error loading data from ${file}:`, err.message);
