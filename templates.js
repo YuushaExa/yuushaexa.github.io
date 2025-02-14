@@ -171,7 +171,9 @@ function generateSlug(text) {
     .replace(/-+/g, '-')  // Replace multiple hyphens with a single one
     .trim()
     .substring(0, 40);
-
+  if (!slug) {
+    slug = 'untitled';
+  }
 }
 
 module.exports = templates;
