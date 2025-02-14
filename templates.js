@@ -170,7 +170,6 @@ function generateSlug(text) {
   const title = text || defaultTitle;
   const baseSlug = title
     .toLowerCase()
-    .replace(/[\s-]/, '')
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
     .trim()
