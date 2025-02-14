@@ -184,4 +184,12 @@ function generateSlug(text) {
   return titleCounts[baseSlug] === 1 ? baseSlug : `${baseSlug}-${titleCounts[baseSlug]}`;
 }
 
+function generateLinkText(text) {
+  const defaultTitle = "untitled-post";
+  const title = text || defaultTitle;
+  return title
+    .trim()
+    .substring(0, 40); // Optionally truncate for display
+}
+
 module.exports = templates;
