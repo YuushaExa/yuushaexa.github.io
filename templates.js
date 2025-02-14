@@ -128,7 +128,7 @@ const templates = {
     `,
 
     generatePostPage: (post, subforum, baseurl) => `
-      <h1>${post.title}</h1>
+      <h1>${post.title || 'Default Title'}</h1>
       <p>By ${post.author} on ${post.date}</p>
       <img src="${post.image}" alt="${post.title}" width="200">
       <p>${post.content}</p>
