@@ -163,13 +163,30 @@ const templates = {
 };
 
 // Helper function to generate slugs
-function generateSlug(text) {
-  return text
+function generateSlug(text, existingSlugs = []) {
+  // Generate the base slug
+  let slug = text
     .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
-    .replace(/\s+/g, '-')         // Replace spaces with hyphens
-    .replace(/-+/g, '-')          // Replace multiple hyphens with a single one
-    .trim();
+    .replace(/[\s-]/, '') // Remove first -
+    .replace(/\s+/g, '-') // Replace spaces with hyphens
+    .replace(/-+/g, '-')  // Replace multiple hyphens with a single one
+    .trim()
+    .substring(0, 40);
+
+  // If the slug is empty, provide a fallback
+  if (!slug) {
+    slug = 'untitled';
+  }
+
+  // Check for duplicates and append a suffix if necessary
+  let uniqueSlug = slug;
+  let counter = 1;
+  while (existingSlugs.includes(uniqueSlug)) {
+    uniqueSlug = `${slug}-${counter}`;
+    counter++;
+  }
+
+  return uniqueSlug;
 }
 
 module.exports = templates;
