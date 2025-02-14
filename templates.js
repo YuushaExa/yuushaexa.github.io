@@ -186,6 +186,9 @@ function generateSlug(text, existingSlugs = []) {
     counter++;
   }
 
+  // Add the new unique slug to the existingSlugs array
+  existingSlugs.push(uniqueSlug);
+
   return uniqueSlug;
 }
 
