@@ -117,7 +117,8 @@ const templates = {
       <p>${subforum.created_at}</p>
       <img src="${subforum.banner}" alt="${subforum.title}">
       <img src="${subforum.icon}" alt="${subforum.title}">
-      <ul>${subforum.posts.map(post => `
+      <ul>${subforum.posts.map(post =>  const title = post.title || 'untitled'; // Fallback to 'untitled' if title is missing
+          return `
         <li>
           <img src="${post.image}" alt="${post.title}" width="50">
           <a href="${post.link}">${post.title}</a>
@@ -175,7 +176,6 @@ function generateSlug(text, existingSlugs = []) {
   // If the slug is empty, provide a fallback
   if (!slug) {
     slug = 'untitled';
-    post.title = 'untitled';
   }
 }
 
