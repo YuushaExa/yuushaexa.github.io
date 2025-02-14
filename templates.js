@@ -121,8 +121,13 @@ const templates = {
       <p>${subforum.created_at}</p>
       <img src="${subforum.banner}" alt="${subforum.title}">
       <img src="${subforum.icon}" alt="${subforum.title}">
- <ul>${subforum.posts.map(post => `
-        <li>
+ <ul>${subforum.posts.map(post => {
+            // Ensure post.title is not missing
+            const title = post.title || "Untitled Post";
+            // Generate the post link
+            const link = templates.gamesTemplate.generatePostLink(subforum.key, post);
+            return `
+              <li>
           <img src="${post.image}" alt="${post.title}" width="50">
           <a href="${post.link}">${post.title}</a>
           <span>(${post.flair})</span>
