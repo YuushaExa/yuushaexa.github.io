@@ -166,10 +166,11 @@ const templates = {
 function generateSlug(text) {
   return text
     .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+    .replace(/[\s-]/, '') // Remove first -
     .replace(/\s+/g, '-')         // Replace spaces with hyphens
     .replace(/-+/g, '-')          // Replace multiple hyphens with a single one
-    .trim();
+      .trim()
+    .substring(0, 40);
 }
 
 
