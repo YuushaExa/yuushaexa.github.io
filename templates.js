@@ -1,5 +1,7 @@
 const templates = {
   gamesTemplate: {
+    generatePostLink: (subforumKey, post) => `/${subforumKey}/games/${generateSlug(post.title)}`,
+
     generateSubforumPage: (subforum, baseurl) => `
       <h1>${subforum.title}</h1>
       <p>${subforum.description}</p>
@@ -50,9 +52,9 @@ const templates = {
     },
   },
 
-// new temp
-  
   programmingTemplate: {
+    generatePostLink: (subforumKey, post) => `/${subforumKey}/programming/${generateSlug(post.title)}`,
+
     generateSubforumPage: (subforum, baseurl) => `
       <h1>${subforum.title}</h1>
       <p>${subforum.description}</p>
@@ -106,9 +108,9 @@ const templates = {
     },
   },
 
-  // test temp
+  testTemplate: {
+    generatePostLink: (subforumKey, post) => `/${subforumKey}/test/${generateSlug(post.title)}`,
 
- testTemplate: {
     generateSubforumPage: (subforum, baseurl) => `
       <h1>${subforum.title}</h1>
       <p>${subforum.description}</p>
@@ -158,7 +160,16 @@ const templates = {
 </rss>`;
     },
   },
-  
 };
+
+// Helper function to generate slugs
+function generateSlug(text) {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+    .replace(/\s+/g, '-')         // Replace spaces with hyphens
+    .replace(/-+/g, '-')          // Replace multiple hyphens with a single one
+    .trim();
+}
 
 module.exports = templates;
