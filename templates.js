@@ -163,13 +163,15 @@ const templates = {
 };
 
 // Helper function to generate slugs
-function generateSlug(text) {
-  return text
+function generateSlug(text, counter) {
+  const defaultTitle = "untitled-post";
+  const title = text ? `${text}-${counter}` : `${defaultTitle}-${counter}`;
+  return title
     .toLowerCase()
     .replace(/[\s-]/, '') // Remove first -
-    .replace(/\s+/g, '-')         // Replace spaces with hyphens
-    .replace(/-+/g, '-')          // Replace multiple hyphens with a single one
-      .trim()
+    .replace(/\s+/g, '-') // Replace spaces with hyphens
+    .replace(/-+/g, '-')  // Replace multiple hyphens with a single one
+    .trim()
     .substring(0, 40);
 }
 
