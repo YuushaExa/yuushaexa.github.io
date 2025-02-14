@@ -70,6 +70,7 @@ async function loadSubforumData(subforum, subforumKey) {
 
       return parsedPosts.map(post => ({
         ...post,
+        title: post.title || 'Default Title',
         link: post.link || template.generatePostLink(subforumKey, post) 
       }));
     } catch (err) {
