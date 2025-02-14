@@ -163,18 +163,13 @@ const templates = {
 };
 
 // Helper function to generate slugs
-function generateSlug(text, existingSlugs = []) {
-  let slug = text
+function generateSlug(text) {
+  return text
     .toLowerCase()
-    .replace(/[\s-]/, '') // Remove first -
-    .replace(/\s+/g, '-') // Replace spaces with hyphens
-    .replace(/-+/g, '-')  // Replace multiple hyphens with a single one
-    .trim()
-    .substring(0, 40);
-
-  if (!slug) {
-    slug = 'untitled';
-  }
+    .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+    .replace(/\s+/g, '-')         // Replace spaces with hyphens
+    .replace(/-+/g, '-')          // Replace multiple hyphens with a single one
+    .trim();
 }
 
 
