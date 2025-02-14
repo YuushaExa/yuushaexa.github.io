@@ -164,7 +164,6 @@ const templates = {
 
 // Helper function to generate slugs
 function generateSlug(text, existingSlugs = []) {
-  // Generate the base slug
   let slug = text
     .toLowerCase()
     .replace(/[\s-]/, '') // Remove first -
@@ -176,19 +175,8 @@ function generateSlug(text, existingSlugs = []) {
   // If the slug is empty, provide a fallback
   if (!slug) {
     slug = 'untitled';
+    post.title = 'untitled';
   }
-
-  // Check for duplicates and append a suffix if necessary
-  let uniqueSlug = slug;
-  let counter = 1;
-
-  // Keep generating a new slug until it's unique
-  while (existingSlugs.includes(uniqueSlug)) {
-    uniqueSlug = `${slug}-${counter}`;
-    counter++;
-  }
-
-  return uniqueSlug;
 }
 
 module.exports = templates;
