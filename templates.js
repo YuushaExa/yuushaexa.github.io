@@ -172,7 +172,7 @@ const templates = {
       <img src="${subforum.icon}" alt="${subforum.title}">
       <ul>${subforum.posts.map(post => `
         <li>
-          <img src="${image}" alt="${title}" width="50">
+          <img src="${image.url}" alt="${title}" width="50">
           <a href="${post.link}">${post.title}</a>
           <span>(${post.flair})</span>
           <br>By ${post.author} on ${post.date}
@@ -182,7 +182,7 @@ const templates = {
 
     generatePostPage: (post, subforum, baseurl) => `
       <h1>${title}</h1>
-      <img src="${image}" alt="${title}" width="200">
+      <img src="${image.url}" alt="${title}" width="200">
       <p>${description}</p>
     `,
 
