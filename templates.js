@@ -172,7 +172,7 @@ const templates = {
       <img src="${subforum.icon}" alt="${subforum.title}">
       <ul>${subforum.posts.map(post => `
         <li>
-          <img src="${post.image}" alt="${post.title}" width="50">
+          <img src="${image}" alt="${title}" width="50">
           <a href="${post.link}">${post.title}</a>
           <span>(${post.flair})</span>
           <br>By ${post.author} on ${post.date}
@@ -181,11 +181,9 @@ const templates = {
     `,
 
     generatePostPage: (post, subforum, baseurl) => `
-      <h1>${post.title}</h1>
-      <p>By ${post.author} on ${post.date}</p>
-      <img src="${post.image}" alt="${post.title}" width="200">
-      <p>${post.content}</p>
-      <p><a href="${post.url}" target="_blank">Read more</a></p>
+      <h1>${title}</h1>
+      <img src="${image}" alt="${title}" width="200">
+      <p>${description}</p>
     `,
 
     generateRSSFeed: (subforum, baseurl) => {
