@@ -184,6 +184,33 @@ const templates = {
       <h1>${post.title}</h1>
       <img src="${post.image.url}" alt="${post.title}" width="200">
       <p>${post.description}</p>
+      <h2>Developers</h2>
+  <ul>
+    ${post.developers.map(dev => `
+      <li>${dev.name}</li>
+    `).join('')}
+  </ul>
+
+  <h2>Aliases</h2>
+  <ul>
+    ${post.aliases.map(alias => `
+      <li>${alias}</li>
+    `).join('')}
+  </ul>
+
+  <h2>Tags</h2>
+  <ul>
+    ${post.tags.map(tag => `
+      <li>${tag.name}</li>
+    `).join('')}
+  </ul>
+
+  <h2>Screenshots</h2>
+  <div>
+    ${post.screenshots.map(screenshot => `
+      <img src="${screenshot.url}" alt="Screenshot" width="200">
+    `).join('')}
+  </div>
     `,
 
     generateRSSFeed: (subforum, baseurl) => {
