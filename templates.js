@@ -1,8 +1,37 @@
 const templates = {
+
+  // Shared helper function for pagination controls
+  generatePaginationControls: (baseurl, subforumLink, page, totalPages) => {
+    const prevLink = page > 1 ? `<a href="${baseurl}${subforumLink}.html?page=${page - 1}">Previous</a>` : '';
+    const nextLink = page < totalPages ? `<a href="${baseurl}${subforumLink}.html?page=${page + 1}">Next</a>` : '';
+    const lastLink = page < totalPages ? `<a href="${baseurl}${subforumLink}.html?page=${totalPages}">Last</a>` : '';
+
+    const pageLinks = Array.from({ length: totalPages }, (_, i) => {
+      const pageNumber = i + 1;
+      const isActive = pageNumber === page ? 'class="active"' : '';
+      return `<a href="${baseurl}${subforumLink}.html?page=${pageNumber}" ${isActive}>${pageNumber}</a>`;
+    }).join('');
+
+    return `
+      <div class="pagination">
+        ${prevLink}
+        ${pageLinks}
+        ${nextLink}
+        ${lastLink}
+      </div>
+    `;
+  },
+  
   gamesTemplate: {
     generatePostLink: (subforumKey, post) => `/${subforumKey}/${generateSlug(post.title)}`,
 
-    generateSubforumPage: (subforum, baseurl) => `
+  generateSubforumPage: (subforum, baseurl, page = 1) => {
+      const postsPerPage = 10;
+      const totalPosts = subforum.posts.length;
+      const totalPages = Math.ceil(totalPosts / postsPerPage);
+      const paginatedPosts = subforum.posts.slice((page - 1) * postsPerPage, page * postsPerPage);
+
+      return `
       <h1>${subforum.title}</h1>
       <p>${subforum.description}</p>
       <p>${subforum.created_at}</p>
@@ -16,7 +45,8 @@ const templates = {
           <br>By ${post.author} on ${post.date}
         </li>
       `).join('')}</ul>
-    `,
+       ${templates.generatePaginationControls(baseurl, subforum.link.replace(/^\//, ''), page, totalPages)}
+      `;,
 
     generatePostPage: (post, subforum, baseurl) => `
       <h1>${post.title}</h1>
@@ -164,7 +194,13 @@ const templates = {
    vnTemplate: {
     generatePostLink: (subforumKey, post) => `/${subforumKey}/${generateSlug(post.title)}`,
 
-    generateSubforumPage: (subforum, baseurl) => `
+      generateSubforumPage: (subforum, baseurl, page = 1) => {
+      const postsPerPage = 10;
+      const totalPosts = subforum.posts.length;
+      const totalPages = Math.ceil(totalPosts / postsPerPage);
+      const paginatedPosts = subforum.posts.slice((page - 1) * postsPerPage, page * postsPerPage);
+
+      return `
       <h1>${subforum.title}</h1>
       <p>${subforum.description}</p>
       <p>${subforum.created_at}</p>
@@ -178,6 +214,7 @@ const templates = {
           <br>By ${post.author} on ${post.date}
         </li>
       `).join('')}</ul>
+             ${templates.generatePaginationControls(baseurl, subforum.link.replace(/^\//, ''), page, totalPages)}
     `,
 
     generatePostPage: (post, subforum, baseurl) => `
