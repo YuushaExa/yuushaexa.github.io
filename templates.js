@@ -15,11 +15,13 @@ function generateSlug(text) {
 
 // Reusable function for pagination logic
 function generatePagination(subforum, baseurl, page, postsPerPage = 10) {
+  const postsPerPage = 10;
   const totalPosts = subforum.posts.length;
   const totalPages = Math.ceil(totalPosts / postsPerPage);
+
   const startIndex = (page - 1) * postsPerPage;
   const endIndex = startIndex + postsPerPage;
-  const paginatedPosts = subforum.posts.slice(startIndex, endIndex);
+  const paginatedPosts = subforum.posts.slice(startIndex, endIndex); // Correctly slice posts for the current page
 
   const paginationControls = `
     <div class="pagination">
