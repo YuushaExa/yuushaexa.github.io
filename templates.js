@@ -1,25 +1,46 @@
+// Helper function to generate slugs
+const titleCounts = {};
+
+function generateSlug(text) {
+  const defaultTitle = "untitled-post";
+  const title = (text || defaultTitle).toLowerCase(); // Normalize title and convert to lowercase
+  const baseSlug = title
+    .replace(/\s+/g, '-') // Replace spaces with hyphens
+    .replace(/-+/g, '-') // Collapse multiple hyphens into one
+    .trim() // Trim leading/trailing spaces
+    .substring(0, 40); // Limit to 40 characters
+  titleCounts[baseSlug] = (titleCounts[baseSlug] || 0) + 1;
+  return titleCounts[baseSlug] === 1 ? baseSlug : `${baseSlug}-${titleCounts[baseSlug]}`;
+}
+
+// Reusable function for pagination logic
+function generatePagination(subforum, baseurl, page, postsPerPage = 10) {
+  const totalPosts = subforum.posts.length;
+  const totalPages = Math.ceil(totalPosts / postsPerPage);
+  const startIndex = (page - 1) * postsPerPage;
+  const endIndex = startIndex + postsPerPage;
+  const paginatedPosts = subforum.posts.slice(startIndex, endIndex);
+
+  const paginationControls = `
+    <div class="pagination">
+      ${page > 1 ? `<a href="${baseurl}${subforum.link.replace(/^\//, '')}.html?page=${page - 1}">Previous</a>` : ''}
+      ${Array.from({ length: totalPages }, (_, i) => `
+        <a href="${baseurl}${subforum.link.replace(/^\//, '')}.html?page=${i + 1}" ${i + 1 === page ? 'class="active"' : ''}>${i + 1}</a>
+      `).join('')}
+      ${page < totalPages ? `<a href="${baseurl}${subforum.link.replace(/^\//, '')}.html?page=${page + 1}">Next</a>` : ''}
+      ${page < totalPages ? `<a href="${baseurl}${subforum.link.replace(/^\//, '')}.html?page=${totalPages}">Last</a>` : ''}
+    </div>
+  `;
+
+  return { paginatedPosts, paginationControls };
+}
+
 const templates = {
   gamesTemplate: {
     generatePostLink: (subforumKey, post) => `/${subforumKey}/${generateSlug(post.title)}`,
 
     generateSubforumPage: (subforum, baseurl, page = 1) => {
-      const postsPerPage = 10;
-      const totalPosts = subforum.posts.length;
-      const totalPages = Math.ceil(totalPosts / postsPerPage);
-      const startIndex = (page - 1) * postsPerPage;
-      const endIndex = startIndex + postsPerPage;
-      const paginatedPosts = subforum.posts.slice(startIndex, endIndex);
-
-      const paginationControls = `
-        <div class="pagination">
-          ${page > 1 ? `<a href="${baseurl}${subforum.link.replace(/^\//, '')}.html?page=${page - 1}">Previous</a>` : ''}
-          ${Array.from({ length: totalPages }, (_, i) => `
-            <a href="${baseurl}${subforum.link.replace(/^\//, '')}.html?page=${i + 1}" ${i + 1 === page ? 'class="active"' : ''}>${i + 1}</a>
-          `).join('')}
-          ${page < totalPages ? `<a href="${baseurl}${subforum.link.replace(/^\//, '')}.html?page=${page + 1}">Next</a>` : ''}
-          ${page < totalPages ? `<a href="${baseurl}${subforum.link.replace(/^\//, '')}.html?page=${totalPages}">Last</a>` : ''}
-        </div>
-      `;
+      const { paginatedPosts, paginationControls } = generatePagination(subforum, baseurl, page);
 
       return `
         <h1>${subforum.title}</h1>
@@ -77,23 +98,7 @@ const templates = {
     generatePostLink: (subforumKey, post) => `/${subforumKey}/${generateSlug(post.title)}`,
 
     generateSubforumPage: (subforum, baseurl, page = 1) => {
-      const postsPerPage = 10;
-      const totalPosts = subforum.posts.length;
-      const totalPages = Math.ceil(totalPosts / postsPerPage);
-      const startIndex = (page - 1) * postsPerPage;
-      const endIndex = startIndex + postsPerPage;
-      const paginatedPosts = subforum.posts.slice(startIndex, endIndex);
-
-      const paginationControls = `
-        <div class="pagination">
-          ${page > 1 ? `<a href="${baseurl}${subforum.link.replace(/^\//, '')}.html?page=${page - 1}">Previous</a>` : ''}
-          ${Array.from({ length: totalPages }, (_, i) => `
-            <a href="${baseurl}${subforum.link.replace(/^\//, '')}.html?page=${i + 1}" ${i + 1 === page ? 'class="active"' : ''}>${i + 1}</a>
-          `).join('')}
-          ${page < totalPages ? `<a href="${baseurl}${subforum.link.replace(/^\//, '')}.html?page=${page + 1}">Next</a>` : ''}
-          ${page < totalPages ? `<a href="${baseurl}${subforum.link.replace(/^\//, '')}.html?page=${totalPages}">Last</a>` : ''}
-        </div>
-      `;
+      const { paginatedPosts, paginationControls } = generatePagination(subforum, baseurl, page);
 
       return `
         <h1>${subforum.title}</h1>
@@ -154,23 +159,7 @@ const templates = {
     generatePostLink: (subforumKey, post) => `/${subforumKey}/${generateSlug(post.title)}`,
 
     generateSubforumPage: (subforum, baseurl, page = 1) => {
-      const postsPerPage = 10;
-      const totalPosts = subforum.posts.length;
-      const totalPages = Math.ceil(totalPosts / postsPerPage);
-      const startIndex = (page - 1) * postsPerPage;
-      const endIndex = startIndex + postsPerPage;
-      const paginatedPosts = subforum.posts.slice(startIndex, endIndex);
-
-      const paginationControls = `
-        <div class="pagination">
-          ${page > 1 ? `<a href="${baseurl}${subforum.link.replace(/^\//, '')}.html?page=${page - 1}">Previous</a>` : ''}
-          ${Array.from({ length: totalPages }, (_, i) => `
-            <a href="${baseurl}${subforum.link.replace(/^\//, '')}.html?page=${i + 1}" ${i + 1 === page ? 'class="active"' : ''}>${i + 1}</a>
-          `).join('')}
-          ${page < totalPages ? `<a href="${baseurl}${subforum.link.replace(/^\//, '')}.html?page=${page + 1}">Next</a>` : ''}
-          ${page < totalPages ? `<a href="${baseurl}${subforum.link.replace(/^\//, '')}.html?page=${totalPages}">Last</a>` : ''}
-        </div>
-      `;
+      const { paginatedPosts, paginationControls } = generatePagination(subforum, baseurl, page);
 
       return `
         <h1>${subforum.title}</h1>
@@ -228,23 +217,7 @@ const templates = {
     generatePostLink: (subforumKey, post) => `/${subforumKey}/${generateSlug(post.title)}`,
 
     generateSubforumPage: (subforum, baseurl, page = 1) => {
-      const postsPerPage = 10;
-      const totalPosts = subforum.posts.length;
-      const totalPages = Math.ceil(totalPosts / postsPerPage);
-      const startIndex = (page - 1) * postsPerPage;
-      const endIndex = startIndex + postsPerPage;
-      const paginatedPosts = subforum.posts.slice(startIndex, endIndex);
-
-      const paginationControls = `
-        <div class="pagination">
-          ${page > 1 ? `<a href="${baseurl}${subforum.link.replace(/^\//, '')}.html?page=${page - 1}">Previous</a>` : ''}
-          ${Array.from({ length: totalPages }, (_, i) => `
-            <a href="${baseurl}${subforum.link.replace(/^\//, '')}.html?page=${i + 1}" ${i + 1 === page ? 'class="active"' : ''}>${i + 1}</a>
-          `).join('')}
-          ${page < totalPages ? `<a href="${baseurl}${subforum.link.replace(/^\//, '')}.html?page=${page + 1}">Next</a>` : ''}
-          ${page < totalPages ? `<a href="${baseurl}${subforum.link.replace(/^\//, '')}.html?page=${totalPages}">Last</a>` : ''}
-        </div>
-      `;
+      const { paginatedPosts, paginationControls } = generatePagination(subforum, baseurl, page);
 
       return `
         <h1>${subforum.title}</h1>
@@ -323,20 +296,5 @@ const templates = {
     },
   },
 };
-
-// Helper function to generate slugs
-const titleCounts = {};
-
-function generateSlug(text) {
-  const defaultTitle = "untitled-post";
-  const title = (text || defaultTitle).toLowerCase(); // Normalize title and convert to lowercase
-  const baseSlug = title
-    .replace(/\s+/g, '-') // Replace spaces with hyphens
-    .replace(/-+/g, '-') // Collapse multiple hyphens into one
-    .trim() // Trim leading/trailing spaces
-    .substring(0, 40); // Limit to 40 characters
-  titleCounts[baseSlug] = (titleCounts[baseSlug] || 0) + 1;
-  return titleCounts[baseSlug] === 1 ? baseSlug : `${baseSlug}-${titleCounts[baseSlug]}`;
-}
 
 module.exports = templates;
