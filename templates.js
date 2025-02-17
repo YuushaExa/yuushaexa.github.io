@@ -1,35 +1,25 @@
 const templates = {
-
-  // Shared helper function for pagination controls
-  generatePaginationControls: (baseurl, subforumLink, page, totalPages) => {
-    const prevLink = page > 1 ? `<a href="${baseurl}${subforumLink}.html?page=${page - 1}">Previous</a>` : '';
-    const nextLink = page < totalPages ? `<a href="${baseurl}${subforumLink}.html?page=${page + 1}">Next</a>` : '';
-    const lastLink = page < totalPages ? `<a href="${baseurl}${subforumLink}.html?page=${totalPages}">Last</a>` : '';
-
-    const pageLinks = Array.from({ length: totalPages }, (_, i) => {
-      const pageNumber = i + 1;
-      const isActive = pageNumber === page ? 'class="active"' : '';
-      return `<a href="${baseurl}${subforumLink}.html?page=${pageNumber}" ${isActive}>${pageNumber}</a>`;
-    }).join('');
-
-    return `
-      <div class="pagination">
-        ${prevLink}
-        ${pageLinks}
-        ${nextLink}
-        ${lastLink}
-      </div>
-    `;
-  },
-  
   gamesTemplate: {
     generatePostLink: (subforumKey, post) => `/${subforumKey}/${generateSlug(post.title)}`,
 
- generateSubforumPage: (subforum, baseurl, page = 1) => {
+    generateSubforumPage: (subforum, baseurl, page = 1) => {
       const postsPerPage = 10;
       const totalPosts = subforum.posts.length;
       const totalPages = Math.ceil(totalPosts / postsPerPage);
-      const paginatedPosts = subforum.posts.slice((page - 1) * postsPerPage, page * postsPerPage);
+      const startIndex = (page - 1) * postsPerPage;
+      const endIndex = startIndex + postsPerPage;
+      const paginatedPosts = subforum.posts.slice(startIndex, endIndex);
+
+      const paginationControls = `
+        <div class="pagination">
+          ${page > 1 ? `<a href="${baseurl}${subforum.link.replace(/^\//, '')}.html?page=${page - 1}">Previous</a>` : ''}
+          ${Array.from({ length: totalPages }, (_, i) => `
+            <a href="${baseurl}${subforum.link.replace(/^\//, '')}.html?page=${i + 1}" ${i + 1 === page ? 'class="active"' : ''}>${i + 1}</a>
+          `).join('')}
+          ${page < totalPages ? `<a href="${baseurl}${subforum.link.replace(/^\//, '')}.html?page=${page + 1}">Next</a>` : ''}
+          ${page < totalPages ? `<a href="${baseurl}${subforum.link.replace(/^\//, '')}.html?page=${totalPages}">Last</a>` : ''}
+        </div>
+      `;
 
       return `
         <h1>${subforum.title}</h1>
@@ -37,17 +27,15 @@ const templates = {
         <p>${subforum.created_at}</p>
         <img src="${subforum.banner}" alt="${subforum.title}">
         <img src="${subforum.icon}" alt="${subforum.title}">
-        <ul>
-          ${paginatedPosts.map(post => `
-            <li>
-              <img src="${post.image}" alt="${post.title}" width="50">
-              <a href="${post.link}">${post.title}</a>
-              <span>(${post.flair})</span>
-              <br>By ${post.author} on ${post.date}
-            </li>
-          `).join('')}
-        </ul>
-        ${templates.generatePaginationControls(baseurl, subforum.link.replace(/^\//, ''), page, totalPages)}
+        <ul>${paginatedPosts.map(post => `
+          <li>
+            <img src="${post.image}" alt="${post.title}" width="50">
+            <a href="${post.link}">${post.title}</a>
+            <span>(${post.flair})</span>
+            <br>By ${post.author} on ${post.date}
+          </li>
+        `).join('')}</ul>
+        ${paginationControls}
       `;
     },
 
@@ -88,22 +76,43 @@ const templates = {
   programmingTemplate: {
     generatePostLink: (subforumKey, post) => `/${subforumKey}/${generateSlug(post.title)}`,
 
-    generateSubforumPage: (subforum, baseurl) => `
-      <h1>${subforum.title}</h1>
-      <p>${subforum.description}</p>
-      <p>${subforum.created_at}</p>
-      <img src="${subforum.banner}" alt="${subforum.title}">
-      <img src="${subforum.icon}" alt="${subforum.title}">
-      <ul>${subforum.posts.map(post => `
-        <li>
-          <img src="${post.image}" alt="${post.title}" width="50">
-          <a href="${post.link}">${post.title}</a>
-          <span>(${post.flair})</span>
-          <br>By ${post.author} on ${post.date}
-          <p>${post.content1}</p>
-        </li>
-      `).join('')}</ul>
-    `,
+    generateSubforumPage: (subforum, baseurl, page = 1) => {
+      const postsPerPage = 10;
+      const totalPosts = subforum.posts.length;
+      const totalPages = Math.ceil(totalPosts / postsPerPage);
+      const startIndex = (page - 1) * postsPerPage;
+      const endIndex = startIndex + postsPerPage;
+      const paginatedPosts = subforum.posts.slice(startIndex, endIndex);
+
+      const paginationControls = `
+        <div class="pagination">
+          ${page > 1 ? `<a href="${baseurl}${subforum.link.replace(/^\//, '')}.html?page=${page - 1}">Previous</a>` : ''}
+          ${Array.from({ length: totalPages }, (_, i) => `
+            <a href="${baseurl}${subforum.link.replace(/^\//, '')}.html?page=${i + 1}" ${i + 1 === page ? 'class="active"' : ''}>${i + 1}</a>
+          `).join('')}
+          ${page < totalPages ? `<a href="${baseurl}${subforum.link.replace(/^\//, '')}.html?page=${page + 1}">Next</a>` : ''}
+          ${page < totalPages ? `<a href="${baseurl}${subforum.link.replace(/^\//, '')}.html?page=${totalPages}">Last</a>` : ''}
+        </div>
+      `;
+
+      return `
+        <h1>${subforum.title}</h1>
+        <p>${subforum.description}</p>
+        <p>${subforum.created_at}</p>
+        <img src="${subforum.banner}" alt="${subforum.title}">
+        <img src="${subforum.icon}" alt="${subforum.title}">
+        <ul>${paginatedPosts.map(post => `
+          <li>
+            <img src="${post.image}" alt="${post.title}" width="50">
+            <a href="${post.link}">${post.title}</a>
+            <span>(${post.flair})</span>
+            <br>By ${post.author} on ${post.date}
+            <p>${post.content1}</p>
+          </li>
+        `).join('')}</ul>
+        ${paginationControls}
+      `;
+    },
 
     generatePostPage: (post, subforum, baseurl) => `
       <h1>${post.title}</h1>
@@ -141,24 +150,45 @@ const templates = {
     },
   },
 
-   testTemplate: {
+  testTemplate: {
     generatePostLink: (subforumKey, post) => `/${subforumKey}/${generateSlug(post.title)}`,
 
-    generateSubforumPage: (subforum, baseurl) => `
-      <h1>${subforum.title}</h1>
-      <p>${subforum.description}</p>
-      <p>${subforum.created_at}</p>
-      <img src="${subforum.banner}" alt="${subforum.title}">
-      <img src="${subforum.icon}" alt="${subforum.title}">
- <ul>${subforum.posts.map(post => `
-        <li>
-          <img src="${post.image}" alt="${post.title}" width="50">
-          <a href="${post.link}">${post.title}</a>
-          <span>(${post.flair})</span>
-          <br>By ${post.author} on ${post.date}
-        </li>
-      `).join('')}</ul>
-    `,
+    generateSubforumPage: (subforum, baseurl, page = 1) => {
+      const postsPerPage = 10;
+      const totalPosts = subforum.posts.length;
+      const totalPages = Math.ceil(totalPosts / postsPerPage);
+      const startIndex = (page - 1) * postsPerPage;
+      const endIndex = startIndex + postsPerPage;
+      const paginatedPosts = subforum.posts.slice(startIndex, endIndex);
+
+      const paginationControls = `
+        <div class="pagination">
+          ${page > 1 ? `<a href="${baseurl}${subforum.link.replace(/^\//, '')}.html?page=${page - 1}">Previous</a>` : ''}
+          ${Array.from({ length: totalPages }, (_, i) => `
+            <a href="${baseurl}${subforum.link.replace(/^\//, '')}.html?page=${i + 1}" ${i + 1 === page ? 'class="active"' : ''}>${i + 1}</a>
+          `).join('')}
+          ${page < totalPages ? `<a href="${baseurl}${subforum.link.replace(/^\//, '')}.html?page=${page + 1}">Next</a>` : ''}
+          ${page < totalPages ? `<a href="${baseurl}${subforum.link.replace(/^\//, '')}.html?page=${totalPages}">Last</a>` : ''}
+        </div>
+      `;
+
+      return `
+        <h1>${subforum.title}</h1>
+        <p>${subforum.description}</p>
+        <p>${subforum.created_at}</p>
+        <img src="${subforum.banner}" alt="${subforum.title}">
+        <img src="${subforum.icon}" alt="${subforum.title}">
+        <ul>${paginatedPosts.map(post => `
+          <li>
+            <img src="${post.image}" alt="${post.title}" width="50">
+            <a href="${post.link}">${post.title}</a>
+            <span>(${post.flair})</span>
+            <br>By ${post.author} on ${post.date}
+          </li>
+        `).join('')}</ul>
+        ${paginationControls}
+      `;
+    },
 
     generatePostPage: (post, subforum, baseurl) => `
       <h1>${post.title}</h1>
@@ -194,63 +224,77 @@ const templates = {
     },
   },
 
-   vnTemplate: {
+  vnTemplate: {
     generatePostLink: (subforumKey, post) => `/${subforumKey}/${generateSlug(post.title)}`,
 
-      generateSubforumPage: (subforum, baseurl, page = 1) => {
+    generateSubforumPage: (subforum, baseurl, page = 1) => {
       const postsPerPage = 10;
       const totalPosts = subforum.posts.length;
       const totalPages = Math.ceil(totalPosts / postsPerPage);
-      const paginatedPosts = subforum.posts.slice((page - 1) * postsPerPage, page * postsPerPage);
+      const startIndex = (page - 1) * postsPerPage;
+      const endIndex = startIndex + postsPerPage;
+      const paginatedPosts = subforum.posts.slice(startIndex, endIndex);
+
+      const paginationControls = `
+        <div class="pagination">
+          ${page > 1 ? `<a href="${baseurl}${subforum.link.replace(/^\//, '')}.html?page=${page - 1}">Previous</a>` : ''}
+          ${Array.from({ length: totalPages }, (_, i) => `
+            <a href="${baseurl}${subforum.link.replace(/^\//, '')}.html?page=${i + 1}" ${i + 1 === page ? 'class="active"' : ''}>${i + 1}</a>
+          `).join('')}
+          ${page < totalPages ? `<a href="${baseurl}${subforum.link.replace(/^\//, '')}.html?page=${page + 1}">Next</a>` : ''}
+          ${page < totalPages ? `<a href="${baseurl}${subforum.link.replace(/^\//, '')}.html?page=${totalPages}">Last</a>` : ''}
+        </div>
+      `;
 
       return `
-      <h1>${subforum.title}</h1>
-      <p>${subforum.description}</p>
-      <p>${subforum.created_at}</p>
-      <img src="${subforum.banner}" alt="${subforum.title}">
-      <img src="${subforum.icon}" alt="${subforum.title}">
-      <ul>${subforum.posts.map(post => `
-        <li>
-          <img src="${post.image.url}" alt="${post.title}" width="50">
-          <a href="${post.link}">${post.title}</a>
-          <span>(${post.flair})</span>
-          <br>By ${post.author} on ${post.date}
-        </li>
-      `).join('')}</ul>
-             ${templates.generatePaginationControls(baseurl, subforum.link.replace(/^\//, ''), page, totalPages)}
-    `,
+        <h1>${subforum.title}</h1>
+        <p>${subforum.description}</p>
+        <p>${subforum.created_at}</p>
+        <img src="${subforum.banner}" alt="${subforum.title}">
+        <img src="${subforum.icon}" alt="${subforum.title}">
+        <ul>${paginatedPosts.map(post => `
+          <li>
+            <img src="${post.image.url}" alt="${post.title}" width="50">
+            <a href="${post.link}">${post.title}</a>
+            <span>(${post.flair})</span>
+            <br>By ${post.author} on ${post.date}
+          </li>
+        `).join('')}</ul>
+        ${paginationControls}
+      `;
+    },
 
     generatePostPage: (post, subforum, baseurl) => `
       <h1>${post.title}</h1>
       <img src="${post.image.url}" alt="${post.title}" width="200">
       <p>${post.description}</p>
       <h2>Developers</h2>
-  <ul>
-    ${post.developers.map(dev => `
-      <li>${dev.name}</li>
-    `).join('')}
-  </ul>
+      <ul>
+        ${post.developers.map(dev => `
+          <li>${dev.name}</li>
+        `).join('')}
+      </ul>
 
-  <h2>Aliases</h2>
-  <ul>
-    ${post.aliases.map(alias => `
-      <li>${alias}</li>
-    `).join('')}
-  </ul>
+      <h2>Aliases</h2>
+      <ul>
+        ${post.aliases.map(alias => `
+          <li>${alias}</li>
+        `).join('')}
+      </ul>
 
-  <h2>Tags</h2>
-  <ul>
-    ${post.tags.map(tag => `
-      <li>${tag.name}</li>
-    `).join('')}
-  </ul>
+      <h2>Tags</h2>
+      <ul>
+        ${post.tags.map(tag => `
+          <li>${tag.name}</li>
+        `).join('')}
+      </ul>
 
-  <h2>Screenshots</h2>
-  <div>
-    ${post.screenshots.map(screenshot => `
-      <img src="${screenshot.url}" alt="Screenshot" width="200">
-    `).join('')}
-  </div>
+      <h2>Screenshots</h2>
+      <div>
+        ${post.screenshots.map(screenshot => `
+          <img src="${screenshot.url}" alt="Screenshot" width="200">
+        `).join('')}
+      </div>
     `,
 
     generateRSSFeed: (subforum, baseurl) => {
@@ -278,7 +322,6 @@ const templates = {
 </rss>`;
     },
   },
-  
 };
 
 // Helper function to generate slugs
@@ -295,4 +338,5 @@ function generateSlug(text) {
   titleCounts[baseSlug] = (titleCounts[baseSlug] || 0) + 1;
   return titleCounts[baseSlug] === 1 ? baseSlug : `${baseSlug}-${titleCounts[baseSlug]}`;
 }
+
 module.exports = templates;
