@@ -1,67 +1,22 @@
-// Helper function to generate slugs
-const titleCounts = {};
-
-function generateSlug(text) {
-  const defaultTitle = "untitled-post";
-  const title = (text || defaultTitle).toLowerCase(); // Normalize title and convert to lowercase
-  const baseSlug = title
-    .replace(/\s+/g, '-') // Replace spaces with hyphens
-    .replace(/-+/g, '-') // Collapse multiple hyphens into one
-    .trim() // Trim leading/trailing spaces
-    .substring(0, 40); // Limit to 40 characters
-  titleCounts[baseSlug] = (titleCounts[baseSlug] || 0) + 1;
-  return titleCounts[baseSlug] === 1 ? baseSlug : `${baseSlug}-${titleCounts[baseSlug]}`;
-}
-
-// Reusable function for pagination logic
-function generatePagination(subforum, baseurl, page, postsPerPage = 10) {
-  const totalPosts = subforum.posts.length;
-  const totalPages = Math.ceil(totalPosts / postsPerPage);
-
-  // Calculate the start and end indices for the current page
-  const startIndex = (page - 1) * postsPerPage;
-  const endIndex = startIndex + postsPerPage;
-  const paginatedPosts = subforum.posts.slice(startIndex, endIndex); // Correctly slice posts for the current page
-
-  // Generate pagination controls
-  const paginationControls = `
-    <div class="pagination">
-      ${page > 1 ? `<a href="${baseurl}${subforum.link.replace(/^\//, '')}.html?page=${page - 1}">Previous</a>` : ''}
-      ${Array.from({ length: totalPages }, (_, i) => `
-        <a href="${baseurl}${subforum.link.replace(/^\//, '')}.html?page=${i + 1}" ${i + 1 === page ? 'class="active"' : ''}>${i + 1}</a>
-      `).join('')}
-      ${page < totalPages ? `<a href="${baseurl}${subforum.link.replace(/^\//, '')}.html?page=${page + 1}">Next</a>` : ''}
-      ${page < totalPages ? `<a href="${baseurl}${subforum.link.replace(/^\//, '')}.html?page=${totalPages}">Last</a>` : ''}
-    </div>
-  `;
-
-  return { paginatedPosts, paginationControls };
-}
-
 const templates = {
   gamesTemplate: {
     generatePostLink: (subforumKey, post) => `/${subforumKey}/${generateSlug(post.title)}`,
 
-    generateSubforumPage: (subforum, baseurl, page = 1) => {
-      const { paginatedPosts, paginationControls } = generatePagination(subforum, baseurl, page);
-
-      return `
-        <h1>${subforum.title}</h1>
-        <p>${subforum.description}</p>
-        <p>${subforum.created_at}</p>
-        <img src="${subforum.banner}" alt="${subforum.title}">
-        <img src="${subforum.icon}" alt="${subforum.title}">
-        <ul>${paginatedPosts.map(post => `
-          <li>
-            <img src="${post.image}" alt="${post.title}" width="50">
-            <a href="${post.link}">${post.title}</a>
-            <span>(${post.flair})</span>
-            <br>By ${post.author} on ${post.date}
-          </li>
-        `).join('')}</ul>
-        ${paginationControls}
-      `;
-    },
+    generateSubforumPage: (subforum, baseurl) => `
+      <h1>${subforum.title}</h1>
+      <p>${subforum.description}</p>
+      <p>${subforum.created_at}</p>
+      <img src="${subforum.banner}" alt="${subforum.title}">
+      <img src="${subforum.icon}" alt="${subforum.title}">
+      <ul>${subforum.posts.map(post => `
+        <li>
+          <img src="${post.image}" alt="${post.title}" width="50">
+          <a href="${post.link}">${post.title}</a>
+          <span>(${post.flair})</span>
+          <br>By ${post.author} on ${post.date}
+        </li>
+      `).join('')}</ul>
+    `,
 
     generatePostPage: (post, subforum, baseurl) => `
       <h1>${post.title}</h1>
@@ -100,27 +55,22 @@ const templates = {
   programmingTemplate: {
     generatePostLink: (subforumKey, post) => `/${subforumKey}/${generateSlug(post.title)}`,
 
-    generateSubforumPage: (subforum, baseurl, page = 1) => {
-      const { paginatedPosts, paginationControls } = generatePagination(subforum, baseurl, page);
-
-      return `
-        <h1>${subforum.title}</h1>
-        <p>${subforum.description}</p>
-        <p>${subforum.created_at}</p>
-        <img src="${subforum.banner}" alt="${subforum.title}">
-        <img src="${subforum.icon}" alt="${subforum.title}">
-        <ul>${paginatedPosts.map(post => `
-          <li>
-            <img src="${post.image}" alt="${post.title}" width="50">
-            <a href="${post.link}">${post.title}</a>
-            <span>(${post.flair})</span>
-            <br>By ${post.author} on ${post.date}
-            <p>${post.content1}</p>
-          </li>
-        `).join('')}</ul>
-        ${paginationControls}
-      `;
-    },
+    generateSubforumPage: (subforum, baseurl) => `
+      <h1>${subforum.title}</h1>
+      <p>${subforum.description}</p>
+      <p>${subforum.created_at}</p>
+      <img src="${subforum.banner}" alt="${subforum.title}">
+      <img src="${subforum.icon}" alt="${subforum.title}">
+      <ul>${subforum.posts.map(post => `
+        <li>
+          <img src="${post.image}" alt="${post.title}" width="50">
+          <a href="${post.link}">${post.title}</a>
+          <span>(${post.flair})</span>
+          <br>By ${post.author} on ${post.date}
+          <p>${post.content1}</p>
+        </li>
+      `).join('')}</ul>
+    `,
 
     generatePostPage: (post, subforum, baseurl) => `
       <h1>${post.title}</h1>
@@ -158,29 +108,24 @@ const templates = {
     },
   },
 
-  testTemplate: {
+   testTemplate: {
     generatePostLink: (subforumKey, post) => `/${subforumKey}/${generateSlug(post.title)}`,
 
-    generateSubforumPage: (subforum, baseurl, page = 1) => {
-      const { paginatedPosts, paginationControls } = generatePagination(subforum, baseurl, page);
-
-      return `
-        <h1>${subforum.title}</h1>
-        <p>${subforum.description}</p>
-        <p>${subforum.created_at}</p>
-        <img src="${subforum.banner}" alt="${subforum.title}">
-        <img src="${subforum.icon}" alt="${subforum.title}">
-        <ul>${paginatedPosts.map(post => `
-          <li>
-            <img src="${post.image}" alt="${post.title}" width="50">
-            <a href="${post.link}">${post.title}</a>
-            <span>(${post.flair})</span>
-            <br>By ${post.author} on ${post.date}
-          </li>
-        `).join('')}</ul>
-        ${paginationControls}
-      `;
-    },
+    generateSubforumPage: (subforum, baseurl) => `
+      <h1>${subforum.title}</h1>
+      <p>${subforum.description}</p>
+      <p>${subforum.created_at}</p>
+      <img src="${subforum.banner}" alt="${subforum.title}">
+      <img src="${subforum.icon}" alt="${subforum.title}">
+ <ul>${subforum.posts.map(post => `
+        <li>
+          <img src="${post.image}" alt="${post.title}" width="50">
+          <a href="${post.link}">${post.title}</a>
+          <span>(${post.flair})</span>
+          <br>By ${post.author} on ${post.date}
+        </li>
+      `).join('')}</ul>
+    `,
 
     generatePostPage: (post, subforum, baseurl) => `
       <h1>${post.title}</h1>
@@ -216,61 +161,56 @@ const templates = {
     },
   },
 
-  vnTemplate: {
+   vnTemplate: {
     generatePostLink: (subforumKey, post) => `/${subforumKey}/${generateSlug(post.title)}`,
 
-    generateSubforumPage: (subforum, baseurl, page = 1) => {
-      const { paginatedPosts, paginationControls } = generatePagination(subforum, baseurl, page);
-
-      return `
-        <h1>${subforum.title}</h1>
-        <p>${subforum.description}</p>
-        <p>${subforum.created_at}</p>
-        <img src="${subforum.banner}" alt="${subforum.title}">
-        <img src="${subforum.icon}" alt="${subforum.title}">
-        <ul>${paginatedPosts.map(post => `
-          <li>
-            <img src="${post.image.url}" alt="${post.title}" width="50">
-            <a href="${post.link}">${post.title}</a>
-            <span>(${post.flair})</span>
-            <br>By ${post.author} on ${post.date}
-          </li>
-        `).join('')}</ul>
-        ${paginationControls}
-      `;
-    },
+    generateSubforumPage: (subforum, baseurl) => `
+      <h1>${subforum.title}</h1>
+      <p>${subforum.description}</p>
+      <p>${subforum.created_at}</p>
+      <img src="${subforum.banner}" alt="${subforum.title}">
+      <img src="${subforum.icon}" alt="${subforum.title}">
+      <ul>${subforum.posts.map(post => `
+        <li>
+          <img src="${post.image.url}" alt="${post.title}" width="50">
+          <a href="${post.link}">${post.title}</a>
+          <span>(${post.flair})</span>
+          <br>By ${post.author} on ${post.date}
+        </li>
+      `).join('')}</ul>
+    `,
 
     generatePostPage: (post, subforum, baseurl) => `
       <h1>${post.title}</h1>
       <img src="${post.image.url}" alt="${post.title}" width="200">
       <p>${post.description}</p>
       <h2>Developers</h2>
-      <ul>
-        ${post.developers.map(dev => `
-          <li>${dev.name}</li>
-        `).join('')}
-      </ul>
+  <ul>
+    ${post.developers.map(dev => `
+      <li>${dev.name}</li>
+    `).join('')}
+  </ul>
 
-      <h2>Aliases</h2>
-      <ul>
-        ${post.aliases.map(alias => `
-          <li>${alias}</li>
-        `).join('')}
-      </ul>
+  <h2>Aliases</h2>
+  <ul>
+    ${post.aliases.map(alias => `
+      <li>${alias}</li>
+    `).join('')}
+  </ul>
 
-      <h2>Tags</h2>
-      <ul>
-        ${post.tags.map(tag => `
-          <li>${tag.name}</li>
-        `).join('')}
-      </ul>
+  <h2>Tags</h2>
+  <ul>
+    ${post.tags.map(tag => `
+      <li>${tag.name}</li>
+    `).join('')}
+  </ul>
 
-      <h2>Screenshots</h2>
-      <div>
-        ${post.screenshots.map(screenshot => `
-          <img src="${screenshot.url}" alt="Screenshot" width="200">
-        `).join('')}
-      </div>
+  <h2>Screenshots</h2>
+  <div>
+    ${post.screenshots.map(screenshot => `
+      <img src="${screenshot.url}" alt="Screenshot" width="200">
+    `).join('')}
+  </div>
     `,
 
     generateRSSFeed: (subforum, baseurl) => {
@@ -298,6 +238,21 @@ const templates = {
 </rss>`;
     },
   },
+  
 };
 
+// Helper function to generate slugs
+const titleCounts = {};
+
+function generateSlug(text) {
+  const defaultTitle = "untitled-post";
+  const title = (text || defaultTitle).toLowerCase(); // Normalize title and convert to lowercase
+  const baseSlug = title
+    .replace(/\s+/g, '-') // Replace spaces with hyphens
+    .replace(/-+/g, '-') // Collapse multiple hyphens into one
+    .trim() // Trim leading/trailing spaces
+    .substring(0, 40); // Limit to 40 characters
+  titleCounts[baseSlug] = (titleCounts[baseSlug] || 0) + 1;
+  return titleCounts[baseSlug] === 1 ? baseSlug : `${baseSlug}-${titleCounts[baseSlug]}`;
+}
 module.exports = templates;
