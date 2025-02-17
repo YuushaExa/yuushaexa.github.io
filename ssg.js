@@ -120,18 +120,25 @@ async function generateSubforumPages(partials, subforums) {
     const posts = await loadSubforumData(subforum, key);
     subforum.posts = posts;
 
-    // Generate subforum page
-    const subforumContent = template.generateSubforumPage(subforum, baseurl);
-    const subforumOutputContent = await createFullPage(
-      partials,
-      subforumContent,
-      `${baseurl}${key}`,
-      subforum.title,
-      subforum.description,
-      subforum.banner
-    );
-    await writeFile(path.join(dirs.public, `${key}.html`), subforumOutputContent);
-    console.log(`Generated: ${key}.html`);
+    const totalPosts = posts.length;
+    const totalPages = Math.ceil(totalPosts / 10);
+
+    // Generate subforum pages for each page
+    for (let page = 1; page <= totalPages; page++) {
+      const subforumContent = template.generateSubforumPage(subforum, baseurl, page);
+      const subforumOutputContent = await createFullPage(
+        partials,
+        subforumContent,
+        `${baseurl}${key}.html?page=${page}`,
+        subforum.title,
+        subforum.description,
+        subforum.banner
+      );
+
+      const pageSuffix = page === 1 ? '' : `-page${page}`;
+      await writeFile(path.join(dirs.public, `${key}${pageSuffix}.html`), subforumOutputContent);
+      console.log(`Generated: ${key}${pageSuffix}.html`);
+    }
 
     // Generate RSS feed
     const rssFeed = template.generateRSSFeed(subforum, baseurl);
