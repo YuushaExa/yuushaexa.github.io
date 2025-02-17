@@ -25,31 +25,31 @@ const templates = {
   gamesTemplate: {
     generatePostLink: (subforumKey, post) => `/${subforumKey}/${generateSlug(post.title)}`,
 
-generateSubforumPage: (subforum, baseurl, page = 1) => {
-  const postsPerPage = 10;
-  const totalPosts = subforum.posts.length;
-  const totalPages = Math.ceil(totalPosts / postsPerPage);
-  const paginatedPosts = subforum.posts.slice((page - 1) * postsPerPage, page * postsPerPage);
+ generateSubforumPage: (subforum, baseurl, page = 1) => {
+      const postsPerPage = 10;
+      const totalPosts = subforum.posts.length;
+      const totalPages = Math.ceil(totalPosts / postsPerPage);
+      const paginatedPosts = subforum.posts.slice((page - 1) * postsPerPage, page * postsPerPage);
 
-  return `
-    <h1>${subforum.title}</h1>
-    <p>${subforum.description}</p>
-    <p>${subforum.created_at}</p>
-    <img src="${subforum.banner}" alt="${subforum.title}">
-    <img src="${subforum.icon}" alt="${subforum.title}">
-    <ul>
-      ${paginatedPosts.map(post => `
-        <li>
-          <img src="${post.image}" alt="${post.title}" width="50">
-          <a href="${post.link}">${post.title}</a>
-          <span>(${post.flair})</span>
-          <br>By ${post.author} on ${post.date}
-        </li>
-      `).join('')}
-    </ul>
-    ${templates.generatePaginationControls(baseurl, subforum.link.replace(/^\//, ''), page, totalPages)}
-  `;
-}
+      return `
+        <h1>${subforum.title}</h1>
+        <p>${subforum.description}</p>
+        <p>${subforum.created_at}</p>
+        <img src="${subforum.banner}" alt="${subforum.title}">
+        <img src="${subforum.icon}" alt="${subforum.title}">
+        <ul>
+          ${paginatedPosts.map(post => `
+            <li>
+              <img src="${post.image}" alt="${post.title}" width="50">
+              <a href="${post.link}">${post.title}</a>
+              <span>(${post.flair})</span>
+              <br>By ${post.author} on ${post.date}
+            </li>
+          `).join('')}
+        </ul>
+        ${templates.generatePaginationControls(baseurl, subforum.link.replace(/^\//, ''), page, totalPages)}
+      `;
+    },
 
     generatePostPage: (post, subforum, baseurl) => `
       <h1>${post.title}</h1>
