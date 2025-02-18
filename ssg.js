@@ -112,30 +112,6 @@ async function generateSpecialPages(partials) {
 }
 
 
-function generatePagination(baseUrl, currentPage, totalPages) {
-  const links = [];
-
-  // Previous link
-  if (currentPage > 1) {
-    const prevPage = currentPage - 1 === 1 ? '' : `-${currentPage - 1}`;
-    links.push(`<a href="${baseUrl}${prevPage}.html">&laquo; Previous</a>`);
-  }
-
-  // Page numbers
-  for (let i = 1; i <= totalPages; i++) {
-    const pageLink = i === 1 ? '' : `-${i}`;
-    const activeClass = i === currentPage ? 'class="active"' : '';
-    links.push(`<a href="${baseUrl}${pageLink}.html" ${activeClass}>${i}</a>`);
-  }
-
-  // Next link
-  if (currentPage < totalPages) {
-    links.push(`<a href="${baseUrl}-${currentPage + 1}.html">Next &raquo;</a>`);
-  }
-
-  return `<div class="pagination">${links.join(' ')}</div>`;
-}
-
 const allTags = {};
 const allDevelopers = {};
 
@@ -148,10 +124,24 @@ async function generateSubforumPages(partials, subforums) {
       throw new Error(`Template ${subforum.template} not found for subforum ${key}`);
     }
 
-    // Load posts
+    // Load posts with folder-based links
     const posts = await loadSubforumData(subforum, key);
     subforum.posts = posts;
 
+  posts.forEach(post => {
+      const tags = post.tags || []; // Default to empty array if undefined
+  const developers = post.developers || []; // Default to empty array if undefined
+
+    post.tags.forEach(tag => {
+      allTags[tag.name] = allTags[tag.name] || [];
+      allTags[tag.name].push(post);
+    });
+    post.developers.forEach(dev => {
+      allDevelopers[dev.name] = allDevelopers[dev.name] || [];
+      allDevelopers[dev.name].push(post);
+    });
+  });
+    
     // Generate RSS feed
     const rssFeed = template.generateRSSFeed(subforum, baseurl);
     await writeFile(path.join(dirs.public, `${key}.rss`), rssFeed);
@@ -184,9 +174,13 @@ async function generateSubforumPages(partials, subforums) {
       const end = start + postsPerPage;
       const paginatedPosts = posts.slice(start, end);
 
-      // Generate pagination links
-      const paginationBaseUrl = `${baseurl}${key}`;
-      const paginationNav = generatePagination(paginationBaseUrl, page, totalPages);
+      const paginationNav = `
+        <div class="pagination">
+          ${page > 1 ? `<a href="${key}${page - 1 === 1 ? '' : `-${page - 1}`}.html">&laquo; Previous</a>` : ''}
+          ${Array.from({ length: totalPages }, (_, i) => `<a href="${key}${i === 0 ? '' : `-${i + 1}`}.html">${i + 1}</a>`).join(' ')}
+          ${page < totalPages ? `<a href="${key}-${page + 1}.html">Next &raquo;</a>` : ''}
+        </div>
+      `;
 
       const subforumContent = template.generateSubforumPage(
         { ...subforum, posts: paginatedPosts },
@@ -240,10 +234,6 @@ async function generateTagDevAliasPages(partials) {
         const end = start + postsPerPage;
         const paginatedPosts = posts.slice(start, end);
 
-        // Generate pagination links
-        const paginationBaseUrl = `${baseurl}vn/${type}/${slug}`;
-        const paginationNav = generatePagination(paginationBaseUrl, page, totalPages);
-
         const pageContent = `
           <h1>${name}</h1>
           <ul>
@@ -254,7 +244,7 @@ async function generateTagDevAliasPages(partials) {
               </li>
             `).join('')}
           </ul>
-          ${paginationNav}
+          ${generatePaginationLinks(type, slug, page, totalPages)}
         `;
 
         const canonicalUrl = page === 1
@@ -316,6 +306,19 @@ async function generateTagDevAliasPages(partials) {
   }
 
   await Promise.all(pageGenerationPromises);
+}
+
+// Helper function to generate pagination links
+function generatePaginationLinks(type, slug, currentPage, totalPages) {
+  return `
+    <div class="pagination">
+      ${currentPage > 1 ? `<a href="${baseurl}vn/${type}/${slug}${currentPage - 1 === 1 ? '' : `-${currentPage - 1}`}.html">&laquo; Previous</a>` : ''}
+      ${Array.from({ length: totalPages }, (_, i) => `
+        <a href="${baseurl}vn/${type}/${slug}${i === 0 ? '' : `-${i + 1}`}.html" ${i + 1 === currentPage ? 'class="active"' : ''}>${i + 1}</a>
+      `).join(' ')}
+      ${currentPage < totalPages ? `<a href="${baseurl}vn/${type}/${slug}-${currentPage + 1}.html">Next &raquo;</a>` : ''}
+    </div>
+  `;
 }
 
 async function runSSG() {
