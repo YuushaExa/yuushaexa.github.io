@@ -1,6 +1,6 @@
 const fs = require('fs').promises;
 const path = require('path');
-const { templates } = require('./templates');
+const { templates, generateSlugtags } = require('./templates');
 const baseurl = 'https://yuushaexa.github.io/'; // You can change this to any base URL
 
 const dirs = {
@@ -201,17 +201,6 @@ async function generateSubforumPages(partials, subforums) {
       console.log(`Generated: ${fileName}`);
     }
   }));
-}
-
- function generateSlugtags(text) {
-  const defaultTitle = "untitled-post";
-  const title = (text || defaultTitle).toLowerCase(); // Normalize title and convert to lowercase
-  const baseSlug = title
-    .replace(/\s+/g, '-') // Replace spaces with hyphens
-    .replace(/-+/g, '-') // Collapse multiple hyphens into one
-    .trim() // Trim leading/trailing spaces
-    .substring(0, 40); // Limit to 40 characters
-  return baseSlug; // Return the base slug without a counter
 }
 
 async function generateTagDevAliasPages(partials) {
