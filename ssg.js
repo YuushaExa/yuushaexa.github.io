@@ -205,7 +205,7 @@ async function generateSubforumPages(partials, subforums) {
 
 async function generateTagDevAliasPages(partials) {
   const categories = [
-    { type: 'tags', meta: '- Visual Novels', data: allTags },
+    { type: 'tags', meta: 'Visual Novels', data: allTags },
     { type: 'developers', meta: 'Company', data: allDevelopers },
   ];
 
