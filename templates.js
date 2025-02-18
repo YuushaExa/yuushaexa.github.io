@@ -178,7 +178,6 @@ const templates = {
           <br>By ${post.author} on ${post.date}
         </li>
       `).join('')}</ul>
-      {{pagination}}
     `,
 
     generatePostPage: (post, subforum, baseurl) => `
