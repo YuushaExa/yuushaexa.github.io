@@ -238,8 +238,7 @@ const templates = {
 </rss>`;
     },
   },
-  
-};
+
 
 // Helper function to generate slugs
 const titleCounts = {};
@@ -255,4 +254,7 @@ function generateSlug(text) {
   titleCounts[baseSlug] = (titleCounts[baseSlug] || 0) + 1;
   return titleCounts[baseSlug] === 1 ? baseSlug : `${baseSlug}-${titleCounts[baseSlug]}`;
 }
+  
+};
+
 module.exports = templates;
