@@ -187,7 +187,7 @@ const templates = {
       <h2>Developers</h2>
   <ul>
    ${post.developers.map(dev => `
-      <li><a href="${baseurl}vn/developers/${generateSlug(dev.name)}.html">${dev.name}</a></li>
+      <li><a href="${baseurl}vn/developers/${generateSlugtags(dev.name)}.html">${dev.name}</a></li>
     `).join('')}
   </ul>
 
@@ -201,7 +201,7 @@ const templates = {
   <h2>Tags</h2>
   <ul>
   ${post.tags.map(tag => `
-      <li><a href="${baseurl}vn/tags/${generateSlug(tag.name)}.html">${tag.name}</a></li>
+      <li><a href="${baseurl}vn/tags/${generateSlugtags(tag.name)}.html">${tag.name}</a></li>
     `).join('')}
   </ul>
 
@@ -256,8 +256,21 @@ function generateSlug(text) {
   titleCounts[baseSlug] = (titleCounts[baseSlug] || 0) + 1;
   return titleCounts[baseSlug] === 1 ? baseSlug : `${baseSlug}-${titleCounts[baseSlug]}`;
 }
+// tags etc
+ function generateSlugtags(text) {
+  const defaultTitle = "untitled-post";
+  const title = (text || defaultTitle).toLowerCase(); // Normalize title and convert to lowercase
+  const baseSlug = title
+    .replace(/\s+/g, '-') // Replace spaces with hyphens
+    .replace(/-+/g, '-') // Collapse multiple hyphens into one
+    .trim() // Trim leading/trailing spaces
+    .substring(0, 40); // Limit to 40 characters
+  return baseSlug; // Return the base slug without a counter
+}
+
 
 module.exports = {
-  templates
+  templates,
+  generateSlugtags
 };
 
