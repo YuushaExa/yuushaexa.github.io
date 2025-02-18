@@ -200,9 +200,13 @@ const templates = {
 
   <h2>Tags</h2>
   <ul>
-  ${post.tags.map(tag => `
-      <li><a href="${baseurl}vn/tags/${generateSlugtags(tag.name)}.html">${tag.name}</a></li>
-    `).join('')}
+${post.tags.map(tag => `
+  <li>
+    <a href="${baseurl}vn/tags/${generateSlugtags(tag.name)}.html">
+      ${tag.name} (${allTags[tag.name]?.length || 0})
+    </a>
+  </li>
+`).join('')}
   </ul>
 
   <h2>Screenshots</h2>
