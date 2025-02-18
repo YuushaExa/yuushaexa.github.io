@@ -256,5 +256,8 @@ function generateSlug(text) {
   return titleCounts[baseSlug] === 1 ? baseSlug : `${baseSlug}-${titleCounts[baseSlug]}`;
 }
 
-module.exports = templates;
-module.exports = generateSlug;
+module.exports = {
+  generateSlug,
+  templates
+};
+
