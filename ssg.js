@@ -109,44 +109,6 @@ async function generateSpecialPages(partials) {
   console.log('Generated: index.html and 404.html');
 }
 
-async function generateTagDevAliasPages(partials) {
-  const categories = [
-    { type: 'tags', data: allTags },
-    { type: 'developers', data: allDevelopers },
-  ];
-
-  for (const { type, data } of categories) {
-    for (const [name, posts] of Object.entries(data)) {
-      const pageContent = `
-        <h1>${name}</h1>
-        <ul>
-          ${posts.map(post => `
-            <li>
-              <a href="${baseurl}${post.link.replace(/^\//, '')}.html">${post.title}</a>
-              by ${post.author} on ${post.date}
-            </li>
-          `).join('')}
-        </ul>
-      `;
-
-      const outputContent = await createFullPage(
-        partials,
-        pageContent,
-        `${baseurl}vn/${type}/${encodeURIComponent(name)}.html`,
-        `${name} - ${type}`,
-        `All visual novels related to ${name}`,
-        ''
-      );
-
-      const outputFilePath = path.join(dirs.public, `vn/${type}/${encodeURIComponent(name)}.html`);
-      await ensureDirectoryExists(path.dirname(outputFilePath));
-      await writeFile(outputFilePath, outputContent);
-      console.log(`Generated: vn/${type}/${name}.html`);
-    }
-  }
-}
-
-
 
 const allTags = {};
 const allDevelopers = {};
@@ -165,6 +127,9 @@ async function generateSubforumPages(partials, subforums) {
     subforum.posts = posts;
 
   posts.forEach(post => {
+      const tags = post.tags || []; // Default to empty array if undefined
+  const developers = post.developers || []; // Default to empty array if undefined
+
     post.tags.forEach(tag => {
       allTags[tag.name] = allTags[tag.name] || [];
       allTags[tag.name].push(post);
@@ -234,6 +199,43 @@ async function generateSubforumPages(partials, subforums) {
       console.log(`Generated: ${fileName}`);
     }
   }));
+}
+
+async function generateTagDevAliasPages(partials) {
+  const categories = [
+    { type: 'tags', data: allTags },
+    { type: 'developers', data: allDevelopers },
+  ];
+
+  for (const { type, data } of categories) {
+    for (const [name, posts] of Object.entries(data)) {
+      const pageContent = `
+        <h1>${name}</h1>
+        <ul>
+          ${posts.map(post => `
+            <li>
+              <a href="${baseurl}${post.link.replace(/^\//, '')}.html">${post.title}</a>
+              by ${post.author} on ${post.date}
+            </li>
+          `).join('')}
+        </ul>
+      `;
+
+      const outputContent = await createFullPage(
+        partials,
+        pageContent,
+        `${baseurl}vn/${type}/${encodeURIComponent(name)}.html`,
+        `${name} - ${type}`,
+        `All visual novels related to ${name}`,
+        ''
+      );
+
+      const outputFilePath = path.join(dirs.public, `vn/${type}/${encodeURIComponent(name)}.html`);
+      await ensureDirectoryExists(path.dirname(outputFilePath));
+      await writeFile(outputFilePath, outputContent);
+      console.log(`Generated: vn/${type}/${name}.html`);
+    }
+  }
 }
 
 
