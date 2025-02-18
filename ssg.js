@@ -114,11 +114,39 @@ async function generateSubforumPages(partials, subforums) {
 
   await Promise.all(Object.entries(subforums).map(async ([key, subforum]) => {
     const template = templates[subforum.template];
-    if (!template) throw new Error(`Template ${subforum.template} not found for subforum ${key}`);
+    if (!template) {
+      throw new Error(`Template ${subforum.template} not found for subforum ${key}`);
+    }
 
+    // Load posts with folder-based links
     const posts = await loadSubforumData(subforum, key);
     subforum.posts = posts;
 
+    // Generate RSS feed
+    const rssFeed = template.generateRSSFeed(subforum, baseurl);
+    await writeFile(path.join(dirs.public, `${key}.rss`), rssFeed);
+    console.log(`Generated: ${key}.rss`);
+
+    // Generate individual post pages
+    await Promise.all(subforum.posts.map(async post => {
+      const postContent = template.generatePostPage(post, subforum, baseurl);
+
+      const postOutputContent = await createFullPage(
+        partials,
+        postContent,
+        `${baseurl}${post.link.replace(/^\//, '')}`,
+        post.title,
+        post.content || subforum.description,
+        post.image || subforum.icon
+      );
+
+      const postOutputFilePath = path.join(dirs.public, `${post.link.replace(/^\//, '')}.html`);
+      await ensureDirectoryExists(path.dirname(postOutputFilePath));
+      await writeFile(postOutputFilePath, postOutputContent);
+      console.log(`Generated: ${post.link.replace(/^\//, '')}.html`);
+    }));
+
+    // Paginate subforum posts and generate pages
     const totalPages = Math.ceil(posts.length / postsPerPage);
 
     for (let page = 1; page <= totalPages; page++) {
