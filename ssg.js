@@ -205,8 +205,8 @@ async function generateSubforumPages(partials, subforums) {
 
 async function generateTagDevAliasPages(partials) {
   const categories = [
-    { type: 'Visual Novels Genre', data: allTags },
-    { type: 'Visual Novels Developer', data: allDevelopers },
+    { type: 'tags', meta: '- Visual Novels', data: allTags },
+    { type: 'developers', meta: 'Company', data: allDevelopers },
   ];
 
   // Slug caching to avoid redundant computations
@@ -223,7 +223,7 @@ async function generateTagDevAliasPages(partials) {
   // Array to hold all promises for parallel execution
   const pageGenerationPromises = [];
 
-  for (const { type, data } of categories) {
+  for (const { type, meta, data } of categories) {
     for (const [name, posts] of Object.entries(data)) {
       const slug = getSlug(name); // Use cached slug
       const pageContent = `
@@ -245,7 +245,7 @@ async function generateTagDevAliasPages(partials) {
             partials,
             pageContent,
             `${baseurl}vn/${type}/${slug}.html`, 
-            `${name} - ${type}`,
+            `${name} - ${meta}`, // Use meta here
             `All visual novels related to ${name}`,
             ''
           );
@@ -258,6 +258,10 @@ async function generateTagDevAliasPages(partials) {
       );
     }
   }
+
+  // Wait for all page generation promises to resolve
+  await Promise.all(pageGenerationPromises);
+}
 
   // Execute all page generation promises in parallel
   await Promise.all(pageGenerationPromises);
