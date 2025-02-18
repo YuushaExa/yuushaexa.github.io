@@ -224,6 +224,7 @@ async function generateTagDevAliasPages(partials) {
   const pageGenerationPromises = [];
 
   for (const { type, meta, data } of categories) {
+    // Generate individual pages for each tag/dev
     for (const [name, posts] of Object.entries(data)) {
       const slug = getSlug(name); // Use cached slug
       const pageContent = `
@@ -257,6 +258,36 @@ async function generateTagDevAliasPages(partials) {
         })()
       );
     }
+
+    // Generate index page for all tags/devs
+    const indexPageContent = `
+      <h1>All ${type}</h1>
+      <ul>
+        ${Object.keys(data).map(name => `
+          <li>
+            <a href="${baseurl}vn/${type}/${getSlug(name)}.html">${name}</a>
+          </li>
+        `).join('')}
+      </ul>
+    `;
+
+    pageGenerationPromises.push(
+      (async () => {
+        const outputContent = await createFullPage(
+          partials,
+          indexPageContent,
+          `${baseurl}vn/${type}/`, 
+          `All ${type} - ${meta}`, // Use meta here
+          `List of all ${type} related to visual novels`,
+          ''
+        );
+
+        const outputFilePath = path.join(dirs.public, `vn/${type}/index.html`);
+        await ensureDirectoryExists(path.dirname(outputFilePath));
+        await writeFile(outputFilePath, outputContent);
+        console.log(`Generated: vn/${type}/index.html`);
+      })()
+    );
   }
 
   // Wait for all page generation promises to resolve
