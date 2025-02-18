@@ -248,16 +248,17 @@ async function runSSG() {
       loadFilesFromDir(dirs.partials, '.html'),
       loadFilesFromDir(dirs.subforums, '.json', JSON.parse),
     ]);
-    await Promise.all([
-      generateSpecialPages(partials),
-      generateSubforumPages(partials, subforums),
-      generateTagDevAliasPages(partials)
-    ]);
+
+    await generateSpecialPages(partials);
+    await generateSubforumPages(partials, subforums); // First, generate all subforum pages
+    await generateTagDevAliasPages(partials);         // Then, generate tag/dev pages
+
     console.log('SSG build complete!');
   } catch (err) {
     console.error('SSG build failed:', err.stack || err.message);
     process.exit(1);
   }
 }
+
 
 runSSG();
