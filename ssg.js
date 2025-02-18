@@ -120,25 +120,43 @@ async function generateSubforumPages(partials, subforums) {
     const posts = await loadSubforumData(subforum, key);
     subforum.posts = posts;
 
-    // Generate subforum page
-    const subforumContent = template.generateSubforumPage(subforum, baseurl);
-    const subforumOutputContent = await createFullPage(
-      partials,
-      subforumContent,
-      `${baseurl}${key}`,
-      subforum.title,
-      subforum.description,
-      subforum.banner
-    );
-    await writeFile(path.join(dirs.public, `${key}.html`), subforumOutputContent);
-    console.log(`Generated: ${key}.html`);
+    // Pagination settings
+    const postsPerPage = 10; // Number of posts per page
+    const totalPages = Math.ceil(posts.length / postsPerPage);
 
-    // Generate RSS feed
+    // Generate paginated subforum pages
+    for (let currentPage = 1; currentPage <= totalPages; currentPage++) {
+      const startIndex = (currentPage - 1) * postsPerPage;
+      const endIndex = startIndex + postsPerPage;
+      const paginatedPosts = posts.slice(startIndex, endIndex);
+
+      const subforumContent = template.generateSubforumPage(
+        { ...subforum, posts: paginatedPosts },
+        baseurl,
+        currentPage,
+        totalPages
+      );
+
+      const subforumOutputContent = await createFullPage(
+        partials,
+        subforumContent,
+        `${baseurl}${key}?page=${currentPage}`,
+        subforum.title,
+        subforum.description,
+        subforum.banner
+      );
+
+      const pageSuffix = currentPage > 1 ? `-page${currentPage}` : '';
+      await writeFile(path.join(dirs.public, `${key}${pageSuffix}.html`), subforumOutputContent);
+      console.log(`Generated: ${key}${pageSuffix}.html`);
+    }
+
+    // Generate RSS feed (unchanged)
     const rssFeed = template.generateRSSFeed(subforum, baseurl);
     await writeFile(path.join(dirs.public, `${key}.rss`), rssFeed);
     console.log(`Generated: ${key}.rss`);
 
-    // Generate individual post pages
+    // Generate individual post pages (unchanged)
     await Promise.all(subforum.posts.map(async post => {
       const postContent = template.generatePostPage(post, subforum, baseurl);
 
@@ -158,7 +176,6 @@ async function generateSubforumPages(partials, subforums) {
     }));
   }));
 }
-
 
 async function runSSG() {
   try {
