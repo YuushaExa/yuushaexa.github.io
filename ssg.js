@@ -110,72 +110,51 @@ async function generateSpecialPages(partials) {
 }
 
 async function generateSubforumPages(partials, subforums) {
+  const postsPerPage = 10; // Number of posts per page
+
   await Promise.all(Object.entries(subforums).map(async ([key, subforum]) => {
     const template = templates[subforum.template];
-    if (!template) {
-      throw new Error(`Template ${subforum.template} not found for subforum ${key}`);
-    }
+    if (!template) throw new Error(`Template ${subforum.template} not found for subforum ${key}`);
 
-    // Load posts with folder-based links
     const posts = await loadSubforumData(subforum, key);
     subforum.posts = posts;
 
-    // Pagination settings
-    const postsPerPage = 10; // Number of posts per page
     const totalPages = Math.ceil(posts.length / postsPerPage);
 
-    // Generate paginated subforum pages
-    for (let currentPage = 1; currentPage <= totalPages; currentPage++) {
-      const startIndex = (currentPage - 1) * postsPerPage;
-      const endIndex = startIndex + postsPerPage;
-      const paginatedPosts = posts.slice(startIndex, endIndex);
+    for (let page = 1; page <= totalPages; page++) {
+      const start = (page - 1) * postsPerPage;
+      const end = start + postsPerPage;
+      const paginatedPosts = posts.slice(start, end);
+
+      const paginationNav = `
+        <div class="pagination">
+          ${page > 1 ? `<a href="${key}${page - 1 === 1 ? '' : `-${page - 1}`}.html">&laquo; Previous</a>` : ''}
+          ${Array.from({ length: totalPages }, (_, i) => `<a href="${key}${i === 0 ? '' : `-${i + 1}`}.html">${i + 1}</a>`).join(' ')}
+          ${page < totalPages ? `<a href="${key}-${page + 1}.html">Next &raquo;</a>` : ''}
+        </div>
+      `;
 
       const subforumContent = template.generateSubforumPage(
         { ...subforum, posts: paginatedPosts },
-        baseurl,
-        currentPage,
-        totalPages
-      );
+        baseurl
+      ) + paginationNav;
 
       const subforumOutputContent = await createFullPage(
         partials,
         subforumContent,
-        `${baseurl}${key}?page=${currentPage}`,
+        `${baseurl}${key}${page === 1 ? '' : `-${page}`}.html`,
         subforum.title,
         subforum.description,
         subforum.banner
       );
 
-      const pageSuffix = currentPage > 1 ? `-page${currentPage}` : '';
-      await writeFile(path.join(dirs.public, `${key}${pageSuffix}.html`), subforumOutputContent);
-      console.log(`Generated: ${key}${pageSuffix}.html`);
+      const fileName = page === 1 ? `${key}.html` : `${key}-${page}.html`;
+      await writeFile(path.join(dirs.public, fileName), subforumOutputContent);
+      console.log(`Generated: ${fileName}`);
     }
-
-    // Generate RSS feed (unchanged)
-    const rssFeed = template.generateRSSFeed(subforum, baseurl);
-    await writeFile(path.join(dirs.public, `${key}.rss`), rssFeed);
-    console.log(`Generated: ${key}.rss`);
-
-    // Generate individual post pages (unchanged)
-    await Promise.all(subforum.posts.map(async post => {
-      const postContent = template.generatePostPage(post, subforum, baseurl);
-
-      const postOutputContent = await createFullPage(
-        partials,
-        postContent,
-        `${baseurl}${post.link.replace(/^\//, '')}`,
-        post.title,
-        post.content || subforum.description,
-        post.image || subforum.icon
-      );
-
-      const postOutputFilePath = path.join(dirs.public, `${post.link.replace(/^\//, '')}.html`);
-      await ensureDirectoryExists(path.dirname(postOutputFilePath));
-      await writeFile(postOutputFilePath, postOutputContent);
-      console.log(`Generated: ${post.link.replace(/^\//, '')}.html`);
-    }));
   }));
 }
+
 
 async function runSSG() {
   try {
