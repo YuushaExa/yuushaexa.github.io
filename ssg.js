@@ -71,7 +71,9 @@ async function loadSubforumData(subforum, subforumKey) {
       return parsedPosts.map(post => ({
         ...post,
         title: post.title || 'Default Title',
-        link: post.link || template.generatePostLink(subforumKey, post) 
+        link: post.link || template.generatePostLink(subforumKey, post),
+         tags: post.tags || [],           // Ensure tags is always an array
+    developers: post.developers || [] // Ensure developers is always an array
       }));
     } catch (err) {
       console.error(`Error loading data from ${file}:`, err.message);
