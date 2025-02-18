@@ -186,8 +186,8 @@ const templates = {
       <p>${post.description}</p>
       <h2>Developers</h2>
   <ul>
-    ${post.developers.map(dev => `
-      <li>${dev.name}</li>
+   ${post.developers.map(dev => `
+      <li><a href="${baseurl}vn/developers/${encodeURIComponent(dev.name)}.html">${dev.name}</a></li>
     `).join('')}
   </ul>
 
@@ -200,8 +200,8 @@ const templates = {
 
   <h2>Tags</h2>
   <ul>
-    ${post.tags.map(tag => `
-      <li>${tag.name}</li>
+  ${post.tags.map(tag => `
+      <li><a href="${baseurl}vn/tags/${encodeURIComponent(tag.name)}.html">${tag.name}</a></li>
     `).join('')}
   </ul>
 
