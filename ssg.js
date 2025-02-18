@@ -109,6 +109,9 @@ async function generateSpecialPages(partials) {
   console.log('Generated: index.html and 404.html');
 }
 
+const allTags = {};
+const allDevelopers = {};
+
 async function generateSubforumPages(partials, subforums) {
   const postsPerPage = 10; // Number of posts per page
 
@@ -122,6 +125,17 @@ async function generateSubforumPages(partials, subforums) {
     const posts = await loadSubforumData(subforum, key);
     subforum.posts = posts;
 
+  posts.forEach(post => {
+    post.tags.forEach(tag => {
+      allTags[tag.name] = allTags[tag.name] || [];
+      allTags[tag.name].push(post);
+    });
+    post.developers.forEach(dev => {
+      allDevelopers[dev.name] = allDevelopers[dev.name] || [];
+      allDevelopers[dev.name].push(post);
+    });
+  });
+    
     // Generate RSS feed
     const rssFeed = template.generateRSSFeed(subforum, baseurl);
     await writeFile(path.join(dirs.public, `${key}.rss`), rssFeed);
