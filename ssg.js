@@ -211,6 +211,7 @@ async function generateTagDevAliasPages(partials) {
 
   for (const { type, data } of categories) {
     for (const [name, posts] of Object.entries(data)) {
+      const slug = generateSlug(name);  
       const pageContent = `
         <h1>${name}</h1>
         <ul>
@@ -226,16 +227,16 @@ async function generateTagDevAliasPages(partials) {
       const outputContent = await createFullPage(
         partials,
         pageContent,
-        `${baseurl}vn/${type}/${encodeURIComponent(name)}.html`,
+        `${baseurl}vn/${type}/${slug}.html`, 
         `${name} - ${type}`,
         `All visual novels related to ${name}`,
         ''
       );
 
-      const outputFilePath = path.join(dirs.public, `vn/${type}/${encodeURIComponent(name)}.html`);
+      const outputFilePath = path.join(dirs.public, `vn/${type}/${slug}.html`); // Use slug in the file path
       await ensureDirectoryExists(path.dirname(outputFilePath));
       await writeFile(outputFilePath, outputContent);
-      console.log(`Generated: vn/${type}/${name}.html`);
+      console.log(`Generated: vn/${type}/${slug}.html`);
     }
   }
 }
