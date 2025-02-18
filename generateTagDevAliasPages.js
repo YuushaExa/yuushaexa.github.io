@@ -1,6 +1,6 @@
 // generateTagDevAliasPages.js
 const path = require('path');
-const { ensureDirectoryExists, createFullPage } = require('./path-to-your-main-file'); // Adjust the path as needed
+const { ensureDirectoryExists, createFullPage } = require('./ssg.js'); // Adjust the path as needed
 
 const generatePaginationLinks = (type, slug, currentPage, totalPages) => {
   return `
