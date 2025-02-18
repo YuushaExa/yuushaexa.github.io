@@ -209,9 +209,23 @@ async function generateTagDevAliasPages(partials) {
     { type: 'developers', data: allDevelopers },
   ];
 
+  // Slug caching to avoid redundant computations
+  const slugCache = new Map();
+
+  // Function to generate or retrieve cached slug
+  const getSlug = (name) => {
+    if (!slugCache.has(name)) {
+      slugCache.set(name, generateSlugtags(name));
+    }
+    return slugCache.get(name);
+  };
+
+  // Array to hold all promises for parallel execution
+  const pageGenerationPromises = [];
+
   for (const { type, data } of categories) {
     for (const [name, posts] of Object.entries(data)) {
-      const slug = generateSlugtags(name);  
+      const slug = getSlug(name); // Use cached slug
       const pageContent = `
         <h1>${name}</h1>
         <ul>
@@ -224,21 +238,29 @@ async function generateTagDevAliasPages(partials) {
         </ul>
       `;
 
-      const outputContent = await createFullPage(
-        partials,
-        pageContent,
-        `${baseurl}vn/${type}/${slug}.html`, 
-        `${name} - ${type}`,
-        `All visual novels related to ${name}`,
-        ''
-      );
+      // Push the promise to the array for parallel execution
+      pageGenerationPromises.push(
+        (async () => {
+          const outputContent = await createFullPage(
+            partials,
+            pageContent,
+            `${baseurl}vn/${type}/${slug}.html`, 
+            `${name} - ${type}`,
+            `All visual novels related to ${name}`,
+            ''
+          );
 
-      const outputFilePath = path.join(dirs.public, `vn/${type}/${slug}.html`); // Use slug in the file path
-      await ensureDirectoryExists(path.dirname(outputFilePath));
-      await writeFile(outputFilePath, outputContent);
-      console.log(`Generated: vn/${type}/${slug}.html`);
+          const outputFilePath = path.join(dirs.public, `vn/${type}/${slug}.html`);
+          await ensureDirectoryExists(path.dirname(outputFilePath));
+          await writeFile(outputFilePath, outputContent);
+          console.log(`Generated: vn/${type}/${slug}.html`);
+        })()
+      );
     }
   }
+
+  // Execute all page generation promises in parallel
+  await Promise.all(pageGenerationPromises);
 }
 
 
