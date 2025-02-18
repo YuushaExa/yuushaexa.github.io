@@ -164,7 +164,7 @@ const templates = {
    vnTemplate: {
     generatePostLink: (subforumKey, post) => `/${subforumKey}/${generateSlug(post.title)}`,
 
-    generateSubforumPage: (subforum, baseurl) => `
+    generateSubforumPage: (subforum, baseurl, currentPage = 1, totalPages = 1) => `
       <h1>${subforum.title}</h1>
       <p>${subforum.description}</p>
       <p>${subforum.created_at}</p>
@@ -178,6 +178,13 @@ const templates = {
           <br>By ${post.author} on ${post.date}
         </li>
       `).join('')}</ul>
+            <div class="pagination">
+        ${currentPage > 1 ? `<a href="${baseurl}${subforum.link.replace(/^\//, '')}?page=${currentPage - 1}">Previous</a>` : ''}
+        ${Array.from({ length: totalPages }, (_, i) => i + 1).map(page => `
+          <a href="${baseurl}${subforum.link.replace(/^\//, '')}?page=${page}" ${page === currentPage ? 'class="active"' : ''}>${page}</a>
+        `).join('')}
+        ${currentPage < totalPages ? `<a href="${baseurl}${subforum.link.replace(/^\//, '')}?page=${currentPage + 1}">Next</a>` : ''}
+      </div>
     `,
 
     generatePostPage: (post, subforum, baseurl) => `
