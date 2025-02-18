@@ -1,6 +1,7 @@
 // generateTagDevAliasPages.js
 const path = require('path');
 const { ensureDirectoryExists, createFullPage } = require('./ssg.js'); // Adjust the path as needed
+const { templates, generateSlugtags } = require('./templates');
 
 const generatePaginationLinks = (type, slug, currentPage, totalPages) => {
   return `
