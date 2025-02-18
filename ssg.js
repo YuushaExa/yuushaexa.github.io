@@ -111,23 +111,29 @@ async function generateSpecialPages(partials) {
   console.log('Generated: index.html and 404.html');
 }
 
-function generatePagination(posts, basePath, currentPage, postsPerPage) {
-  const totalPages = Math.ceil(posts.length / postsPerPage);
-  const start = (currentPage - 1) * postsPerPage;
-  const end = start + postsPerPage;
-  const paginatedPosts = posts.slice(start, end);
 
-  const paginationLinks = `
-    <div class="pagination">
-      ${currentPage > 1 ? `<a href="${basePath}${currentPage - 1 === 1 ? '' : `-${currentPage - 1}`}.html">&laquo; Previous</a>` : ''}
-      ${Array.from({ length: totalPages }, (_, i) => `
-        <a href="${basePath}${i === 0 ? '' : `-${i + 1}`}.html" ${i + 1 === currentPage ? 'class="active"' : ''}>${i + 1}</a>
-      `).join(' ')}
-      ${currentPage < totalPages ? `<a href="${basePath}-${currentPage + 1}.html">Next &raquo;</a>` : ''}
-    </div>
-  `;
+function generatePagination(baseUrl, currentPage, totalPages) {
+  const links = [];
 
-  return { paginatedPosts, paginationLinks };
+  // Previous link
+  if (currentPage > 1) {
+    const prevPage = currentPage - 1 === 1 ? '' : `-${currentPage - 1}`;
+    links.push(`<a href="${baseUrl}${prevPage}.html">&laquo; Previous</a>`);
+  }
+
+  // Page numbers
+  for (let i = 1; i <= totalPages; i++) {
+    const pageLink = i === 1 ? '' : `-${i}`;
+    const activeClass = i === currentPage ? 'class="active"' : '';
+    links.push(`<a href="${baseUrl}${pageLink}.html" ${activeClass}>${i}</a>`);
+  }
+
+  // Next link
+  if (currentPage < totalPages) {
+    links.push(`<a href="${baseUrl}-${currentPage + 1}.html">Next &raquo;</a>`);
+  }
+
+  return `<div class="pagination">${links.join(' ')}</div>`;
 }
 
 const allTags = {};
@@ -142,7 +148,7 @@ async function generateSubforumPages(partials, subforums) {
       throw new Error(`Template ${subforum.template} not found for subforum ${key}`);
     }
 
-    // Load posts with folder-based links
+    // Load posts
     const posts = await loadSubforumData(subforum, key);
     subforum.posts = posts;
 
@@ -174,12 +180,18 @@ async function generateSubforumPages(partials, subforums) {
     const totalPages = Math.ceil(posts.length / postsPerPage);
 
     for (let page = 1; page <= totalPages; page++) {
-      const { paginatedPosts, paginationLinks } = generatePagination(posts, `${key}`, page, postsPerPage);
+      const start = (page - 1) * postsPerPage;
+      const end = start + postsPerPage;
+      const paginatedPosts = posts.slice(start, end);
+
+      // Generate pagination links
+      const paginationBaseUrl = `${baseurl}${key}`;
+      const paginationNav = generatePagination(paginationBaseUrl, page, totalPages);
 
       const subforumContent = template.generateSubforumPage(
         { ...subforum, posts: paginatedPosts },
         baseurl
-      ) + paginationLinks;
+      ) + paginationNav;
 
       const subforumOutputContent = await createFullPage(
         partials,
@@ -196,6 +208,7 @@ async function generateSubforumPages(partials, subforums) {
     }
   }));
 }
+
 async function generateTagDevAliasPages(partials) {
   const categories = [
     { type: 'tags', meta: 'Visual Novels', data: allTags },
@@ -223,7 +236,13 @@ async function generateTagDevAliasPages(partials) {
       const totalPages = Math.ceil(posts.length / postsPerPage);
 
       for (let page = 1; page <= totalPages; page++) {
-        const { paginatedPosts, paginationLinks } = generatePagination(posts, `vn/${type}/${slug}`, page, postsPerPage);
+        const start = (page - 1) * postsPerPage;
+        const end = start + postsPerPage;
+        const paginatedPosts = posts.slice(start, end);
+
+        // Generate pagination links
+        const paginationBaseUrl = `${baseurl}vn/${type}/${slug}`;
+        const paginationNav = generatePagination(paginationBaseUrl, page, totalPages);
 
         const pageContent = `
           <h1>${name}</h1>
@@ -235,7 +254,7 @@ async function generateTagDevAliasPages(partials) {
               </li>
             `).join('')}
           </ul>
-          ${paginationLinks}
+          ${paginationNav}
         `;
 
         const canonicalUrl = page === 1
