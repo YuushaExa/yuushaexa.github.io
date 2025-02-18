@@ -263,11 +263,6 @@ async function generateTagDevAliasPages(partials) {
   await Promise.all(pageGenerationPromises);
 }
 
-  // Execute all page generation promises in parallel
-  await Promise.all(pageGenerationPromises);
-}
-
-
 async function runSSG() {
   try {
     await ensureDirectoryExists(dirs.public);
