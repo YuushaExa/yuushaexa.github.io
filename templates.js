@@ -258,7 +258,6 @@ function generateSlug(text) {
 }
 
 module.exports = {
-  generateSlug,
   templates
 };
 
