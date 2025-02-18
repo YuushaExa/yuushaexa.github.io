@@ -205,8 +205,8 @@ async function generateSubforumPages(partials, subforums) {
 
 async function generateTagDevAliasPages(partials) {
   const categories = [
-    { type: 'tags', data: allTags },
-    { type: 'developers', data: allDevelopers },
+    { type: 'Visual Novels Genre', data: allTags },
+    { type: 'Visual Novels Developer', data: allDevelopers },
   ];
 
   // Slug caching to avoid redundant computations
