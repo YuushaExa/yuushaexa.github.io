@@ -235,7 +235,7 @@ async function generateTagDevAliasPages(partials) {
         const paginatedPosts = posts.slice(start, end);
 
         const pageContent = `
-          <h1>${name}</h1>
+          <h1>${name} (${posts.length})</h1>
           <ul>
             ${paginatedPosts.map(post => `
               <li>
