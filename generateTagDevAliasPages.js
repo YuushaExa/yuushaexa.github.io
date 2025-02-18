@@ -2,6 +2,8 @@
 const path = require('path');
 const { ensureDirectoryExists, createFullPage } = require('./ssg.js'); // Adjust the path as needed
 const { templates, generateSlugtags } = require('./templates');
+const baseurl = 'https://yuushaexa.github.io/'; // You can change this to any base URL
+
 
 const generatePaginationLinks = (type, slug, currentPage, totalPages) => {
   return `
