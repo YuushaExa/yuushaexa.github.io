@@ -118,11 +118,26 @@ const allDevelopers = {};
 function findRelatedPosts(currentPost, allPosts) {
   console.log(`Finding related posts for: ${currentPost.title}`);
 
-  // Get the first word of the current post's title
+  // Step 1: Check for 3 matching developers
+  const relatedByDevelopers = allPosts.filter(post => {
+    const hasMatchingDevelopers = post.developers.some(dev => 
+      currentPost.developers.some(currentDev => currentDev.name === dev.name)
+    );
+    const isNotCurrentPost = post.title !== currentPost.title;
+    return hasMatchingDevelopers && isNotCurrentPost;
+  });
+
+  console.log(`Related by developers:`, relatedByDevelopers.map(post => post.title));
+
+  // If we have at least 3 posts with matching developers, return them
+  if (relatedByDevelopers.length >= 3) {
+    return relatedByDevelopers.slice(0, 3);
+  }
+
+  // Step 2: Fallback to checking the title
   const firstWord = currentPost.title.split(' ')[0].toLowerCase();
   console.log(`First word: ${firstWord}`);
 
-  // Find posts with the same first word in the title (excluding the current post)
   const relatedByTitle = allPosts.filter(post => {
     const startsWithFirstWord = post.title.toLowerCase().startsWith(firstWord);
     const isNotCurrentPost = post.title !== currentPost.title;
@@ -136,19 +151,22 @@ function findRelatedPosts(currentPost, allPosts) {
     return relatedByTitle.slice(0, 5);
   }
 
-  // Fallback to posts with similar tags
+  // Step 3: Fallback to checking tags
   const relatedByTags = allPosts.filter(post => {
-    const hasMatchingTags = post.developers.some(tag => 
-      currentPost.developers.some(t => t.name === tag.name)
+    const hasMatchingTags = post.tags.some(tag => 
+      currentPost.tags.some(currentTag => currentTag.name === tag.name)
     );
     const isNotCurrentPost = post.title !== currentPost.title;
     return hasMatchingTags && isNotCurrentPost;
   });
 
-  console.log(`Related by developers:`, relatedByTags.map(post => post.title));
+  console.log(`Related by tags:`, relatedByTags.map(post => post.title));
 
-  // Combine results from title and tags
-  const combined = [...relatedByTitle, ...relatedByTags];
+  // Shuffle the relatedByTags array to ensure variety
+  const shuffledRelatedByTags = shuffleArray(relatedByTags);
+
+  // Combine results from developers, title, and tags
+  const combined = [...relatedByDevelopers, ...relatedByTitle, ...shuffledRelatedByTags];
   const uniquePosts = Array.from(new Set(combined.map(post => post.title)))
     .map(title => combined.find(post => post.title === title));
 
@@ -158,6 +176,14 @@ function findRelatedPosts(currentPost, allPosts) {
   return uniquePosts.slice(0, 5);
 }
 
+// Helper function to shuffle an array
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
 async function generateSubforumPages(partials, subforums) {
   const postsPerPage = 10; // Number of posts per page
 
