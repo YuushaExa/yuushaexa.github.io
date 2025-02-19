@@ -115,6 +115,34 @@ async function generateSpecialPages(partials) {
 const allTags = {};
 const allDevelopers = {};
 
+function findRelatedPosts(currentPost, allPosts) {
+  // Get the first word of the current post's title
+  const firstWord = currentPost.title.split(' ')[0].toLowerCase();
+
+  // Find posts with the same first word in the title (excluding the current post)
+  const relatedByTitle = allPosts.filter(post => 
+    post.title.toLowerCase().startsWith(firstWord) && post.title !== currentPost.title
+  );
+
+  // If we have enough posts by title, return them
+  if (relatedByTitle.length >= 5) {
+    return relatedByTitle.slice(0, 5);
+  }
+
+  // Fallback to posts with similar tags
+  const relatedByTags = allPosts.filter(post => 
+    post.tags.some(tag => currentPost.tags.some(t => t.name === tag.name)) && post.title !== currentPost.title
+  );
+
+  // Combine results from title and tags
+  const combined = [...relatedByTitle, ...relatedByTags];
+  const uniquePosts = Array.from(new Set(combined.map(post => post.title)))
+    .map(title => combined.find(post => post.title === title));
+
+  // Return up to 5 unique related posts
+  return uniquePosts.slice(0, 5);
+}
+
 async function generateSubforumPages(partials, subforums) {
   const postsPerPage = 10; // Number of posts per page
 
@@ -149,7 +177,10 @@ async function generateSubforumPages(partials, subforums) {
 
     // Generate individual post pages
     await Promise.all(subforum.posts.map(async post => {
-      const postContent = template.generatePostPage(post, subforum, baseurl);
+      // Find related posts for the current post
+      const relatedPosts = findRelatedPosts(post, subforum.posts);
+      // Generate post content with related posts
+      const postContent = template.generatePostPage(post, subforum, baseurl, relatedPosts);
 
       const postOutputContent = await createFullPage(
         partials,
