@@ -130,8 +130,8 @@ function findRelatedPosts(currentPost, allPosts) {
   console.log(`Related by developers:`, relatedByDevelopers.map(post => post.title));
 
   // If we have at least 3 posts with matching developers, return them
-  if (relatedByDevelopers.length >= 3) {
-    return relatedByDevelopers.slice(0, 3);
+  if (relatedByDevelopers.length >= 1) {
+    return relatedByDevelopers.slice(0, 5);
   }
 
   // Step 2: Fallback to checking the title
