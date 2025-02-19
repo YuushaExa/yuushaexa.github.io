@@ -223,7 +223,6 @@ const templates = {
       </ul>
     ` : '<p>No related posts found.</p>'}
   `,
-}
 
     generateRSSFeed: (subforum, baseurl) => {
       const feedUrl = `${baseurl}${subforum.link.replace(/^\//, '')}.rss`;
