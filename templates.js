@@ -180,52 +180,38 @@ const templates = {
       `).join('')}</ul>
     `,
 
- generatePostPage: (post, subforum, baseurl) => {
-  const relatedPostsForAll = findRelatedPostsForAll(subforum.posts); // Generate related posts for all posts
-  const relatedPosts = relatedPostsForAll[post.title] || []; // Get related posts for this specific post
+    generatePostPage: (post, subforum, baseurl) => `
+      <h1>${post.title}</h1>
+      <img src="${post.image.url}" alt="${post.title}" width="200">
+      <p>${post.description}</p>
+      <h2>Developers</h2>
+  <ul>
+    ${post.developers.map(dev => `
+      <li><a href="${baseurl}vn/developers/${generateSlugtags(dev.name)}.html">${dev.name}</a></li>
+    `).join('')}
+  </ul>
 
-      return `
-        <h1>${post.title}</h1>
-        <img src="${post.image.url}" alt="${post.title}" width="200">
-        <p>${post.description}</p>
-        <h2>Developers</h2>
-        <ul>
-          ${post.developers.map(dev => `
-            <li><a href="${baseurl}vn/developers/${generateSlugtags(dev.name)}.html">${dev.name}</a></li>
-          `).join('')}
-        </ul>
+  <h2>Aliases</h2>
+  <ul>
+    ${post.aliases.map(alias => `
+      <li>${alias}</li>
+    `).join('')}
+  </ul>
 
-        <h2>Aliases</h2>
-        <ul>
-          ${post.aliases.map(alias => `
-            <li>${alias}</li>
-          `).join('')}
-        </ul>
+  <h2>Tags</h2>
+  <ul>
+ ${post.tags.map(tag => `
+      <li><a href="${baseurl}vn/tags/${generateSlugtags(tag.name)}.html">${tag.name}</a></li>
+    `).join('')}
+  </ul>
 
-        <h2>Tags</h2>
-        <ul>
-          ${post.tags.map(tag => `
-            <li><a href="${baseurl}vn/tags/${generateSlugtags(tag.name)}.html">${tag.name}</a></li>
-          `).join('')}
-        </ul>
-
-        <h2>Screenshots</h2>
-        <div>
-          ${post.screenshots.map(screenshot => `
-            <img src="${screenshot.url}" alt="Screenshot" width="200">
-          `).join('')}
-        </div>
-
-        <h2>Related Posts</h2>
-        <ul>
-          ${relatedPosts.map(relatedPost => `
-            <li>
-              <a href="${baseurl}${relatedPost.link.replace(/^\//, '')}.html">${relatedPost.title}</a>
-            </li>
-          `).join('')}
-        </ul>
-      `;
-    },
+  <h2>Screenshots</h2>
+  <div>
+    ${post.screenshots.map(screenshot => `
+      <img src="${screenshot.url}" alt="Screenshot" width="200">
+    `).join('')}
+  </div>
+    `,
 
     generateRSSFeed: (subforum, baseurl) => {
       const feedUrl = `${baseurl}${subforum.link.replace(/^\//, '')}.rss`;
@@ -282,37 +268,8 @@ function generateSlug(text) {
   return baseSlug; // Return the base slug without a counter
 }
 
-// related posts
-
-function findRelatedPostsForAll(allPosts) {
-  const relatedPostsMap = {};
-
-  allPosts.forEach(post => {
-    const firstWord = post.title.split(' ')[0].toLowerCase();
-
-    // Find posts with the same first word in the title
-    const relatedByTitle = allPosts.filter(p => 
-      p.title.toLowerCase().startsWith(firstWord) && p.title !== post.title
-    );
-
-    // Find posts with similar tags
-    const relatedByTags = allPosts.filter(p => 
-      p.tags.some(tag => post.tags.some(t => t.name === tag.name)) && p.title !== post.title
-    );
-
-    // Combine and deduplicate the results
-    const combined = [...new Set([...relatedByTitle, ...relatedByTags])];
-
-    // Store up to 5 related posts for this post
-    relatedPostsMap[post.title] = combined.slice(0, 5);
-  });
-
-  return relatedPostsMap;
-}
-
 
 module.exports = {
   templates,
   generateSlugtags
 };
-
