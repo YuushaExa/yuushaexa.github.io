@@ -181,7 +181,8 @@ const templates = {
     `,
 
  generatePostPage: (post, subforum, baseurl) => {
-      const relatedPosts = findRelatedPosts(post, subforum.posts);
+  const relatedPostsForAll = findRelatedPostsForAll(subforum.posts); // Generate related posts for all posts
+  const relatedPosts = relatedPostsForAll[post.title] || []; // Get related posts for this specific post
 
       return `
         <h1>${post.title}</h1>
