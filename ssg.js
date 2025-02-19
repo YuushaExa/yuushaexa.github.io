@@ -119,21 +119,24 @@ function findRelatedPosts(currentPost, allPosts) {
   console.log(`Finding related posts for: ${currentPost.title}`);
 
   const relatedPosts = new Set(); // Use a Set to avoid duplicates
+  const developerNames = new Set(currentPost.developers.map(dev => dev.name)); // Faster lookups
+  const tagNames = new Set(currentPost.tags.map(tag => tag.name)); // Faster lookups
+  const firstWord = currentPost.title.split(' ')[0].toLowerCase();
+
+  console.log(`First word: ${firstWord}`);
 
   // Step 1: Check for similar developers
-  const developerNames = currentPost.developers.map(dev => dev.name);
-  const relatedByDevelopers = allPosts.filter(post => {
-    const hasMatchingDevelopers = post.developers.some(dev => 
-      developerNames.includes(dev.name)
-    );
-    const isNotCurrentPost = post.title !== currentPost.title;
-    return hasMatchingDevelopers && isNotCurrentPost;
-  });
+  for (const post of allPosts) {
+    if (post.title === currentPost.title) continue; // Skip the current post
 
-  console.log(`Related by developers:`, relatedByDevelopers.map(post => post.title));
+    const hasMatchingDevelopers = post.developers.some(dev => developerNames.has(dev.name));
+    if (hasMatchingDevelopers) {
+      relatedPosts.add(post);
+      if (relatedPosts.size >= 5) break; // Early termination
+    }
+  }
 
-  // Add posts from developers to the relatedPosts Set
-  relatedByDevelopers.forEach(post => relatedPosts.add(post));
+  console.log(`Related by developers:`, Array.from(relatedPosts).map(post => post.title));
 
   // If we already have 5 posts, return them
   if (relatedPosts.size >= 5) {
@@ -141,20 +144,17 @@ function findRelatedPosts(currentPost, allPosts) {
   }
 
   // Step 2: Check for similar first word in title
-  const firstWord = currentPost.title.split(' ')[0].toLowerCase();
-  console.log(`First word: ${firstWord}`);
+  for (const post of allPosts) {
+    if (post.title === currentPost.title || relatedPosts.has(post)) continue; // Skip current or already added posts
 
-  const relatedByTitle = allPosts.filter(post => {
     const startsWithFirstWord = post.title.toLowerCase().startsWith(firstWord);
-    const isNotCurrentPost = post.title !== currentPost.title;
-    const isNotAlreadyAdded = !relatedPosts.has(post);
-    return startsWithFirstWord && isNotCurrentPost && isNotAlreadyAdded;
-  });
+    if (startsWithFirstWord) {
+      relatedPosts.add(post);
+      if (relatedPosts.size >= 5) break; // Early termination
+    }
+  }
 
-  console.log(`Related by title:`, relatedByTitle.map(post => post.title));
-
-  // Add posts from title to the relatedPosts Set
-  relatedByTitle.forEach(post => relatedPosts.add(post));
+  console.log(`Related by title:`, Array.from(relatedPosts).map(post => post.title));
 
   // If we now have 5 posts, return them
   if (relatedPosts.size >= 5) {
@@ -162,25 +162,15 @@ function findRelatedPosts(currentPost, allPosts) {
   }
 
   // Step 3: Check for similar tags
-  const tagNames = currentPost.tags.map(tag => tag.name);
-  const relatedByTags = allPosts.filter(post => {
-    const hasMatchingTags = post.tags.some(tag => 
-      tagNames.includes(tag.name)
-    );
-    const isNotCurrentPost = post.title !== currentPost.title;
-    const isNotAlreadyAdded = !relatedPosts.has(post);
-    return hasMatchingTags && isNotCurrentPost && isNotAlreadyAdded;
-  });
+  const shuffledPosts = shuffleArray(allPosts); // Shuffle once for variety
+  for (const post of shuffledPosts) {
+    if (post.title === currentPost.title || relatedPosts.has(post)) continue; // Skip current or already added posts
 
-  console.log(`Related by tags:`, relatedByTags.map(post => post.title));
-
-  // Shuffle the relatedByTags array to ensure variety
-  const shuffledRelatedByTags = shuffleArray(relatedByTags);
-
-  // Add posts from tags to the relatedPosts Set until we reach 5 posts
-  for (const post of shuffledRelatedByTags) {
-    if (relatedPosts.size >= 5) break;
-    relatedPosts.add(post);
+    const hasMatchingTags = post.tags.some(tag => tagNames.has(tag.name));
+    if (hasMatchingTags) {
+      relatedPosts.add(post);
+      if (relatedPosts.size >= 5) break; // Early termination
+    }
   }
 
   console.log(`Final related posts:`, Array.from(relatedPosts).map(post => post.title));
