@@ -118,10 +118,13 @@ const allDevelopers = {};
 function findRelatedPosts(currentPost, allPosts) {
   console.log(`Finding related posts for: ${currentPost.title}`);
 
-  // Step 1: Check for 3 matching developers
+  const relatedPosts = new Set(); // Use a Set to avoid duplicates
+
+  // Step 1: Check for similar developers
+  const developerNames = currentPost.developers.map(dev => dev.name);
   const relatedByDevelopers = allPosts.filter(post => {
     const hasMatchingDevelopers = post.developers.some(dev => 
-      currentPost.developers.some(currentDev => currentDev.name === dev.name)
+      developerNames.includes(dev.name)
     );
     const isNotCurrentPost = post.title !== currentPost.title;
     return hasMatchingDevelopers && isNotCurrentPost;
@@ -129,35 +132,44 @@ function findRelatedPosts(currentPost, allPosts) {
 
   console.log(`Related by developers:`, relatedByDevelopers.map(post => post.title));
 
-  // If we have at least 3 posts with matching developers, return them
-  if (relatedByDevelopers.length >= 1) {
-    return relatedByDevelopers.slice(0, 5);
+  // Add posts from developers to the relatedPosts Set
+  relatedByDevelopers.forEach(post => relatedPosts.add(post));
+
+  // If we already have 5 posts, return them
+  if (relatedPosts.size >= 5) {
+    return Array.from(relatedPosts).slice(0, 5);
   }
 
-  // Step 2: Fallback to checking the title
+  // Step 2: Check for similar first word in title
   const firstWord = currentPost.title.split(' ')[0].toLowerCase();
   console.log(`First word: ${firstWord}`);
 
   const relatedByTitle = allPosts.filter(post => {
     const startsWithFirstWord = post.title.toLowerCase().startsWith(firstWord);
     const isNotCurrentPost = post.title !== currentPost.title;
-    return startsWithFirstWord && isNotCurrentPost;
+    const isNotAlreadyAdded = !relatedPosts.has(post);
+    return startsWithFirstWord && isNotCurrentPost && isNotAlreadyAdded;
   });
 
   console.log(`Related by title:`, relatedByTitle.map(post => post.title));
 
-  // If we have enough posts by title, return them
-  if (relatedByTitle.length >= 5) {
-    return relatedByTitle.slice(0, 5);
+  // Add posts from title to the relatedPosts Set
+  relatedByTitle.forEach(post => relatedPosts.add(post));
+
+  // If we now have 5 posts, return them
+  if (relatedPosts.size >= 5) {
+    return Array.from(relatedPosts).slice(0, 5);
   }
 
-  // Step 3: Fallback to checking tags
+  // Step 3: Check for similar tags
+  const tagNames = currentPost.tags.map(tag => tag.name);
   const relatedByTags = allPosts.filter(post => {
     const hasMatchingTags = post.tags.some(tag => 
-      currentPost.tags.some(currentTag => currentTag.name === tag.name)
+      tagNames.includes(tag.name)
     );
     const isNotCurrentPost = post.title !== currentPost.title;
-    return hasMatchingTags && isNotCurrentPost;
+    const isNotAlreadyAdded = !relatedPosts.has(post);
+    return hasMatchingTags && isNotCurrentPost && isNotAlreadyAdded;
   });
 
   console.log(`Related by tags:`, relatedByTags.map(post => post.title));
@@ -165,15 +177,25 @@ function findRelatedPosts(currentPost, allPosts) {
   // Shuffle the relatedByTags array to ensure variety
   const shuffledRelatedByTags = shuffleArray(relatedByTags);
 
-  // Combine results from developers, title, and tags
-  const combined = [...relatedByDevelopers, ...relatedByTitle, ...shuffledRelatedByTags];
-  const uniquePosts = Array.from(new Set(combined.map(post => post.title)))
-    .map(title => combined.find(post => post.title === title));
+  // Add posts from tags to the relatedPosts Set until we reach 5 posts
+  for (const post of shuffledRelatedByTags) {
+    if (relatedPosts.size >= 5) break;
+    relatedPosts.add(post);
+  }
 
-  console.log(`Unique related posts:`, uniquePosts.map(post => post.title));
+  console.log(`Final related posts:`, Array.from(relatedPosts).map(post => post.title));
 
   // Return up to 5 unique related posts
-  return uniquePosts.slice(0, 5);
+  return Array.from(relatedPosts).slice(0, 5);
+}
+
+// Helper function to shuffle an array
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
 }
 
 // Helper function to shuffle an array
