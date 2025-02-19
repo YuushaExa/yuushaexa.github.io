@@ -4,9 +4,11 @@
   "description": "A simple static site generator",
   "main": "ssg.js",
   "scripts": {
-    "build": "node ssg.js"
+    "build": "node ssg.js",
+    "postbuild": "pagefind --source public"
   },
   "license": "MIT",
  "dependencies": {
+   "pagefind": "^1.0.0"
 }
 }
