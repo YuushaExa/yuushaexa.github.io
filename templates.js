@@ -180,7 +180,10 @@ const templates = {
       `).join('')}</ul>
     `,
 
-    generatePostPage: (post, subforum, baseurl) => `
+  generatePostPage: (post, subforum, baseurl) => {
+    const relatedPosts = findRelatedPosts(post, subforum.posts);
+
+    return `
       <h1>${post.title}</h1>
       <img src="${post.image.url}" alt="${post.title}" width="200">
       <p>${post.description}</p>
@@ -211,6 +214,15 @@ const templates = {
       <img src="${screenshot.url}" alt="Screenshot" width="200">
     `).join('')}
   </div>
+
+    <h2>Related Posts</h2>
+      <ul>
+        ${relatedPosts.map(relatedPost => `
+          <li>
+            <a href="${baseurl}${relatedPost.link.replace(/^\//, '')}.html">${relatedPost.title}</a>
+          </li>
+        `).join('')}
+      </ul>
     `,
 
     generateRSSFeed: (subforum, baseurl) => {
@@ -268,6 +280,32 @@ function generateSlug(text) {
   return baseSlug; // Return the base slug without a counter
 }
 
+// related posts
+
+function findRelatedPosts(post, allPosts) {
+  const firstWord = post.title.split(' ')[0].toLowerCase();
+  
+  // Find posts with the same first word in the title
+  const relatedByTitle = allPosts.filter(p => 
+    p.title.toLowerCase().startsWith(firstWord) && p.title !== post.title
+  );
+
+  // If we have enough posts, return them
+  if (relatedByTitle.length >= 5) {
+    return relatedByTitle.slice(0, 5);
+  }
+
+  // Otherwise, find posts with similar tags
+  const relatedByTags = allPosts.filter(p => 
+    p.tags.some(tag => post.tags.some(t => t.name === tag.name)) && p.title !== post.title
+  );
+
+  // Combine and deduplicate the results
+  const combined = [...new Set([...relatedByTitle, ...relatedByTags])];
+
+  // Return up to 5 related posts
+  return combined.slice(0, 5);
+}
 
 module.exports = {
   templates,
