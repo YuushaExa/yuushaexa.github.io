@@ -119,68 +119,31 @@ function findRelatedPosts(currentPost, allPosts) {
   console.log(`Finding related posts for: ${currentPost.title}`);
 
   const relatedPosts = new Set(); // Use a Set to avoid duplicates
-
-  // Step 1: Check for similar developers
-  const developerNames = currentPost.developers.map(dev => dev.name);
-  const relatedByDevelopers = allPosts.filter(post => {
-    const hasMatchingDevelopers = post.developers.some(dev => 
-      developerNames.includes(dev.name)
-    );
-    const isNotCurrentPost = post.title !== currentPost.title;
-    return hasMatchingDevelopers && isNotCurrentPost;
-  });
-
-  console.log(`Related by developers:`, relatedByDevelopers.map(post => post.title));
-
-  // Add posts from developers to the relatedPosts Set
-  relatedByDevelopers.forEach(post => relatedPosts.add(post));
-
-  // If we already have 5 posts, return them
-  if (relatedPosts.size >= 5) {
-    return Array.from(relatedPosts).slice(0, 5);
-  }
-
-  // Step 2: Check for similar first word in title
+  const developerNames = new Set(currentPost.developers.map(dev => dev.name));
+  const tagNames = new Set(currentPost.tags.map(tag => tag.name));
   const firstWord = currentPost.title.split(' ')[0].toLowerCase();
+
   console.log(`First word: ${firstWord}`);
 
-  const relatedByTitle = allPosts.filter(post => {
+  for (const post of allPosts) {
+    if (post.title === currentPost.title) continue; // Skip the current post
+
+    // Check if the post is related by developers
+    const hasMatchingDevelopers = post.developers.some(dev => developerNames.has(dev.name));
+
+    // Check if the post is related by title
     const startsWithFirstWord = post.title.toLowerCase().startsWith(firstWord);
-    const isNotCurrentPost = post.title !== currentPost.title;
-    const isNotAlreadyAdded = !relatedPosts.has(post);
-    return startsWithFirstWord && isNotCurrentPost && isNotAlreadyAdded;
-  });
 
-  console.log(`Related by title:`, relatedByTitle.map(post => post.title));
+    // Check if the post is related by tags
+    const hasMatchingTags = post.tags.some(tag => tagNames.has(tag.name));
 
-  // Add posts from title to the relatedPosts Set
-  relatedByTitle.forEach(post => relatedPosts.add(post));
+    // If the post is related by any criteria, add it to the set
+    if (hasMatchingDevelopers || startsWithFirstWord || hasMatchingTags) {
+      relatedPosts.add(post);
+    }
 
-  // If we now have 5 posts, return them
-  if (relatedPosts.size >= 5) {
-    return Array.from(relatedPosts).slice(0, 5);
-  }
-
-  // Step 3: Check for similar tags
-  const tagNames = currentPost.tags.map(tag => tag.name);
-  const relatedByTags = allPosts.filter(post => {
-    const hasMatchingTags = post.tags.some(tag => 
-      tagNames.includes(tag.name)
-    );
-    const isNotCurrentPost = post.title !== currentPost.title;
-    const isNotAlreadyAdded = !relatedPosts.has(post);
-    return hasMatchingTags && isNotCurrentPost && isNotAlreadyAdded;
-  });
-
-  console.log(`Related by tags:`, relatedByTags.map(post => post.title));
-
-  // Shuffle the relatedByTags array to ensure variety
-  const shuffledRelatedByTags = shuffleArray(relatedByTags);
-
-  // Add posts from tags to the relatedPosts Set until we reach 5 posts
-  for (const post of shuffledRelatedByTags) {
+    // If we have enough related posts, break out of the loop
     if (relatedPosts.size >= 5) break;
-    relatedPosts.add(post);
   }
 
   console.log(`Final related posts:`, Array.from(relatedPosts).map(post => post.title));
@@ -189,23 +152,6 @@ function findRelatedPosts(currentPost, allPosts) {
   return Array.from(relatedPosts).slice(0, 5);
 }
 
-// Helper function to shuffle an array
-function shuffleArray(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-  return array;
-}
-
-// Helper function to shuffle an array
-function shuffleArray(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-  return array;
-}
 async function generateSubforumPages(partials, subforums) {
   const postsPerPage = 10; // Number of posts per page
 
