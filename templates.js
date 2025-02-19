@@ -180,7 +180,7 @@ const templates = {
       `).join('')}</ul>
     `,
 
-    generatePostPage: (post, subforum, baseurl) => `
+  generatePostPage: (post, subforum, baseurl, relatedPosts = []) => `
       <h1>${post.title}</h1>
       <img src="${post.image.url}" alt="${post.title}" width="200">
       <p>${post.description}</p>
@@ -211,7 +211,19 @@ const templates = {
       <img src="${screenshot.url}" alt="Screenshot" width="200">
     `).join('')}
   </div>
-    `,
+  
+  <h2>Related Posts</h2>
+    ${relatedPosts.length > 0 ? `
+      <ul>
+        ${relatedPosts.map(relatedPost => `
+          <li>
+            <a href="${baseurl}${relatedPost.link.replace(/^\//, '')}.html">${relatedPost.title}</a>
+          </li>
+        `).join('')}
+      </ul>
+    ` : '<p>No related posts found.</p>'}
+  `,
+}
 
     generateRSSFeed: (subforum, baseurl) => {
       const feedUrl = `${baseurl}${subforum.link.replace(/^\//, '')}.rss`;
