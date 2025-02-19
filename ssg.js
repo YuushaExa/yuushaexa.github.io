@@ -138,14 +138,14 @@ function findRelatedPosts(currentPost, allPosts) {
 
   // Fallback to posts with similar tags
   const relatedByTags = allPosts.filter(post => {
-    const hasMatchingTags = post.tags.some(tag => 
-      currentPost.tags.some(t => t.name === tag.name)
+    const hasMatchingTags = post.developers.some(tag => 
+      currentPost.developers.some(t => t.name === tag.name)
     );
     const isNotCurrentPost = post.title !== currentPost.title;
     return hasMatchingTags && isNotCurrentPost;
   });
 
-  console.log(`Related by tags:`, relatedByTags.map(post => post.title));
+  console.log(`Related by developers:`, relatedByTags.map(post => post.title));
 
   // Combine results from title and tags
   const combined = [...relatedByTitle, ...relatedByTags];
@@ -157,6 +157,7 @@ function findRelatedPosts(currentPost, allPosts) {
   // Return up to 5 unique related posts
   return uniquePosts.slice(0, 5);
 }
+
 async function generateSubforumPages(partials, subforums) {
   const postsPerPage = 10; // Number of posts per page
 
