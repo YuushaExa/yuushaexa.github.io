@@ -116,13 +116,20 @@ const allTags = {};
 const allDevelopers = {};
 
 function findRelatedPosts(currentPost, allPosts) {
+  console.log(`Finding related posts for: ${currentPost.title}`);
+
   // Get the first word of the current post's title
   const firstWord = currentPost.title.split(' ')[0].toLowerCase();
+  console.log(`First word: ${firstWord}`);
 
   // Find posts with the same first word in the title (excluding the current post)
-  const relatedByTitle = allPosts.filter(post => 
-    post.title.toLowerCase().startsWith(firstWord) && post.title !== currentPost.title
-  );
+  const relatedByTitle = allPosts.filter(post => {
+    const startsWithFirstWord = post.title.toLowerCase().startsWith(firstWord);
+    const isNotCurrentPost = post.title !== currentPost.title;
+    return startsWithFirstWord && isNotCurrentPost;
+  });
+
+  console.log(`Related by title:`, relatedByTitle.map(post => post.title));
 
   // If we have enough posts by title, return them
   if (relatedByTitle.length >= 5) {
@@ -130,19 +137,26 @@ function findRelatedPosts(currentPost, allPosts) {
   }
 
   // Fallback to posts with similar tags
-  const relatedByTags = allPosts.filter(post => 
-    post.tags.some(tag => currentPost.tags.some(t => t.name === tag.name)) && post.title !== currentPost.title
-  );
+  const relatedByTags = allPosts.filter(post => {
+    const hasMatchingTags = post.tags.some(tag => 
+      currentPost.tags.some(t => t.name === tag.name)
+    );
+    const isNotCurrentPost = post.title !== currentPost.title;
+    return hasMatchingTags && isNotCurrentPost;
+  });
+
+  console.log(`Related by tags:`, relatedByTags.map(post => post.title));
 
   // Combine results from title and tags
   const combined = [...relatedByTitle, ...relatedByTags];
   const uniquePosts = Array.from(new Set(combined.map(post => post.title)))
     .map(title => combined.find(post => post.title === title));
 
+  console.log(`Unique related posts:`, uniquePosts.map(post => post.title));
+
   // Return up to 5 unique related posts
   return uniquePosts.slice(0, 5);
 }
-
 async function generateSubforumPages(partials, subforums) {
   const postsPerPage = 10; // Number of posts per page
 
