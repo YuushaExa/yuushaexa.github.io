@@ -115,52 +115,22 @@ async function generateSpecialPages(partials) {
 const allTags = {};
 const allDevelopers = {};
 
-async function findRelatedPosts(currentPost, allPosts) {
+function findRelatedPosts(currentPost, allPosts) {
   console.log(`Finding related posts for: ${currentPost.title}`);
 
   const relatedPosts = new Set(); // Use a Set to avoid duplicates
 
   // Step 1: Check for similar developers
   const developerNames = currentPost.developers.map(dev => dev.name);
-  const relatedByDevelopersPromise = Promise.resolve(allPosts.filter(post => {
+  const relatedByDevelopers = allPosts.filter(post => {
     const hasMatchingDevelopers = post.developers.some(dev => 
       developerNames.includes(dev.name)
     );
     const isNotCurrentPost = post.title !== currentPost.title;
     return hasMatchingDevelopers && isNotCurrentPost;
-  }));
-
-  // Step 2: Check for similar first word in title
-  const firstWord = currentPost.title.split(' ')[0].toLowerCase();
-  console.log(`First word: ${firstWord}`);
-  const relatedByTitlePromise = Promise.resolve(allPosts.filter(post => {
-    const startsWithFirstWord = post.title.toLowerCase().startsWith(firstWord);
-    const isNotCurrentPost = post.title !== currentPost.title;
-    const isNotAlreadyAdded = !relatedPosts.has(post);
-    return startsWithFirstWord && isNotCurrentPost && isNotAlreadyAdded;
-  }));
-
-  // Step 3: Check for similar tags
-  const tagNames = currentPost.tags.map(tag => tag.name);
-  const relatedByTagsPromise = Promise.resolve(allPosts.filter(post => {
-    const hasMatchingTags = post.tags.some(tag => 
-      tagNames.includes(tag.name)
-    );
-    const isNotCurrentPost = post.title !== currentPost.title;
-    const isNotAlreadyAdded = !relatedPosts.has(post);
-    return hasMatchingTags && isNotCurrentPost && isNotAlreadyAdded;
-  }));
-
-  // Run all steps in parallel
-  const [relatedByDevelopers, relatedByTitle, relatedByTags] = await Promise.all([
-    relatedByDevelopersPromise,
-    relatedByTitlePromise,
-    relatedByTagsPromise,
-  ]);
+  });
 
   console.log(`Related by developers:`, relatedByDevelopers.map(post => post.title));
-  console.log(`Related by title:`, relatedByTitle.map(post => post.title));
-  console.log(`Related by tags:`, relatedByTags.map(post => post.title));
 
   // Add posts from developers to the relatedPosts Set
   relatedByDevelopers.forEach(post => relatedPosts.add(post));
@@ -170,6 +140,19 @@ async function findRelatedPosts(currentPost, allPosts) {
     return Array.from(relatedPosts).slice(0, 5);
   }
 
+  // Step 2: Check for similar first word in title
+  const firstWord = currentPost.title.split(' ')[0].toLowerCase();
+  console.log(`First word: ${firstWord}`);
+
+  const relatedByTitle = allPosts.filter(post => {
+    const startsWithFirstWord = post.title.toLowerCase().startsWith(firstWord);
+    const isNotCurrentPost = post.title !== currentPost.title;
+    const isNotAlreadyAdded = !relatedPosts.has(post);
+    return startsWithFirstWord && isNotCurrentPost && isNotAlreadyAdded;
+  });
+
+  console.log(`Related by title:`, relatedByTitle.map(post => post.title));
+
   // Add posts from title to the relatedPosts Set
   relatedByTitle.forEach(post => relatedPosts.add(post));
 
@@ -177,6 +160,19 @@ async function findRelatedPosts(currentPost, allPosts) {
   if (relatedPosts.size >= 5) {
     return Array.from(relatedPosts).slice(0, 5);
   }
+
+  // Step 3: Check for similar tags
+  const tagNames = currentPost.tags.map(tag => tag.name);
+  const relatedByTags = allPosts.filter(post => {
+    const hasMatchingTags = post.tags.some(tag => 
+      tagNames.includes(tag.name)
+    );
+    const isNotCurrentPost = post.title !== currentPost.title;
+    const isNotAlreadyAdded = !relatedPosts.has(post);
+    return hasMatchingTags && isNotCurrentPost && isNotAlreadyAdded;
+  });
+
+  console.log(`Related by tags:`, relatedByTags.map(post => post.title));
 
   // Shuffle the relatedByTags array to ensure variety
   const shuffledRelatedByTags = shuffleArray(relatedByTags);
@@ -237,7 +233,7 @@ async function generateSubforumPages(partials, subforums) {
     // Generate individual post pages
     await Promise.all(subforum.posts.map(async post => {
       // Find related posts for the current post
-  const relatedPosts = await findRelatedPosts(post, subforum.posts); // Await the result
+      const relatedPosts = findRelatedPosts(post, subforum.posts);
       // Generate post content with related posts
       const postContent = template.generatePostPage(post, subforum, baseurl, relatedPosts);
 
