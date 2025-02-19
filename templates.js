@@ -283,30 +283,32 @@ function generateSlug(text) {
 
 // related posts
 
-function findRelatedPosts(post, allPosts) {
-  const firstWord = post.title.split(' ')[0].toLowerCase();
-  
-  // Find posts with the same first word in the title
-  const relatedByTitle = allPosts.filter(p => 
-    p.title.toLowerCase().startsWith(firstWord) && p.title !== post.title
-  );
+function findRelatedPostsForAll(allPosts) {
+  const relatedPostsMap = {};
 
-  // If we have enough posts, return them
-  if (relatedByTitle.length >= 5) {
-    return relatedByTitle.slice(0, 5);
-  }
+  allPosts.forEach(post => {
+    const firstWord = post.title.split(' ')[0].toLowerCase();
 
-  // Otherwise, find posts with similar tags
-  const relatedByTags = allPosts.filter(p => 
-    p.tags.some(tag => post.tags.some(t => t.name === tag.name)) && p.title !== post.title
-  );
+    // Find posts with the same first word in the title
+    const relatedByTitle = allPosts.filter(p => 
+      p.title.toLowerCase().startsWith(firstWord) && p.title !== post.title
+    );
 
-  // Combine and deduplicate the results
-  const combined = [...new Set([...relatedByTitle, ...relatedByTags])];
+    // Find posts with similar tags
+    const relatedByTags = allPosts.filter(p => 
+      p.tags.some(tag => post.tags.some(t => t.name === tag.name)) && p.title !== post.title
+    );
 
-  // Return up to 5 related posts
-  return combined.slice(0, 5);
+    // Combine and deduplicate the results
+    const combined = [...new Set([...relatedByTitle, ...relatedByTags])];
+
+    // Store up to 5 related posts for this post
+    relatedPostsMap[post.title] = combined.slice(0, 5);
+  });
+
+  return relatedPostsMap;
 }
+
 
 module.exports = {
   templates,
