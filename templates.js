@@ -164,48 +164,7 @@ const templates = {
 vnTemplate: {
   generatePostLink: (subforumKey, post) => `/${subforumKey}/${generateSlug(post.title)}`,
 
-  generateSubforumPage: (subforum, baseurl) => `
-    <h1>${subforum.title}</h1>
-    <p>${subforum.description}</p>
-    <p>${subforum.created_at}</p>
-    <img src="${subforum.banner}" alt="${subforum.title}">
-    <img src="${subforum.icon}" alt="${subforum.title}">
-    <ul>${subforum.posts.map(post => `
-      <li>
-        <img src="${post.image.url}" alt="${post.title}" width="50">
-        <a href="${post.link}">${post.title}</a>
-        <span>(${post.flair})</span>
-        <br>By ${post.author} on ${post.date}
-      </li>
-    `).join('')}</ul>
-  `,
-
-  generatePostPage: (post, subforum, baseurl) => {
-    // Function to find related posts
-    const findRelatedPosts = (currentPost, allPosts) => {
-      const firstWord = currentPost.title.split(' ')[0].toLowerCase();
-      const relatedByTitle = allPosts.filter(p => 
-        p.title.toLowerCase().startsWith(firstWord) && p.title !== currentPost.title
-      );
-
-      if (relatedByTitle.length >= 5) {
-        return relatedByTitle.slice(0, 5);
-      }
-
-      // If not enough posts by title, fallback to tags
-      const relatedByTags = allPosts.filter(p => 
-        p.tags.some(tag => currentPost.tags.some(t => t.name === tag.name)) && p.title !== currentPost.title
-      );
-
-      const combined = [...relatedByTitle, ...relatedByTags];
-      const uniquePosts = Array.from(new Set(combined.map(p => p.title)))
-        .map(title => combined.find(p => p.title === title));
-
-      return uniquePosts.slice(0, 5);
-    };
-
-    const relatedPosts = findRelatedPosts(post, subforum.posts);
-
+  generatePostPage: (post, subforum, baseurl, relatedPosts) => {
     const relatedPostsHTML = relatedPosts.length > 0 ? `
       <h2>Related Posts</h2>
       <ul>
@@ -248,32 +207,7 @@ vnTemplate: {
       ${relatedPostsHTML}
     `;
   },
-
-  generateRSSFeed: (subforum, baseurl) => {
-    const feedUrl = `${baseurl}${subforum.link.replace(/^\//, '')}.rss`;
-    const items = subforum.posts.map(post => `
-      <item>
-        <title>${post.title}</title>
-        <link>${baseurl}${post.link.replace(/^\//, '')}.html</link>
-        <description>${post.content || ''}</description>
-        <pubDate>${new Date(post.date).toUTCString()}</pubDate>
-        <guid>${baseurl}${post.link.replace(/^\//, '')}.html</guid>
-      </item>
-    `).join('');
-
-    return `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-  <channel>
-    <title>${subforum.title}</title>
-    <link>${baseurl}${subforum.link.replace(/^\//, '')}.html</link>
-    <description>${subforum.description}</description>
-    <atom:link href="${feedUrl}" rel="self" type="application/rss+xml" />
-    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
-    ${items}
-  </channel>
-</rss>`;
-  },
-},
+}
   
 };
 
