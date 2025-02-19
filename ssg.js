@@ -321,37 +321,24 @@ function generatePaginationLinks(type, slug, currentPage, totalPages) {
   `;
 }
 
-const { exec } = require('child_process');
-
 async function runSSG() {
   try {
     await ensureDirectoryExists(dirs.public);
-
     const [partials, subforums] = await Promise.all([
       loadFilesFromDir(dirs.partials, '.html'),
       loadFilesFromDir(dirs.subforums, '.json', JSON.parse),
     ]);
 
     await generateSpecialPages(partials);
-    await generateSubforumPages(partials, subforums);
-    await generateTagDevAliasPages(partials);
+    await generateSubforumPages(partials, subforums); // First, generate all subforum pages
+    await generateTagDevAliasPages(partials);         // Then, generate tag/dev pages
 
     console.log('SSG build complete!');
-
-    // Run Pagefind after the site is built
-    console.log('Running Pagefind to index content...');
-    exec('npx pagefind --source public', (err, stdout, stderr) => {
-      if (err) {
-        console.error('Pagefind failed:', err);
-        return;
-      }
-      console.log('Pagefind indexing complete!');
-      console.log(stdout);
-    });
   } catch (err) {
     console.error('SSG build failed:', err.stack || err.message);
     process.exit(1);
   }
 }
+
 
 runSSG();
