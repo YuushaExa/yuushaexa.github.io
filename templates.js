@@ -272,22 +272,35 @@ function generateSlug(text) {
 
 // related posts
 
-function getPostsByField(field, value, allPosts, limit, baseurl) {
-  const postsWithField = allPosts.filter(post => {
-    if (field === 'tags') {
-      return post.tags.some(tag => tag.name === value);
-    } else if (field === 'developers') {
-      return post.developers.some(dev => dev.name === value);
-    } else if (field === 'aliases') {
-      return post.aliases.includes(value);
-    }
-    return false;
-  }).slice(0, limit); // Limit the number of posts
+function getPostsByField(field, value, allPosts, limit = 5, baseurl = '', sortFn = null) {
+  // Mapping of field types to their respective filtering functions
+  const fieldFilters = {
+    tags: (post) => post.tags.some(tag => tag.name === value),
+    developers: (post) => post.developers.some(dev => dev.name === value),
+  };
 
+  // Validate field type
+  if (!fieldFilters[field]) {
+    throw new Error(`Unsupported field type: ${field}`);
+  }
+
+  // Filter posts based on the field and value
+  let postsWithField = allPosts.filter(fieldFilters[field]);
+
+  // Apply custom sorting if provided
+  if (sortFn && typeof sortFn === 'function') {
+    postsWithField.sort(sortFn);
+  }
+
+  // Limit the number of posts
+  postsWithField = postsWithField.slice(0, limit);
+
+  // Handle case where no posts are found
   if (postsWithField.length === 0) {
     return '<p>No posts found for this field.</p>';
   }
 
+  // Generate HTML for the filtered posts
   return `
     <ul>
       ${postsWithField.map(post => `
@@ -299,7 +312,6 @@ function getPostsByField(field, value, allPosts, limit, baseurl) {
     </ul>
   `;
 }
-
 
 module.exports = {
   templates,
