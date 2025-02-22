@@ -187,7 +187,9 @@ const templates = {
       <h2>Developers</h2>
   <ul>
     ${post.developers.map(dev => `
-      <li><a href="${baseurl}vn/developers/${generateSlugtags(dev.name)}.html">${dev.name}</a></li>
+      <li><a href="${baseurl}vn/developers/${generateSlugtags(dev.name)}.html">${dev.name}</a>
+        ${getPostsByField('developers', dev.name, subforum.posts, 5, baseurl)}
+      </li>
     `).join('')}
   </ul>
 
@@ -266,6 +268,36 @@ function generateSlug(text) {
     .trim() // Trim leading/trailing spaces
     .substring(0, 40); // Limit to 40 characters
   return baseSlug; // Return the base slug without a counter
+}
+
+// related posts
+
+function getPostsByField(field, value, allPosts, limit, baseurl) {
+  const postsWithField = allPosts.filter(post => {
+    if (field === 'tags') {
+      return post.tags.some(tag => tag.name === value);
+    } else if (field === 'developers') {
+      return post.developers.some(dev => dev.name === value);
+    } else if (field === 'aliases') {
+      return post.aliases.includes(value);
+    }
+    return false;
+  }).slice(0, limit); // Limit the number of posts
+
+  if (postsWithField.length === 0) {
+    return '<p>No posts found for this field.</p>';
+  }
+
+  return `
+    <ul>
+      ${postsWithField.map(post => `
+        <li>
+          <a href="${baseurl}${post.link.replace(/^\//, '')}.html">${post.title}</a>
+          <br>By ${post.author} on ${post.date}
+        </li>
+      `).join('')}
+    </ul>
+  `;
 }
 
 
