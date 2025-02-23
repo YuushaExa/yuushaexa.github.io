@@ -272,7 +272,7 @@ function generateSlug(text) {
 
 // related posts
 
-function getPostsByField(field, value, allPosts, limit = 5, baseurl = '') {
+function getPostsByField(field, value, allPosts, baseurl = '') {
   const filters = {
     tags: (post) => post.tags.some(tag => tag.name === value),
     developers: (post) => post.developers.some(dev => dev.name === value),
@@ -281,15 +281,8 @@ function getPostsByField(field, value, allPosts, limit = 5, baseurl = '') {
 
   if (!filters[field]) throw new Error(`Unsupported field: ${field}`);
 
-  // Filter, sort, and limit the posts in one chain
-  const posts = allPosts
-    .filter(filters[field])
-    .map(post => ({
-      ...post,
-      firstWord: post.title.split(' ')[0].toLowerCase(), // Precompute and lowercase for case-insensitive sorting
-    }))
-    .sort((a, b) => a.firstWord.localeCompare(b.firstWord))
-    .slice(0, limit);
+  // Filter the posts
+  const posts = allPosts.filter(filters[field]);
 
   return posts.length === 0
     ? '<p>No posts found.</p>'
@@ -300,7 +293,6 @@ function getPostsByField(field, value, allPosts, limit = 5, baseurl = '') {
         </li>`).join('')}
       </ul>`;
 }
-
 module.exports = {
   templates,
   generateSlugtags
