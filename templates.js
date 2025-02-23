@@ -272,7 +272,7 @@ function generateSlug(text) {
 
 // related posts
 
-function getPostsByField(field, value, allPosts, limit = 5, baseurl = '', currentPost = null) {
+function getPostsByField(field, value, allPosts, limit = 5, baseurl = '') {
   const filters = {
     tags: (post) => post.tags.some(tag => tag.name === value),
     developers: (post) => post.developers.some(dev => dev.name === value),
@@ -281,27 +281,9 @@ function getPostsByField(field, value, allPosts, limit = 5, baseurl = '', curren
 
   if (!filters[field]) throw new Error(`Unsupported field: ${field}`);
 
-  // Filter posts based on the specified field and value
-  let posts = allPosts.filter(filters[field]);
-
-  // If a currentPost is provided, find related posts by title
-  if (currentPost) {
-    const firstWord = currentPost.title.split(' ')[0].toLowerCase();
-    console.log(`First word: ${firstWord}`);
-
-    const relatedByTitle = allPosts.filter(post => {
-      const startsWithFirstWord = post.title.toLowerCase().startsWith(firstWord);
-      const isNotCurrentPost = post.title !== currentPost.title;
-      const isNotAlreadyAdded = !posts.includes(post);
-      return startsWithFirstWord && isNotCurrentPost && isNotAlreadyAdded;
-    });
-
-    // Combine the filtered posts with the related posts
-    posts = posts.concat(relatedByTitle);
-  }
-
-  // Sort posts by the first word of the title
-  posts = posts
+  // Filter, sort, and limit the posts in one chain
+  const posts = allPosts
+    .filter(filters[field])
     .map(post => ({
       ...post,
       firstWord: post.title.split(' ')[0].toLowerCase(), // Precompute and lowercase for case-insensitive sorting
@@ -318,6 +300,7 @@ function getPostsByField(field, value, allPosts, limit = 5, baseurl = '', curren
         </li>`).join('')}
       </ul>`;
 }
+
 module.exports = {
   templates,
   generateSlugtags
