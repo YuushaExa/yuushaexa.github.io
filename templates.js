@@ -272,45 +272,34 @@ function generateSlug(text) {
 
 // related posts
 
-function getPostsByField(field, value, allPosts, limit = 5, baseurl = '', sortFn = null) {
-  // Mapping of field types to their respective filtering functions
-  const fieldFilters = {
+function getPostsByField(field, value, allPosts, limit = 5, baseurl = '', originalTitle) {
+  const filters = {
     tags: (post) => post.tags.some(tag => tag.name === value),
     developers: (post) => post.developers.some(dev => dev.name === value),
+    aliases: (post) => post.aliases.includes(value),
   };
 
-  // Validate field type
-  if (!fieldFilters[field]) {
-    throw new Error(`Unsupported field type: ${field}`);
-  }
+  if (!filters[field]) throw new Error(`Unsupported field: ${field}`);
 
-  // Filter posts based on the field and value
-  let postsWithField = allPosts.filter(fieldFilters[field]);
+  // Filter posts, exclude the original post, and sort by the first word of the title
+  const posts = allPosts
+    .filter(filters[field])
+    .filter(post => post.title !== originalTitle) // Exclude the original post
+    .sort((a, b) => {
+      const firstWordA = a.title.split(' ')[0]; // Get the first word of title A
+      const firstWordB = b.title.split(' ')[0]; // Get the first word of title B
+      return firstWordA.localeCompare(firstWordB); // Sort alphabetically by first word
+    })
+    .slice(0, limit);
 
-  // Apply custom sorting if provided
-  if (sortFn && typeof sortFn === 'function') {
-    postsWithField.sort(sortFn);
-  }
-
-  // Limit the number of posts
-  postsWithField = postsWithField.slice(0, limit);
-
-  // Handle case where no posts are found
-  if (postsWithField.length === 0) {
-    return '<p>No posts found for this field.</p>';
-  }
-
-  // Generate HTML for the filtered posts
-  return `
-    <ul>
-      ${postsWithField.map(post => `
+  return posts.length === 0
+    ? '<p>No posts found.</p>'
+    : `<ul>${posts.map(post => `
         <li>
           <a href="${baseurl}${post.link.replace(/^\//, '')}.html">${post.title}</a>
           <br>By ${post.author} on ${post.date}
-        </li>
-      `).join('')}
-    </ul>
-  `;
+        </li>`).join('')}
+      </ul>`;
 }
 
 module.exports = {
