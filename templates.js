@@ -272,26 +272,46 @@ function generateSlug(text) {
 
 // related posts
 
-function getPostsByField(field, value, allPosts, baseurl = '') {
+async function getPostsByField(field, value, allPosts, baseurl = '') {
   const filters = {
-    tags: (post) => post.tags.some(tag => tag.name === value),
-    developers: (post) => post.developers.some(dev => dev.name === value),
-    aliases: (post) => post.aliases.includes(value),
+    tags: async (post) => {
+      // Simulate an async operation (e.g., fetching tag data)
+      const tags = await Promise.resolve(post.tags);
+      return tags.some(tag => tag.name === value);
+    },
+    developers: async (post) => {
+      // Simulate an async operation (e.g., fetching developer data)
+      const developers = await Promise.resolve(post.developers);
+      return developers.some(dev => dev.name === value);
+    },
+    aliases: async (post) => {
+      // Simulate an async operation (e.g., fetching alias data)
+      const aliases = await Promise.resolve(post.aliases);
+      return aliases.includes(value);
+    },
   };
 
   if (!filters[field]) throw new Error(`Unsupported field: ${field}`);
 
-  // Filter the posts
-  const posts = allPosts.filter(filters[field]);
+  // Use Promise.all to process all posts in parallel
+  const filteredPosts = await Promise.all(
+    allPosts.map(async (post) => {
+      const isMatch = await filters[field](post);
+      return isMatch ? post : null;
+    })
+  ).then(results => results.filter(post => post !== null)); // Filter out null values
 
-  return posts.length === 0
-    ? '<p>No posts found.</p>'
-    : `<ul>${posts.map(post => `
-        <li>
-          <a href="${baseurl}${post.link.replace(/^\//, '')}.html">${post.title}</a>
-          <br>By ${post.author} on ${post.date}
-        </li>`).join('')}
-      </ul>`;
+  if (filteredPosts.length === 0) return '<p>No posts found.</p>';
+
+  // Generate HTML
+  const html = `<ul>${filteredPosts.map(post => `
+    <li>
+      <a href="${baseurl}${post.link.replace(/^\//, '')}.html">${post.title}</a>
+      <br>By ${post.author} on ${post.date}
+    </li>`).join('')}
+  </ul>`;
+
+  return html;
 }
 module.exports = {
   templates,
