@@ -276,32 +276,23 @@ function getPostsByField(field, value, allPosts, baseurl = '') {
   const filters = {
     tags: (post) => post.tags.some(tag => tag.name === value),
     developers: (post) => post.developers.some(dev => dev.name === value),
-    aliases: (post) => new Set(post.aliases).has(value),
   };
 
-  if (!filters[field]) throw new Error(`Unsupported field: ${field}');
+  if (!filters[field]) throw new Error(`Unsupported field: ${field}`);
 
-  const filteredPosts = [];
-  for (let i = 0; i < allPosts.length; i++) {
-    if (filters[field](allPosts[i])) {
-      filteredPosts.push(allPosts[i]);
-    }
-  }
+  // Filter the posts
+  const posts = allPosts.filter(filters[field]);
 
-  if (filteredPosts.length === 0) return '<p>No posts found.</p>';
-
-  let html = '<ul>';
-  for (let i = 0; i < filteredPosts.length; i++) {
-    const post = filteredPosts[i];
-    html += `
-      <li>
-        <a href="${baseurl}${post.link.replace(/^\//, '')}.html">${post.title}</a>
-        <br>By ${post.author} on ${post.date}
-      </li>`;
-  }
-  html += '</ul>';
-  return html;
+  return posts.length === 0
+    ? '<p>No posts found.</p>'
+    : `<ul>${posts.map(post => `
+        <li>
+          <a href="${baseurl}${post.link.replace(/^\//, '')}.html">${post.title}</a>
+          <br>By ${post.author} on ${post.date}
+        </li>`).join('')}
+      </ul>`;
 }
+
 module.exports = {
   templates,
   generateSlugtags
