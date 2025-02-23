@@ -285,9 +285,16 @@ function getPostsByField(field, value, allPosts, baseurl = '') {
     // If no posts are found, return a message
     if (posts.length === 0) return '<p>No posts found.</p>';
 
-    // Get the first word of the first post's title to determine priority
-    const firstPostTitle = posts[0].title;
-    const priorityFirstWord = firstPostTitle.split(' ')[0].toLowerCase(); // Normalize for comparison
+    // Find the post with an exact title match first
+    let priorityPost = posts.find(post => post.title.toLowerCase() === value.toLowerCase());
+
+    // If no exact match, fallback to the first post in the filtered list
+    if (!priorityPost) {
+        priorityPost = posts[0];
+    }
+
+    // Get the first word of the priority post's title to determine sorting order
+    const priorityFirstWord = priorityPost.title.split(' ')[0].toLowerCase(); // Normalize for comparison
 
     // Group posts by their first word
     const groupedPosts = posts.reduce((acc, post) => {
@@ -300,7 +307,7 @@ function getPostsByField(field, value, allPosts, baseurl = '') {
     }, {});
 
     // Sort the groups:
-    // - The group matching the first word of the first post comes first.
+    // - The group matching the first word of the priority post comes first.
     // - The rest are sorted alphabetically.
     const sortedGroups = Object.keys(groupedPosts).sort((a, b) => {
         if (a === priorityFirstWord) return -1; // The priority group goes first
@@ -326,6 +333,7 @@ function getPostsByField(field, value, allPosts, baseurl = '') {
 
     return `<ul>${postList}</ul>`;
 }
+
 
 
 module.exports = {
