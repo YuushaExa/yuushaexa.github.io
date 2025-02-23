@@ -272,7 +272,7 @@ function generateSlug(text) {
 
 // related posts
 
-function getPostsByField(field, value, allPosts, limit = 5, baseurl = '') {
+function getPostsByField(field, value, allPosts, limit = 5, baseurl = '', currentPost = null) {
   const filters = {
     tags: (post) => post.tags.some(tag => tag.name === value),
     developers: (post) => post.developers.some(dev => dev.name === value),
@@ -281,43 +281,43 @@ function getPostsByField(field, value, allPosts, limit = 5, baseurl = '') {
 
   if (!filters[field]) throw new Error(`Unsupported field: ${field}`);
 
-  // Filter and precompute the first word for grouping
-  const posts = allPosts
-    .filter(filters[field])
+  // Filter posts based on the specified field and value
+  let posts = allPosts.filter(filters[field]);
+
+  // If a currentPost is provided, find related posts by title
+  if (currentPost) {
+    const firstWord = currentPost.title.split(' ')[0].toLowerCase();
+    console.log(`First word: ${firstWord}`);
+
+    const relatedByTitle = allPosts.filter(post => {
+      const startsWithFirstWord = post.title.toLowerCase().startsWith(firstWord);
+      const isNotCurrentPost = post.title !== currentPost.title;
+      const isNotAlreadyAdded = !posts.includes(post);
+      return startsWithFirstWord && isNotCurrentPost && isNotAlreadyAdded;
+    });
+
+    // Combine the filtered posts with the related posts
+    posts = posts.concat(relatedByTitle);
+  }
+
+  // Sort posts by the first word of the title
+  posts = posts
     .map(post => ({
       ...post,
-      firstWord: post.title.split(' ')[0].toLowerCase(), // Extract and lowercase the first word
-    }));
+      firstWord: post.title.split(' ')[0].toLowerCase(), // Precompute and lowercase for case-insensitive sorting
+    }))
+    .sort((a, b) => a.firstWord.localeCompare(b.firstWord))
+    .slice(0, limit);
 
-  // Group posts by their first word
-  const groupedPosts = posts.reduce((groups, post) => {
-    const firstWord = post.firstWord;
-    if (!groups[firstWord]) {
-      groups[firstWord] = [];
-    }
-    groups[firstWord].push(post);
-    return groups;
-  }, {});
-
-  // Sort the groups by the first word
-  const sortedGroups = Object.keys(groupedPosts)
-    .sort((a, b) => a.localeCompare(b)) // Sort groups alphabetically by first word
-    .map(firstWord => groupedPosts[firstWord]) // Extract the sorted groups
-    .flat(); // Flatten the groups into a single array
-
-  // Limit the results
-  const limitedPosts = sortedGroups.slice(0, limit);
-
-  return limitedPosts.length === 0
+  return posts.length === 0
     ? '<p>No posts found.</p>'
-    : `<ul>${limitedPosts.map(post => `
+    : `<ul>${posts.map(post => `
         <li>
           <a href="${baseurl}${post.link.replace(/^\//, '')}.html">${post.title}</a>
           <br>By ${post.author} on ${post.date}
         </li>`).join('')}
       </ul>`;
 }
-
 module.exports = {
   templates,
   generateSlugtags
