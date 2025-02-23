@@ -281,17 +281,19 @@ function getPostsByField(field, value, allPosts, limit = 5, baseurl = '') {
 
   if (!filters[field]) throw new Error(`Unsupported field: ${field}`);
 
-  // Sort by the first word of post.title
-  const sortByFirstWord = (a, b) => {
-    const firstWordA = a.title.split(' ')[0]; // Get the first word of title A
-    const firstWordB = b.title.split(' ')[0]; // Get the first word of title B
-    return firstWordA.localeCompare(firstWordB); // Sort alphabetically by first word
-  };
-
-  const posts = allPosts
+  // Precompute the first word for each post
+  const postsWithFirstWord = allPosts
     .filter(filters[field])
-    .sort(sortByFirstWord) // Sort by the first word of the title
-    .slice(0, limit);
+    .map(post => ({
+      ...post,
+      firstWord: post.title.split(' ')[0].toLowerCase(), // Precompute and lowercase for case-insensitive sorting
+    }));
+
+  // Sort by the precomputed first word
+  postsWithFirstWord.sort((a, b) => a.firstWord.localeCompare(b.firstWord));
+
+  // Limit the number of posts
+  const posts = postsWithFirstWord.slice(0, limit);
 
   return posts.length === 0
     ? '<p>No posts found.</p>'
