@@ -280,17 +280,53 @@ function getPostsByField(field, value, allPosts, baseurl = '') {
 
   if (!filters[field]) throw new Error(`Unsupported field: ${field}`);
 
-  // Filter the posts
-  const posts = allPosts.filter(filters[field]);
+  // Extract the first word from the post title
+  const getFirstWord = (title) => title.split(' ')[0];
 
-  return posts.length === 0
-    ? '<p>No posts found.</p>'
-    : `<ul>${posts.map(post => `
-        <li>
-          <a href="${baseurl}${post.link.replace(/^\//, '')}.html">${post.title}</a>
-          <br>By ${post.author} on ${post.date}
-        </li>`).join('')}
+  // Group posts by the first word of their title
+  const postsGroupedByFirstWord = allPosts.reduce((acc, post) => {
+    const firstWord = getFirstWord(post.title);
+    if (!acc[firstWord]) {
+      acc[firstWord] = [];
+    }
+    acc[firstWord].push(post);
+    return acc;
+  }, {});
+
+  // Filter the posts based on the specified field and value
+  const filteredPosts = allPosts.filter(filters[field]);
+
+  // Sort the filtered posts to show those with similar first words first
+  const sortedPosts = filteredPosts.sort((a, b) => {
+    const firstWordA = getFirstWord(a.title);
+    const firstWordB = getFirstWord(b.title);
+    return firstWordA.localeCompare(firstWordB);
+  });
+
+  // Group the sorted posts by the first word of their title
+  const sortedPostsGroupedByFirstWord = sortedPosts.reduce((acc, post) => {
+    const firstWord = getFirstWord(post.title);
+    if (!acc[firstWord]) {
+      acc[firstWord] = [];
+    }
+    acc[firstWord].push(post);
+    return acc;
+  }, {});
+
+  // Generate the HTML for the grouped posts
+  const html = Object.entries(sortedPostsGroupedByFirstWord).map(([firstWord, posts]) => {
+    return `
+      <h3>${firstWord}</h3>
+      <ul>
+        ${posts.map(post => `
+          <li>
+            <a href="${baseurl}${post.link.replace(/^\//, '')}.html">${post.title}</a>
+            <br>By ${post.author} on ${post.date}
+          </li>`).join('')}
       </ul>`;
+  }).join('');
+
+  return html === '' ? '<p>No posts found.</p>' : html;
 }
 
 module.exports = {
