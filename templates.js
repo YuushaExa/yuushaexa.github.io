@@ -285,24 +285,35 @@ function getPostsByField(field, value, allPosts, baseurl = '') {
     // If no posts are found, return a message
     if (posts.length === 0) return '<p>No posts found.</p>';
 
-    // Group posts by the first word in the title
+    // Get the first word of the first post's title to determine priority
+    const firstPostTitle = posts[0].title;
+    const priorityFirstWord = firstPostTitle.split(' ')[0].toLowerCase(); // Normalize for comparison
+
+    // Group posts by their first word
     const groupedPosts = posts.reduce((acc, post) => {
-        const firstWord = post.title.split(' ')[0].toLowerCase();  // Get the first word of the title
-        if (!acc[firstWord]) acc[firstWord] = [];
-        acc[firstWord].push(post);
+        const firstWord = post.title.split(' ')[0]; // Preserve original case
+        const normalizedFirstWord = firstWord.toLowerCase(); // Normalize for sorting
+
+        if (!acc[normalizedFirstWord]) acc[normalizedFirstWord] = { original: firstWord, posts: [] };
+        acc[normalizedFirstWord].posts.push(post);
         return acc;
     }, {});
 
-    // Sort the groups by the first word alphabetically
-    const sortedGroups = Object.keys(groupedPosts).sort((a, b) => a.localeCompare(b));
+    // Sort the groups:
+    // - The group matching the first word of the first post comes first.
+    // - The rest are sorted alphabetically.
+    const sortedGroups = Object.keys(groupedPosts).sort((a, b) => {
+        if (a === priorityFirstWord) return -1; // The priority group goes first
+        if (b === priorityFirstWord) return 1;  // Others come after
+        return a.localeCompare(b);              // Alphabetical order for the rest
+    });
 
     // Generate the HTML list with grouped posts
     const postList = sortedGroups.map(group => {
         return `
-            <li>
-                <strong>${group}</strong> 
+            <li><strong>${groupedPosts[group].original}</strong>
                 <ul>
-                    ${groupedPosts[group].map(post => `
+                    ${groupedPosts[group].posts.map(post => `
                         <li>
                             <a href="${baseurl}${post.link.replace(/^\//, '')}.html">${post.title}</a>
                             <br>By ${post.author} on ${post.date}
@@ -315,6 +326,7 @@ function getPostsByField(field, value, allPosts, baseurl = '') {
 
     return `<ul>${postList}</ul>`;
 }
+
 
 module.exports = {
   templates,
