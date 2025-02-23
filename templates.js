@@ -283,6 +283,12 @@ function getPostsByField(field, value, allPosts, limit = 5, baseurl = '') {
 
   // Filter, sort, and limit the posts in one chain
   const posts = allPosts
+    .filter(filters[field])
+    .map(post => ({
+      ...post,
+      firstWord: post.title.split(' ')[0].toLowerCase(), // Precompute and lowercase for case-insensitive sorting
+    }))
+    .sort((a, b) => a.firstWord.localeCompare(b.firstWord))
     .slice(0, limit);
 
   return posts.length === 0
