@@ -281,24 +281,28 @@ function getPostsByField(field, value, allPosts, limit = 5, baseurl = '') {
 
   if (!filters[field]) throw new Error(`Unsupported field: ${field}`);
 
+  // Extract the first word more robustly (ignoring leading special characters)
+  const extractFirstWord = (title) => {
+    const match = title.match(/[a-zA-Z0-9]+/); // Match the first alphanumeric word
+    return match ? match[0].toLowerCase() : ''; // Return lowercase or empty string if no match
+  };
+
   // Filter, sort, and limit the posts in one chain
   const posts = allPosts
-  .filter(filters[field])
-  .map(post => {
-    const firstWord = post.title.match(/^\w+/)?.[0]?.toLowerCase() || ''; // More robust extraction
-    return {
+    .filter(filters[field])
+    .map(post => ({
       ...post,
-      firstWord: firstWord,
-    };
-  })
-  .sort((a, b) => a.firstWord.localeCompare(b.firstWord))
-  .slice(0, limit);
+      firstWord: extractFirstWord(post.title), // Use the robust extraction method
+    }))
+    .sort((a, b) => a.firstWord.localeCompare(b.firstWord)) // Sort by firstWord
+    .slice(0, limit);
 
   return posts.length === 0
     ? '<p>No posts found.</p>'
     : `<ul>${posts.map(post => `
         <li>
           <a href="${baseurl}${post.link.replace(/^\//, '')}.html">${post.title}</a>
+          <br>By ${post.author || 'Unknown'} on ${post.date || 'Unknown Date'}
         </li>`).join('')}
       </ul>`;
 }
