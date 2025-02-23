@@ -283,20 +283,22 @@ function getPostsByField(field, value, allPosts, limit = 5, baseurl = '') {
 
   // Filter, sort, and limit the posts in one chain
   const posts = allPosts
-    .filter(filters[field])
-    .map(post => ({
+  .filter(filters[field])
+  .map(post => {
+    const firstWord = post.title.match(/^\w+/)?.[0]?.toLowerCase() || ''; // More robust extraction
+    return {
       ...post,
-      firstWord: post.title.split(' ')[0].toLowerCase(), // Precompute and lowercase for case-insensitive sorting
-    }))
-    .sort((a, b) => a.firstWord.localeCompare(b.firstWord))
-    .slice(0, limit);
+      firstWord: firstWord,
+    };
+  })
+  .sort((a, b) => a.firstWord.localeCompare(b.firstWord))
+  .slice(0, limit);
 
   return posts.length === 0
     ? '<p>No posts found.</p>'
     : `<ul>${posts.map(post => `
         <li>
           <a href="${baseurl}${post.link.replace(/^\//, '')}.html">${post.title}</a>
-          <br>By ${post.author} on ${post.date}
         </li>`).join('')}
       </ul>`;
 }
