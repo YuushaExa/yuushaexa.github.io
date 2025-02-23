@@ -272,45 +272,34 @@ function generateSlug(text) {
 
 // related posts
 
-async function getPostsByField(field, value, allPosts, baseurl = '') {
+function getPostsByField(field, value, allPosts, baseurl = '') {
   const filters = {
-    tags: async (post) => {
-      // Simulate an async operation (e.g., fetching tag data)
-      const tags = await Promise.resolve(post.tags);
-      return tags.some(tag => tag.name === value);
-    },
-    developers: async (post) => {
-      // Simulate an async operation (e.g., fetching developer data)
-      const developers = await Promise.resolve(post.developers);
-      return developers.some(dev => dev.name === value);
-    },
-    aliases: async (post) => {
-      // Simulate an async operation (e.g., fetching alias data)
-      const aliases = await Promise.resolve(post.aliases);
-      return aliases.includes(value);
-    },
+    tags: (post) => post.tags.some(tag => tag.name === value),
+    developers: (post) => post.developers.some(dev => dev.name === value),
+    aliases: (post) => new Set(post.aliases).has(value),
   };
 
-  if (!filters[field]) throw new Error(`Unsupported field: ${field}`);
+  if (!filters[field]) throw new Error(`Unsupported field: ${field}');
 
-  // Use Promise.all to process all posts in parallel
-  const filteredPosts = await Promise.all(
-    allPosts.map(async (post) => {
-      const isMatch = await filters[field](post);
-      return isMatch ? post : null;
-    })
-  ).then(results => results.filter(post => post !== null)); // Filter out null values
+  const filteredPosts = [];
+  for (let i = 0; i < allPosts.length; i++) {
+    if (filters[field](allPosts[i])) {
+      filteredPosts.push(allPosts[i]);
+    }
+  }
 
   if (filteredPosts.length === 0) return '<p>No posts found.</p>';
 
-  // Generate HTML
-  const html = `<ul>${filteredPosts.map(post => `
-    <li>
-      <a href="${baseurl}${post.link.replace(/^\//, '')}.html">${post.title}</a>
-      <br>By ${post.author} on ${post.date}
-    </li>`).join('')}
-  </ul>`;
-
+  let html = '<ul>';
+  for (let i = 0; i < filteredPosts.length; i++) {
+    const post = filteredPosts[i];
+    html += `
+      <li>
+        <a href="${baseurl}${post.link.replace(/^\//, '')}.html">${post.title}</a>
+        <br>By ${post.author} on ${post.date}
+      </li>`;
+  }
+  html += '</ul>';
   return html;
 }
 module.exports = {
