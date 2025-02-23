@@ -281,19 +281,15 @@ function getPostsByField(field, value, allPosts, limit = 5, baseurl = '') {
 
   if (!filters[field]) throw new Error(`Unsupported field: ${field}`);
 
-  // Precompute the first word for each post
-  const postsWithFirstWord = allPosts
+  // Filter, sort, and limit the posts in one chain
+  const posts = allPosts
     .filter(filters[field])
     .map(post => ({
       ...post,
       firstWord: post.title.split(' ')[0].toLowerCase(), // Precompute and lowercase for case-insensitive sorting
-    }));
-
-  // Sort by the precomputed first word
-  postsWithFirstWord.sort((a, b) => a.firstWord.localeCompare(b.firstWord));
-
-  // Limit the number of posts
-  const posts = postsWithFirstWord.slice(0, limit);
+    }))
+    .sort((a, b) => a.firstWord.localeCompare(b.firstWord))
+    .slice(0, limit);
 
   return posts.length === 0
     ? '<p>No posts found.</p>'
