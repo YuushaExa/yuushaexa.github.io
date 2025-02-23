@@ -294,7 +294,6 @@ function getPostsByField(field, value, allPosts, limit = 5, baseurl = '') {
       ...post,
       firstWord: extractFirstWord(post.title), // Use the robust extraction method
     }))
-    .sort((a, b) => a.firstWord.localeCompare(b.firstWord)) // Sort by firstWord
     .slice(0, limit);
 
   return posts.length === 0
@@ -302,7 +301,6 @@ function getPostsByField(field, value, allPosts, limit = 5, baseurl = '') {
     : `<ul>${posts.map(post => `
         <li>
           <a href="${baseurl}${post.link.replace(/^\//, '')}.html">${post.title}</a>
-          <br>By ${post.author || 'Unknown'} on ${post.date || 'Unknown Date'}
         </li>`).join('')}
       </ul>`;
 }
