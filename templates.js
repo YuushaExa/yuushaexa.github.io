@@ -272,7 +272,7 @@ function generateSlug(text) {
 
 // related posts
 
-function getPostsByField(field, value, allPosts, limit = 5, baseurl = '', originalTitle) {
+function getPostsByField(field, value, allPosts, limit = 5, baseurl = '') {
   const filters = {
     tags: (post) => post.tags.some(tag => tag.name === value),
     developers: (post) => post.developers.some(dev => dev.name === value),
@@ -281,15 +281,16 @@ function getPostsByField(field, value, allPosts, limit = 5, baseurl = '', origin
 
   if (!filters[field]) throw new Error(`Unsupported field: ${field}`);
 
-  // Filter posts, exclude the original post, and sort by the first word of the title
+  // Sort by the first word of post.title
+  const sortByFirstWord = (a, b) => {
+    const firstWordA = a.title.split(' ')[0]; // Get the first word of title A
+    const firstWordB = b.title.split(' ')[0]; // Get the first word of title B
+    return firstWordA.localeCompare(firstWordB); // Sort alphabetically by first word
+  };
+
   const posts = allPosts
     .filter(filters[field])
-    .filter(post => post.title !== originalTitle) // Exclude the original post
-    .sort((a, b) => {
-      const firstWordA = a.title.split(' ')[0]; // Get the first word of title A
-      const firstWordB = b.title.split(' ')[0]; // Get the first word of title B
-      return firstWordA.localeCompare(firstWordB); // Sort alphabetically by first word
-    })
+    .sort(sortByFirstWord) // Sort by the first word of the title
     .slice(0, limit);
 
   return posts.length === 0
