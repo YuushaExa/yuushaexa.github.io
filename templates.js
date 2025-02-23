@@ -283,21 +283,42 @@ function getPostsByField(field, value, allPosts, baseurl = '') {
   // Filter the posts based on the specified field and value
   const filteredPosts = allPosts.filter(filters[field]);
 
-  // Sort the filtered posts by their title
-  const sortedPosts = filteredPosts.sort((a, b) => a.title.localeCompare(b.title));
+  if (filteredPosts.length === 0) return '<p>No posts found.</p>';
 
-  // Generate the HTML for the sorted posts
-  const html = sortedPosts.map(post => `
-    <li>
-      <a href="${baseurl}${post.link.replace(/^\//, '')}.html">${post.title}</a>
-      <br>By ${post.author} on ${post.date}
-    </li>`).join('');
+  // Get the first word of the first filtered post's title
+  const firstWord = filteredPosts[0].title.split(' ')[0];
 
-  return sortedPosts.length === 0
-    ? '<p>No posts found.</p>'
-    : `<ul>${html}</ul>`;
+  // Group all posts by the first word of their title
+  const groupedPosts = allPosts.reduce((groups, post) => {
+    const postFirstWord = post.title.split(' ')[0];
+    if (!groups[postFirstWord]) {
+      groups[postFirstWord] = [];
+    }
+    groups[postFirstWord].push(post);
+    return groups;
+  }, {});
+
+  // Sort groups so that the group with the matching first word comes first
+  const sortedGroups = Object.entries(groupedPosts).sort(([groupName], [otherGroupName]) => {
+    if (groupName === firstWord) return -1; // Put the matching group first
+    if (otherGroupName === firstWord) return 1;
+    return groupName.localeCompare(otherGroupName); // Sort other groups alphabetically
+  });
+
+  // Generate the HTML for the grouped posts
+  const html = sortedGroups.map(([groupName, posts]) => `
+    <h3>${groupName}</h3>
+    <ul>
+      ${posts.map(post => `
+        <li>
+          <a href="${baseurl}${post.link.replace(/^\//, '')}.html">${post.title}</a>
+          <br>By ${post.author} on ${post.date}
+        </li>`).join('')}
+    </ul>
+  `).join('');
+
+  return html;
 }
-
 module.exports = {
   templates,
   generateSlugtags
