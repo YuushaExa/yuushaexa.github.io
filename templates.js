@@ -281,26 +281,39 @@ function getPostsByField(field, value, allPosts, limit = 5, baseurl = '') {
 
   if (!filters[field]) throw new Error(`Unsupported field: ${field}`);
 
-  // Extract the first word more robustly (ignoring leading special characters)
-  const extractFirstWord = (title) => {
-    const match = title.match(/[a-zA-Z0-9]+/); // Match the first alphanumeric word
-    return match ? match[0].toLowerCase() : ''; // Return lowercase or empty string if no match
-  };
-
-  // Filter, sort, and limit the posts in one chain
+  // Filter and precompute the first word for grouping
   const posts = allPosts
     .filter(filters[field])
     .map(post => ({
       ...post,
-      firstWord: extractFirstWord(post.title), // Use the robust extraction method
-    }))
-    .slice(0, limit);
+      firstWord: post.title.split(' ')[0].toLowerCase(), // Extract and lowercase the first word
+    }));
 
-  return posts.length === 0
+  // Group posts by their first word
+  const groupedPosts = posts.reduce((groups, post) => {
+    const firstWord = post.firstWord;
+    if (!groups[firstWord]) {
+      groups[firstWord] = [];
+    }
+    groups[firstWord].push(post);
+    return groups;
+  }, {});
+
+  // Sort the groups by the first word
+  const sortedGroups = Object.keys(groupedPosts)
+    .sort((a, b) => a.localeCompare(b)) // Sort groups alphabetically by first word
+    .map(firstWord => groupedPosts[firstWord]) // Extract the sorted groups
+    .flat(); // Flatten the groups into a single array
+
+  // Limit the results
+  const limitedPosts = sortedGroups.slice(0, limit);
+
+  return limitedPosts.length === 0
     ? '<p>No posts found.</p>'
-    : `<ul>${posts.map(post => `
+    : `<ul>${limitedPosts.map(post => `
         <li>
           <a href="${baseurl}${post.link.replace(/^\//, '')}.html">${post.title}</a>
+          <br>By ${post.author} on ${post.date}
         </li>`).join('')}
       </ul>`;
 }
