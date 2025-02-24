@@ -204,6 +204,7 @@ const templates = {
   <ul>
  ${post.tags.map(tag => `
       <li><a href="${baseurl}vn/tags/${generateSlugtags(tag.name)}.html">${tag.name}</a>
+      ${getPostsByField('tags', tag.name, subforum.posts, baseurl, 5)}
 </li>
     `).join('')}
   </ul>
