@@ -290,12 +290,13 @@ function getPostsByField(field, value, allPosts, options = {}) {
     // If no posts are found, return a message
     if (posts.length === 0) return '<p>No posts found.</p>';
 
-    // Remove duplicates based on post title
+    // Remove duplicates based on normalized post title
     const uniquePosts = [];
     const seenTitles = new Set(); // Track seen post titles
     for (const post of posts) {
-        if (!seenTitles.has(post.title)) { // Use `post.title` as the unique identifier
-            seenTitles.add(post.title);
+        const normalizedTitle = post.title.toLowerCase().trim(); // Normalize title
+        if (!seenTitles.has(normalizedTitle)) { // Use normalized title as the unique identifier
+            seenTitles.add(normalizedTitle);
             uniquePosts.push(post);
         }
     }
@@ -342,7 +343,7 @@ function getPostsByField(field, value, allPosts, options = {}) {
                     ${groupedPosts[group].posts.map(post => `
                         <li>
                             <a href="${baseurl}${post.link.replace(/^\//, '')}.html">${post.title}</a>
-                            <br>By ${post.author} on ${post.date}
+                            <br>By ${post.author || 'Unknown'} on ${post.date || 'Unknown'}
                         </li>
                     `).join('')}
                 </ul>
@@ -356,7 +357,6 @@ function getPostsByField(field, value, allPosts, options = {}) {
 
     return `<ul>${postList}</ul>${totalResultsHtml}`;
 }
-
 module.exports = {
   templates,
   generateSlugtags
