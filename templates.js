@@ -277,13 +277,14 @@ function getPostsByField(field, value, allPosts, options = {}) {
     const { baseurl = '', limit = 5 } = options; // Destructure options with defaults
 
     const filters = {
-        tags: (post) => post.tags.some(tag => tag.name === value),
-        developers: (post) => post.developers.some(dev => dev.name === value),
+        tags: (post) => post.tags.some(tag => tag.name === value), // Filter by tags
+        developers: (post) => post.developers.some(dev => dev.name === value), // Filter by developers
+        title: (post) => post.title.toLowerCase().includes(value.toLowerCase()), // Filter by title
     };
 
     if (!filters[field]) throw new Error(`Unsupported field: ${field}`);
 
-    // Filter the posts
+    // Filter the posts based on the selected field
     const posts = allPosts.filter(filters[field]);
 
     // If no posts are found, return a message
