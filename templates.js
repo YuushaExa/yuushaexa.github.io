@@ -15,7 +15,7 @@ const templates = {
           <span>(${post.flair})</span>
           <br>By ${post.author} on ${post.date}
         </li>
-      `).join('')}</ul>
+      `).join('')}</ul> 
     `,
 
     generatePostPage: (post, subforum, baseurl) => `
