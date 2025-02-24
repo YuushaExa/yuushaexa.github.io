@@ -204,8 +204,8 @@ const templates = {
   <ul>
  ${post.tags.map(tag => `
       <li><a href="${baseurl}vn/tags/${generateSlugtags(tag.name)}.html">${tag.name}</a>
-   ${getPostsByField('tags', tag.name, subforum.posts, 5, baseurl)}
-      </li>
+${getPostsByField('tags', tag.name, subforum.posts, baseurl, 5)}
+</li>
     `).join('')}
   </ul>
 
@@ -273,7 +273,9 @@ function generateSlug(text) {
 }
 
 // related posts
-function getPostsByField(field, value, allPosts, baseurl = '') {
+function getPostsByField(field, value, allPosts, options = {}) {
+    const { baseurl = '', limit = 5 } = options; // Destructure options with defaults
+
     const filters = {
         tags: (post) => post.tags.some(tag => tag.name === value),
         developers: (post) => post.developers.some(dev => dev.name === value),
@@ -319,8 +321,11 @@ function getPostsByField(field, value, allPosts, baseurl = '') {
         return numA - numB; // Numerical sorting
     });
 
+    // Limit the number of posts displayed
+    const limitedGroups = sortedGroups.slice(0, limit);
+
     // Generate the HTML list with grouped posts
-    const postList = sortedGroups.map(group => {
+    const postList = limitedGroups.map(group => {
         return `
                 <ul>
                     ${groupedPosts[group].posts.map(post => `
@@ -334,9 +339,12 @@ function getPostsByField(field, value, allPosts, baseurl = '') {
         `;
     }).join('');
 
-    return `<ul>${postList}</ul>`;
-}
+    // Display the total number of results
+    const totalResults = posts.length;
+    const totalResultsHtml = `<p>Total results: ${totalResults}</p>`;
 
+    return `<ul>${postList}</ul>${totalResultsHtml}`;
+}
 
 module.exports = {
   templates,
