@@ -277,36 +277,24 @@ function getPostsByField(field, value, allPosts, options = {}) {
     const { baseurl = '', limit = 5 } = options; // Destructure options with defaults
 
     const filters = {
-        tags: (post) => post.tags.some(tag => tag.name === value), // Filter by tags
-        developers: (post) => post.developers.some(dev => dev.name === value), // Filter by developers
-        title: (post) => post.title.toLowerCase().includes(value.toLowerCase()), // Filter by title
+        tags: (post) => post.tags.some(tag => tag.name === value),
+        developers: (post) => post.developers.some(dev => dev.name === value),
     };
 
     if (!filters[field]) throw new Error(`Unsupported field: ${field}`);
 
-    // Filter the posts based on the selected field
+    // Filter the posts
     const posts = allPosts.filter(filters[field]);
 
     // If no posts are found, return a message
     if (posts.length === 0) return '<p>No posts found.</p>';
 
-    // Remove duplicates based on normalized post title
-    const uniquePosts = [];
-    const seenTitles = new Set(); // Track seen post titles
-    for (const post of posts) {
-        const normalizedTitle = post.title.toLowerCase().trim(); // Normalize title
-        if (!seenTitles.has(normalizedTitle)) { // Use normalized title as the unique identifier
-            seenTitles.add(normalizedTitle);
-            uniquePosts.push(post);
-        }
-    }
-
     // Get the first word of the first post's title to determine priority
-    const firstPostTitle = uniquePosts[0].title;
+    const firstPostTitle = posts[0].title;
     const priorityFirstWord = firstPostTitle.split(' ')[0].toLowerCase(); // Normalize for comparison
 
     // Group posts by their first word
-    const groupedPosts = uniquePosts.reduce((acc, post) => {
+    const groupedPosts = posts.reduce((acc, post) => {
         const firstWord = post.title.split(' ')[0]; // Preserve original case
         const normalizedFirstWord = firstWord.toLowerCase(); // Normalize for sorting
 
@@ -343,7 +331,7 @@ function getPostsByField(field, value, allPosts, options = {}) {
                     ${groupedPosts[group].posts.map(post => `
                         <li>
                             <a href="${baseurl}${post.link.replace(/^\//, '')}.html">${post.title}</a>
-                            <br>By ${post.author || 'Unknown'} on ${post.date || 'Unknown'}
+                            <br>By ${post.author} on ${post.date}
                         </li>
                     `).join('')}
                 </ul>
@@ -352,11 +340,12 @@ function getPostsByField(field, value, allPosts, options = {}) {
     }).join('');
 
     // Display the total number of results
-    const totalResults = uniquePosts.length;
+    const totalResults = posts.length;
     const totalResultsHtml = `<p>Total results: ${totalResults}</p>`;
 
     return `<ul>${postList}</ul>${totalResultsHtml}`;
 }
+
 module.exports = {
   templates,
   generateSlugtags
