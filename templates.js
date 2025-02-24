@@ -15,7 +15,7 @@ const templates = {
           <span>(${post.flair})</span>
           <br>By ${post.author} on ${post.date}
         </li>
-      `).join('')}</ul> 
+      `).join('')}</ul>
     `,
 
     generatePostPage: (post, subforum, baseurl) => `
@@ -290,23 +290,27 @@ function getPostsByField(field, value, allPosts, options = {}) {
     if (posts.length === 0) return '<p>No posts found.</p>';
 
     // Get the first word of the first post's title to determine priority
-    const priorityFirstWord = posts[0].title.split(' ')[0].toLowerCase();
+    const firstPostTitle = posts[0].title;
+    const priorityFirstWord = firstPostTitle.split(' ')[0].toLowerCase(); // Normalize for comparison
 
-    // Group posts by their first word and sort them
-    const groupedPosts = new Map();
+    // Group posts by their first word
+    const groupedPosts = posts.reduce((acc, post) => {
+        const firstWord = post.title.split(' ')[0]; // Preserve original case
+        const normalizedFirstWord = firstWord.toLowerCase(); // Normalize for sorting
 
-    posts.forEach(post => {
-        const firstWord = post.title.split(' ')[0];
-        const normalizedFirstWord = firstWord.toLowerCase();
+        if (!acc[normalizedFirstWord]) acc[normalizedFirstWord] = { original: firstWord, posts: [] };
+        acc[normalizedFirstWord].posts.push(post);
+        return acc;
+    }, {});
 
-        if (!groupedPosts.has(normalizedFirstWord)) {
-            groupedPosts.set(normalizedFirstWord, { original: firstWord, posts: [] });
-        }
-        groupedPosts.get(normalizedFirstWord).posts.push(post);
-    });
+    // Function to extract alphabetical and numeric parts for sorting
+    function splitAlphaNum(str) {
+        const match = str.match(/^([a-zA-Z]+)(\d+)?$/);
+        return match ? [match[1], match[2] ? parseInt(match[2], 10) : 0] : [str, 0];
+    }
 
-    // Sort the groups
-    const sortedGroups = Array.from(groupedPosts.keys()).sort((a, b) => {
+    // Sort the groups:
+    const sortedGroups = Object.keys(groupedPosts).sort((a, b) => {
         if (a === priorityFirstWord) return -1; // The priority group goes first
         if (b === priorityFirstWord) return 1;
 
@@ -317,21 +321,21 @@ function getPostsByField(field, value, allPosts, options = {}) {
         return numA - numB; // Numerical sorting
     });
 
-    // Limit the number of groups displayed
+    // Limit the number of posts displayed
     const limitedGroups = sortedGroups.slice(0, limit);
 
     // Generate the HTML list with grouped posts
     const postList = limitedGroups.map(group => {
-        const groupData = groupedPosts.get(group);
         return `
-            <ul>
-                ${groupData.posts.map(post => `
-                    <li>
-                        <a href="${baseurl}${post.link.replace(/^\//, '')}.html">${post.title}</a>
-                        <br>By ${post.author} on ${post.date}
-                    </li>
-                `).join('')}
-            </ul>
+                <ul>
+                    ${groupedPosts[group].posts.map(post => `
+                        <li>
+                            <a href="${baseurl}${post.link.replace(/^\//, '')}.html">${post.title}</a>
+                            <br>By ${post.author} on ${post.date}
+                        </li>
+                    `).join('')}
+                </ul>
+            </li>
         `;
     }).join('');
 
@@ -340,12 +344,6 @@ function getPostsByField(field, value, allPosts, options = {}) {
     const totalResultsHtml = `<p>Total results: ${totalResults}</p>`;
 
     return `<ul>${postList}</ul>${totalResultsHtml}`;
-}
-
-// Function to extract alphabetical and numeric parts for sorting
-function splitAlphaNum(str) {
-    const match = str.match(/^([a-zA-Z]+)(\d+)?$/);
-    return match ? [match[1], match[2] ? parseInt(match[2], 10) : 0] : [str, 0];
 }
 
 module.exports = {
