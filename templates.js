@@ -320,7 +320,6 @@ function getPostsByField(field, value, allPosts, baseurl = '') {
     // Generate the HTML list with grouped posts
     const postList = sortedGroups.map(group => {
         return `
-            <li><strong>${groupedPosts[group].original}</strong>
                 <ul>
                     ${groupedPosts[group].posts.map(post => `
                         <li>
