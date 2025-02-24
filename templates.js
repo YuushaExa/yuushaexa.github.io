@@ -285,16 +285,9 @@ function getPostsByField(field, value, allPosts, baseurl = '') {
     // If no posts are found, return a message
     if (posts.length === 0) return '<p>No posts found.</p>';
 
-    // Find the post with an exact title match first
-    let priorityPost = posts.find(post => post.title.toLowerCase() === value.toLowerCase());
-
-    // If no exact match, fallback to the first post in the filtered list
-    if (!priorityPost) {
-        priorityPost = posts[0];
-    }
-
-    // Get the first word of the priority post's title to determine sorting order
-    const priorityFirstWord = priorityPost.title.split(' ')[0].toLowerCase(); // Normalize for comparison
+    // Get the first word of the first post's title to determine priority
+    const firstPostTitle = posts[0].title;
+    const priorityFirstWord = firstPostTitle.split(' ')[0].toLowerCase(); // Normalize for comparison
 
     // Group posts by their first word
     const groupedPosts = posts.reduce((acc, post) => {
@@ -306,13 +299,22 @@ function getPostsByField(field, value, allPosts, baseurl = '') {
         return acc;
     }, {});
 
+    // Function to extract alphabetical and numeric parts for sorting
+    function splitAlphaNum(str) {
+        const match = str.match(/^([a-zA-Z]+)(\d+)?$/);
+        return match ? [match[1], match[2] ? parseInt(match[2], 10) : 0] : [str, 0];
+    }
+
     // Sort the groups:
-    // - The group matching the first word of the priority post comes first.
-    // - The rest are sorted alphabetically.
     const sortedGroups = Object.keys(groupedPosts).sort((a, b) => {
         if (a === priorityFirstWord) return -1; // The priority group goes first
-        if (b === priorityFirstWord) return 1;  // Others come after
-        return a.localeCompare(b);              // Alphabetical order for the rest
+        if (b === priorityFirstWord) return 1;
+
+        const [alphaA, numA] = splitAlphaNum(a);
+        const [alphaB, numB] = splitAlphaNum(b);
+
+        if (alphaA !== alphaB) return alphaA.localeCompare(alphaB); // Alphabetical sorting
+        return numA - numB; // Numerical sorting
     });
 
     // Generate the HTML list with grouped posts
@@ -333,7 +335,6 @@ function getPostsByField(field, value, allPosts, baseurl = '') {
 
     return `<ul>${postList}</ul>`;
 }
-
 
 
 module.exports = {
