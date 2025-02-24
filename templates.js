@@ -289,12 +289,22 @@ function getPostsByField(field, value, allPosts, options = {}) {
     // If no posts are found, return a message
     if (posts.length === 0) return '<p>No posts found.</p>';
 
+    // Remove duplicates based on post title
+    const uniquePosts = [];
+    const seenTitles = new Set(); // Track seen post titles
+    for (const post of posts) {
+        if (!seenTitles.has(post.title)) { // Use `post.title` as the unique identifier
+            seenTitles.add(post.title);
+            uniquePosts.push(post);
+        }
+    }
+
     // Get the first word of the first post's title to determine priority
-    const firstPostTitle = posts[0].title;
+    const firstPostTitle = uniquePosts[0].title;
     const priorityFirstWord = firstPostTitle.split(' ')[0].toLowerCase(); // Normalize for comparison
 
     // Group posts by their first word
-    const groupedPosts = posts.reduce((acc, post) => {
+    const groupedPosts = uniquePosts.reduce((acc, post) => {
         const firstWord = post.title.split(' ')[0]; // Preserve original case
         const normalizedFirstWord = firstWord.toLowerCase(); // Normalize for sorting
 
@@ -340,7 +350,7 @@ function getPostsByField(field, value, allPosts, options = {}) {
     }).join('');
 
     // Display the total number of results
-    const totalResults = posts.length;
+    const totalResults = uniquePosts.length;
     const totalResultsHtml = `<p>Total results: ${totalResults}</p>`;
 
     return `<ul>${postList}</ul>${totalResultsHtml}`;
