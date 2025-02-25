@@ -3,7 +3,7 @@ const templates = {
     generatePostLink: (subforumKey, post) => `/${subforumKey}/${generateSlug(post.title)}`,
  
     generateSubforumPage: (subforum, baseurl) => `
-      <h1>${subforum.title}</h1>
+      <h1>${subforum.title}</h1> 
       <p>${subforum.description}</p>
       <p>${subforum.created_at}</p>
       <img src="${subforum.banner}" alt="${subforum.title}">
