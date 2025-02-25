@@ -48,12 +48,42 @@ async function loadFilesFromDir(dirPath, fileType, transform = (data) => data) {
   }
 }
 
+async function loadMetadata(file) {
+  try {
+    let content;
+    if (file.startsWith('http://') || file.startsWith('https://')) {
+      const response = await fetch(file);
+      if (!response.ok) throw new Error(`Failed to fetch ${file}: ${response.statusText}`);
+      content = await response.text();
+    } else {
+      const filePath = path.join(dirs.subforums, file);
+      content = await readFile(filePath);
+    }
+    return JSON.parse(content);
+  } catch (err) {
+    console.error(`Error loading metadata from ${file}:`, err.message);
+    return [];
+  }
+}
+
+async function mergeMetadata(posts, metadata, key = 'title') {
+  return posts.map(post => {
+    const matchedMetadata = metadata.find(item => item[key] === post[key]);
+    return {
+      ...post,
+      ...matchedMetadata // Merge metadata into the post
+    };
+  });
+}
+
 async function loadSubforumData(subforum, subforumKey) {
   if (!subforum.data) return [];
 
   const dataFiles = Array.isArray(subforum.data) ? subforum.data : [subforum.data];
+  const metadataSources = subforum.metadata || {};
   const template = templates[subforum.template];
 
+  // Load posts
   const posts = await Promise.all(dataFiles.map(async (file) => {
     try {
       let content;
@@ -67,13 +97,12 @@ async function loadSubforumData(subforum, subforumKey) {
       }
 
       const parsedPosts = JSON.parse(content);
-
       return parsedPosts.map(post => ({
         ...post,
         title: post.title || 'Default Title',
         link: post.link || template.generatePostLink(subforumKey, post),
-         tags: post.tags || [],           // Ensure tags is always an array
-    developers: post.developers || [] // Ensure developers is always an array
+        tags: post.tags || [],           // Ensure tags is always an array
+        developers: post.developers || [] // Ensure developers is always an array
       }));
     } catch (err) {
       console.error(`Error loading data from ${file}:`, err.message);
@@ -81,7 +110,19 @@ async function loadSubforumData(subforum, subforumKey) {
     }
   }));
 
-  return posts.flat();
+  // Load and merge metadata
+  const metadata = {};
+  for (const [type, file] of Object.entries(metadataSources)) {
+    metadata[type] = await loadMetadata(file);
+  }
+
+  // Merge metadata into posts
+  let mergedPosts = posts.flat();
+  for (const [type, metadataItems] of Object.entries(metadata)) {
+    mergedPosts = await mergeMetadata(mergedPosts, metadataItems, 'title');
+  }
+
+  return mergedPosts;
 }
 
 async function createFullPage(partials, mainContent, canonicalUrl = '', title = 'Default Title', description = '', image = '') {
