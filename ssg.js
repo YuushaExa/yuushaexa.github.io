@@ -174,8 +174,8 @@ async function generateSubforumPages(partials, subforums) {
   const developers = post.developers || []; // Default to empty array if undefined
 
     post.tags.forEach(tag => {
-      allTags[tag.name] = allTags[tag.name] || [];
-      allTags[tag.name].push(post);
+      allTags[tag] = allTags[tag] || [];
+      allTags[tag].push(post);
     });
     post.developers.forEach(dev => {
       allDevelopers[dev.name] = allDevelopers[dev.name] || [];
