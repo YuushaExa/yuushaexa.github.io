@@ -317,7 +317,7 @@ function getPostsByField(field, value, allPosts, options = {}) {
         return numA - numB; // Numerical sorting
     });
 
-    // Limit the number of groups displayed
+    // Limit the number of groups displayed 
     const limitedGroups = sortedGroups.slice(0, limit);
 
     // Generate the HTML list with grouped posts
