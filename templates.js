@@ -277,7 +277,7 @@ function getPostsByField(field, value, allPosts, options = {}) {
     const { baseurl = '', limit = 5 } = options; // Destructure options with defaults
 
     const filters = {
-        tags: (post) => post.tags.some(tag => tag.name === value),
+        tags: (post) => post.tags.some(tag => tag === value),
         developers: (post) => post.developers.some(dev => dev.name === value),
     };
 
