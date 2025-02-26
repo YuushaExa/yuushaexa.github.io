@@ -1,7 +1,7 @@
 const fs = require('fs').promises;
 const path = require('path');
 const { templates, generateSlugtags } = require('./templates');
-const baseurl = 'https://yuushaexa.github.io'; // You can change this to any base URL
+const baseurl = 'https://yuushaexa.github.io/'; // You can change this to any base URL
 
 const dirs = {
   partials: path.join(__dirname, 'partials'),
@@ -217,7 +217,7 @@ async function generateSubforumPages(partials, subforums) {
 
 const paginationNav = `
   <div class="pagination">
-    ${page > 1 ? `<a href="${baseurl}/${subforum.link}${page - 1 === 1 ? '' : `-${page - 1}`}.html">&laquo; Previous</a>` : ''}
+    ${page > 1 ? `<a href="${subforum.link}${page - 1 === 1 ? '' : `-${page - 1}`}.html">&laquo; Previous</a>` : ''}
     ${Array.from({ length: totalPages }, (_, i) => `<a href="${subforum.link}${i === 0 ? '' : `-${i + 1}`}.html">${i + 1}</a>`).join(' ')}
     ${page < totalPages ? `<a href="${subforum.link}-${page + 1}.html">Next &raquo;</a>` : ''}
   </div>
@@ -244,7 +244,7 @@ const paginationNav = `
   }));
 }
 
-async function generateTagDevAliasPages(partials, subforum) {
+async function generateTagDevAliasPages(partials) {
   const categories = [
     { type: 'tags', meta: 'Visual Novels', data: allTags },
     { type: 'developers', meta: 'Company', data: allDevelopers },
@@ -285,35 +285,31 @@ async function generateTagDevAliasPages(partials, subforum) {
               </li>
             `).join('')}
           </ul>
-          ${generatePaginationLinks(type, slug, page, totalPages, subforum)}
+          ${generatePaginationLinks(type, slug, page, totalPages)}
         `;
 
         const canonicalUrl = page === 1
-          ? `${baseurl}/${subforum.link}/${type}/${slug}.html`
-          : `${baseurl}/${subforum.link}/${type}/${slug}.html?page=${page}`;
+          ? `${baseurl}vn/${type}/${slug}.html`
+          : `${baseurl}vn/${type}/${slug}-${page}.html`;
 
         pageGenerationPromises.push(
           (async () => {
-            try {
-              const outputContent = await createFullPage(
-                partials,
-                pageContent,
-                canonicalUrl,
-                `${name} - ${meta}`,
-                `All visual novels related to ${name}`,
-                ''
-              );
+            const outputContent = await createFullPage(
+              partials,
+              pageContent,
+              canonicalUrl,
+              `${name} - ${meta}`,
+              `All visual novels related to ${name}`,
+              ''
+            );
 
-              const outputFilePath = page === 1
-                ? path.join(dirs.public, `${subforum.link}/${type}/${slug}.html`)
-                : path.join(dirs.public, `${subforum.link}/${type}/${slug}-${page}.html`);
+            const outputFilePath = page === 1
+              ? path.join(dirs.public, `vn/${type}/${slug}.html`)
+              : path.join(dirs.public, `vn/${type}/${slug}-${page}.html`);
 
-              await ensureDirectoryExists(path.dirname(outputFilePath));
-              await writeFile(outputFilePath, outputContent);
-              console.log(`Generated: ${outputFilePath}`);
-            } catch (error) {
-              console.error(`Error generating ${outputFilePath}:`, error);
-            }
+            await ensureDirectoryExists(path.dirname(outputFilePath));
+            await writeFile(outputFilePath, outputContent);
+            console.log(`Generated: ${outputFilePath}`);
           })()
         );
       }
@@ -323,33 +319,29 @@ async function generateTagDevAliasPages(partials, subforum) {
     const indexPageContent = `
       <h1>All ${type}</h1>
       <ul>
-        ${Object.entries(data).map(([name, posts]) => `
-          <li>
-            <a href="${baseurl}/${subforum.link}/${type}/${getSlug(name)}.html">${name} (${posts.length})</a>
-          </li>
-        `).join('')}
+       ${Object.entries(data).map(([name, posts]) => `
+  <li>
+    <a href="${baseurl}vn/${type}/${getSlug(name)}.html">${name} (${posts.length})</a>
+  </li>
+`).join('')}
       </ul>
     `;
 
     pageGenerationPromises.push(
       (async () => {
-        try {
-          const outputContent = await createFullPage(
-            partials,
-            indexPageContent,
-            `${baseurl}/${subforum.link}/${type}/`,
-            `All ${type} - ${meta}`,
-            `List of all ${type} related to visual novels`,
-            ''
-          );
+        const outputContent = await createFullPage(
+          partials,
+          indexPageContent,
+          `${baseurl}vn/${type}/`,
+          `All ${type} - ${meta}`,
+          `List of all ${type} related to visual novels`,
+          ''
+        );
 
-          const outputFilePath = path.join(dirs.public, `${subforum.link}/${type}/index.html`);
-          await ensureDirectoryExists(path.dirname(outputFilePath));
-          await writeFile(outputFilePath, outputContent);
-          console.log(`Generated: ${outputFilePath}`);
-        } catch (error) {
-          console.error(`Error generating index page for ${type}:`, error);
-        }
+        const outputFilePath = path.join(dirs.public, `vn/${type}/index.html`);
+        await ensureDirectoryExists(path.dirname(outputFilePath));
+        await writeFile(outputFilePath, outputContent);
+        console.log(`Generated: vn/${type}/index.html`);
       })()
     );
   }
@@ -361,11 +353,11 @@ async function generateTagDevAliasPages(partials, subforum) {
 function generatePaginationLinks(type, slug, currentPage, totalPages) {
   return `
     <div class="pagination">
-      ${currentPage > 1 ? `<a href="${baseurl}/${type}/${slug}${currentPage - 1 === 1 ? '' : `-${currentPage - 1}`}.html">&laquo; Previous</a>` : ''}
+      ${currentPage > 1 ? `<a href="${baseurl}vn/${type}/${slug}${currentPage - 1 === 1 ? '' : `-${currentPage - 1}`}.html">&laquo; Previous</a>` : ''}
       ${Array.from({ length: totalPages }, (_, i) => `
-        <a href="${baseurl}/${type}/${slug}${i === 0 ? '' : `-${i + 1}`}.html" ${i + 1 === currentPage ? 'class="active"' : ''}>${i + 1}</a>
+        <a href="${baseurl}vn/${type}/${slug}${i === 0 ? '' : `-${i + 1}`}.html" ${i + 1 === currentPage ? 'class="active"' : ''}>${i + 1}</a>
       `).join(' ')}
-      ${currentPage < totalPages ? `<a href="${baseurl}/${type}/${slug}-${currentPage + 1}.html">Next &raquo;</a>` : ''}
+      ${currentPage < totalPages ? `<a href="${baseurl}vn/${type}/${slug}-${currentPage + 1}.html">Next &raquo;</a>` : ''}
     </div>
   `;
 }
