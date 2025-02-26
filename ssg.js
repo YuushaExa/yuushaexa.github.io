@@ -244,7 +244,7 @@ const paginationNav = `
   }));
 }
 
-async function generateTagDevAliasPages(partials) {
+async function generateTagDevAliasPages(partials, subforum) {
   const categories = [
     { type: 'tags', meta: 'Visual Novels', data: allTags },
     { type: 'developers', meta: 'Company', data: allDevelopers },
@@ -285,12 +285,12 @@ async function generateTagDevAliasPages(partials) {
               </li>
             `).join('')}
           </ul>
-          ${generatePaginationLinks(type, slug, page, totalPages)}
+          ${generatePaginationLinks(type, slug, page, totalPages, subforum)}
         `;
 
         const canonicalUrl = page === 1
-          ? `${baseurl}vn/${type}/${slug}.html`
-          : `${baseurl}vn/${type}/${slug}-${page}.html`;
+          ? `${baseurl}/${subforum.link}/${type}/${slug}.html`
+          : `${baseurl}/${subforum.link}/${type}/${slug}?${page}.html`;
 
         pageGenerationPromises.push(
           (async () => {
@@ -304,8 +304,8 @@ async function generateTagDevAliasPages(partials) {
             );
 
             const outputFilePath = page === 1
-              ? path.join(dirs.public, `vn/${type}/${slug}.html`)
-              : path.join(dirs.public, `vn/${type}/${slug}-${page}.html`);
+              ? path.join(dirs.public, `${subforum.link}/${type}/${slug}.html`)
+              : path.join(dirs.public, `${subforum.link}/${type}/${slug}-${page}.html`);
 
             await ensureDirectoryExists(path.dirname(outputFilePath));
             await writeFile(outputFilePath, outputContent);
