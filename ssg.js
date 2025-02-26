@@ -100,7 +100,7 @@ async function loadSubforumData(subforum, subforumKey) {
       return parsedPosts.map(post => ({
         ...post,
         title: post.title || 'Default Title',
-        link: post.link || template.generatePostLink(subforumKey, post),
+        link: post.link || template.generatePostLink(subforum.link, post),
         tags: post.tags || [],           // Ensure tags is always an array
         developers: post.developers || [] // Ensure developers is always an array
       }));
@@ -215,13 +215,13 @@ async function generateSubforumPages(partials, subforums) {
       const end = start + postsPerPage;
       const paginatedPosts = posts.slice(start, end);
 
-      const paginationNav = `
-        <div class="pagination">
-          ${page > 1 ? `<a href="${key}${page - 1 === 1 ? '' : `-${page - 1}`}.html">&laquo; Previous</a>` : ''}
-          ${Array.from({ length: totalPages }, (_, i) => `<a href="${key}${i === 0 ? '' : `-${i + 1}`}.html">${i + 1}</a>`).join(' ')}
-          ${page < totalPages ? `<a href="${key}-${page + 1}.html">Next &raquo;</a>` : ''}
-        </div>
-      `;
+const paginationNav = `
+  <div class="pagination">
+    ${page > 1 ? `<a href="${subforum.link}${page - 1 === 1 ? '' : `-${page - 1}`}.html">&laquo; Previous</a>` : ''}
+    ${Array.from({ length: totalPages }, (_, i) => `<a href="${subforum.link}${i === 0 ? '' : `-${i + 1}`}.html">${i + 1}</a>`).join(' ')}
+    ${page < totalPages ? `<a href="${subforum.link}-${page + 1}.html">Next &raquo;</a>` : ''}
+  </div>
+`;
 
       const subforumContent = template.generateSubforumPage(
         { ...subforum, posts: paginatedPosts },
