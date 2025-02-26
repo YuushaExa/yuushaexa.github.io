@@ -353,11 +353,11 @@ async function generateTagDevAliasPages(partials) {
 function generatePaginationLinks(type, slug, currentPage, totalPages) {
   return `
     <div class="pagination">
-      ${currentPage > 1 ? `<a href="${baseurl}vn/${type}/${slug}${currentPage - 1 === 1 ? '' : `-${currentPage - 1}`}.html">&laquo; Previous</a>` : ''}
+      ${currentPage > 1 ? `<a href="${baseurl}/${type}/${slug}${currentPage - 1 === 1 ? '' : `-${currentPage - 1}`}.html">&laquo; Previous</a>` : ''}
       ${Array.from({ length: totalPages }, (_, i) => `
-        <a href="${baseurl}vn/${type}/${slug}${i === 0 ? '' : `-${i + 1}`}.html" ${i + 1 === currentPage ? 'class="active"' : ''}>${i + 1}</a>
+        <a href="${baseurl}/${type}/${slug}${i === 0 ? '' : `-${i + 1}`}.html" ${i + 1 === currentPage ? 'class="active"' : ''}>${i + 1}</a>
       `).join(' ')}
-      ${currentPage < totalPages ? `<a href="${baseurl}vn/${type}/${slug}-${currentPage + 1}.html">Next &raquo;</a>` : ''}
+      ${currentPage < totalPages ? `<a href="${baseurl}/${type}/${slug}-${currentPage + 1}.html">Next &raquo;</a>` : ''}
     </div>
   `;
 }
