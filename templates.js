@@ -1,6 +1,6 @@
 const templates = {
   gamesTemplate: {
-    generatePostLink: (subforumLink, post) => `/${subforumLink}/${generateSlug(post.title)}`,
+    generatePostLink: (subforumKey, post) => `/${subforumKey}/${generateSlug(post.title)}`,
  
     generateSubforumPage: (subforum, baseurl) => `
       <h1>${subforum.title}</h1>  
@@ -53,7 +53,7 @@ const templates = {
   },
 
   programmingTemplate: {
-    generatePostLink: (subforumLink, post) => `/${subforumLink}/${generateSlug(post.title)}`,
+    generatePostLink: (subforumKey, post) => `/${subforumKey}/${generateSlug(post.title)}`,
 
     generateSubforumPage: (subforum, baseurl) => `
       <h1>${subforum.title}</h1>
@@ -109,7 +109,7 @@ const templates = {
   },
 
    testTemplate: {
-    generatePostLink: (subforumLink, post) => `/${subforumLink}/${generateSlug(post.title)}`,
+    generatePostLink: (subforumKey, post) => `/${subforumKey}/${generateSlug(post.title)}`,
 
     generateSubforumPage: (subforum, baseurl) => `
       <h1>${subforum.title}</h1>
@@ -162,7 +162,7 @@ const templates = {
   },
 
    vnTemplate: {
-    generatePostLink: (subforumLink, post) => `/${subforumLink}/${generateSlug(post.title)}`,
+    generatePostLink: (subforumKey, post) => `/${subforumKey}/${generateSlug(post.title)}`,
 
     generateSubforumPage: (subforum, baseurl) => `
       <h1>${subforum.title}</h1>
@@ -187,7 +187,7 @@ const templates = {
       <h2>Developers</h2>
   <ul>
     ${post.developers.map(dev => `
-      <li><a href="${baseurl}${subforum.link}/developers/${generateSlugtags(dev.name)}.html">${dev.name}</a>
+      <li><a href="${baseurl}vn/developers/${generateSlugtags(dev.name)}.html">${dev.name}</a>
         ${getPostsByField('developers', dev.name, subforum.posts, 5, baseurl)}
       </li>
     `).join('')}
@@ -203,7 +203,7 @@ const templates = {
   <h2>Tags</h2>
   <ul>
  ${post.tags.map(tag => `
-      <li><a href="${baseurl}${subforum.link}/tags/${generateSlugtags(tag)}.html">${tag}</a>
+      <li><a href="${baseurl}vn/tags/${generateSlugtags(tag)}.html">${tag}</a>
       ${getPostsByField('tags', tag, subforum.posts, baseurl, 5)}
 </li>
     `).join('')}
