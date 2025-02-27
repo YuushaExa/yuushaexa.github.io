@@ -244,7 +244,12 @@ const paginationNav = `
   }));
 }
 
-async function generateTagDevAliasPages(partials, subforums) {
+async function generateTagDevAliasPages(partials) {
+  const categories = [
+    { type: 'tags', meta: 'Visual Novels', data: allTags },
+    { type: 'developers', meta: 'Company', data: allDevelopers },
+  ];
+
   const postsPerPage = 10; // Number of posts per page
   const slugCache = new Map();
 
@@ -257,115 +262,106 @@ async function generateTagDevAliasPages(partials, subforums) {
 
   const pageGenerationPromises = [];
 
-  // Iterate over all subforums
-  for (const [subforumKey, subforum] of Object.entries(subforums)) {
-    const subforumLink = subforum.link.replace(/^\//, ''); // Remove leading slash
+  for (const { type, meta, data } of categories) {
+    // Generate individual pages for each tag/dev
+    for (const [name, posts] of Object.entries(data)) {
+      const slug = getSlug(name);
 
-    const categories = [
-      { type: 'tags', meta: 'Visual Novels', data: allTags },
-      { type: 'developers', meta: 'Company', data: allDevelopers },
-    ];
+      // Paginate posts
+      const totalPages = Math.ceil(posts.length / postsPerPage);
 
-    for (const { type, meta, data } of categories) {
-      // Generate individual pages for each tag/dev
-      for (const [name, posts] of Object.entries(data)) {
-        const slug = getSlug(name);
+      for (let page = 1; page <= totalPages; page++) {
+        const start = (page - 1) * postsPerPage;
+        const end = start + postsPerPage;
+        const paginatedPosts = posts.slice(start, end);
 
-        // Paginate posts
-        const totalPages = Math.ceil(posts.length / postsPerPage);
+        const pageContent = `
+          <h1>${name} (${posts.length})</h1>
+          <ul>
+            ${paginatedPosts.map(post => `
+              <li>
+                <a href="${baseurl}${post.link.replace(/^\//, '')}.html">${post.title}</a>
+                by ${post.author} on ${post.date}
+              </li>
+            `).join('')}
+          </ul>
+          ${generatePaginationLinks(type, slug, page, totalPages)}
+        `;
 
-        for (let page = 1; page <= totalPages; page++) {
-          const start = (page - 1) * postsPerPage;
-          const end = start + postsPerPage;
-          const paginatedPosts = posts.slice(start, end);
+        const canonicalUrl = page === 1
+          ? `${baseurl}${subforumLink}${type}/${slug}.html`
+          : `${baseurl}${subforumLink}${type}/${slug}-${page}.html`;
 
-          const pageContent = `
-            <h1>${name} (${posts.length})</h1>
-            <ul>
-              ${paginatedPosts.map(post => `
-                <li>
-                  <a href="${baseurl}${post.link.replace(/^\//, '')}.html">${post.title}</a>
-                  by ${post.author} on ${post.date}
-                </li>
-              `).join('')}
-            </ul>
-            ${generatePaginationLinks(subforumLink, type, slug, page, totalPages)}
-          `;
+        pageGenerationPromises.push(
+          (async () => {
+            const outputContent = await createFullPage(
+              partials,
+              pageContent,
+              canonicalUrl,
+              `${name} - ${meta}`,
+              `All visual novels related to ${name}`,
+              ''
+            );
 
-          const canonicalUrl = page === 1
-            ? `${baseurl}${subforumLink}/${type}/${slug}.html`
-            : `${baseurl}${subforumLink}/${type}/${slug}-${page}.html`;
+            const outputFilePath = page === 1
+              ? path.join(dirs.public, `${subforumLink}${type}/${slug}.html`)
+              : path.join(dirs.public, `${subforumLink}${type}/${slug}-${page}.html`);
 
-          pageGenerationPromises.push(
-            (async () => {
-              const outputContent = await createFullPage(
-                partials,
-                pageContent,
-                canonicalUrl,
-                `${name} - ${meta}`,
-                `All ${meta.toLowerCase()} related to ${name}`,
-                ''
-              );
-
-              const outputFilePath = page === 1
-                ? path.join(dirs.public, `${subforumLink}/${type}/${slug}.html`)
-                : path.join(dirs.public, `${subforumLink}/${type}/${slug}-${page}.html`);
-
-              await ensureDirectoryExists(path.dirname(outputFilePath));
-              await writeFile(outputFilePath, outputContent);
-              console.log(`Generated: ${outputFilePath}`);
-            })()
-          );
-        }
+            await ensureDirectoryExists(path.dirname(outputFilePath));
+            await writeFile(outputFilePath, outputContent);
+            console.log(`Generated: ${outputFilePath}`);
+          })()
+        );
       }
-
-      // Generate index page for all tags/devs in this subforum
-      const indexPageContent = `
-        <h1>All ${type}</h1>
-        <ul>
-          ${Object.entries(data).map(([name, posts]) => `
-            <li>
-              <a href="${baseurl}${subforumLink}/${type}/${getSlug(name)}.html">${name} (${posts.length})</a>
-            </li>
-          `).join('')}
-        </ul>
-      `;
-
-      pageGenerationPromises.push(
-        (async () => {
-          const outputContent = await createFullPage(
-            partials,
-            indexPageContent,
-            `${baseurl}${subforumLink}/${type}/`,
-            `All ${type} - ${meta}`,
-            `List of all ${type} related to ${meta.toLowerCase()}`,
-            ''
-          );
-
-          const outputFilePath = path.join(dirs.public, `${subforumLink}/${type}/index.html`);
-          await ensureDirectoryExists(path.dirname(outputFilePath));
-          await writeFile(outputFilePath, outputContent);
-          console.log(`Generated: ${subforumLink}/${type}/index.html`);
-        })()
-      );
     }
+
+    // Generate index page for all tags/devs
+    const indexPageContent = `
+      <h1>All ${type}</h1>
+      <ul>
+       ${Object.entries(data).map(([name, posts]) => `
+  <li>
+    <a href="${baseurl}${subforumLink}${type}/${getSlug(name)}.html">${name} (${posts.length})</a>
+  </li>
+`).join('')}
+      </ul>
+    `;
+
+    pageGenerationPromises.push(
+      (async () => {
+        const outputContent = await createFullPage(
+          partials,
+          indexPageContent,
+          `${baseurl}${subforumLink}${type}/`,
+          `All ${type} - ${meta}`,
+          `List of all ${type} related to visual novels`,
+          ''
+        );
+
+        const outputFilePath = path.join(dirs.public, `${subforumLink}${type}/index.html`);
+        await ensureDirectoryExists(path.dirname(outputFilePath));
+        await writeFile(outputFilePath, outputContent);
+        console.log(`Generated: ${subforumLink}${type}/index.html`);
+      })()
+    );
   }
 
   await Promise.all(pageGenerationPromises);
 }
 
 // Helper function to generate pagination links
-function generatePaginationLinks(subforumLink, type, slug, currentPage, totalPages) {
+function generatePaginationLinks(type, slug, currentPage, totalPages) {
   return `
     <div class="pagination">
-      ${currentPage > 1 ? `<a href="${baseurl}${subforumLink}/${type}/${slug}${currentPage - 1 === 1 ? '' : `-${currentPage - 1}`}.html">&laquo; Previous</a>` : ''}
+      ${currentPage > 1 ? `<a href="${baseurl}${subforumLink}${type}/${slug}${currentPage - 1 === 1 ? '' : `-${currentPage - 1}`}.html">&laquo; Previous</a>` : ''}
       ${Array.from({ length: totalPages }, (_, i) => `
-        <a href="${baseurl}${subforumLink}/${type}/${slug}${i === 0 ? '' : `-${i + 1}`}.html" ${i + 1 === currentPage ? 'class="active"' : ''}>${i + 1}</a>
+        <a href="${baseurl}${subforumLink}${type}/${slug}${i === 0 ? '' : `-${i + 1}`}.html" ${i + 1 === currentPage ? 'class="active"' : ''}>${i + 1}</a>
       `).join(' ')}
-      ${currentPage < totalPages ? `<a href="${baseurl}${subforumLink}/${type}/${slug}-${currentPage + 1}.html">Next &raquo;</a>` : ''}
+      ${currentPage < totalPages ? `<a href="${baseurl}${subforumLink}${type}/${slug}-${currentPage + 1}.html">Next &raquo;</a>` : ''}
     </div>
   `;
 }
+
 async function runSSG() {
   try {
     await ensureDirectoryExists(dirs.public);
@@ -375,8 +371,8 @@ async function runSSG() {
     ]);
 
     await generateSpecialPages(partials);
-    await generateSubforumPages(partials, subforums); // First, generate all subforum pages
-    await generateTagDevAliasPages(partials);         // Then, generate tag/dev pages
+    await generateSubforumPages(partials, subforums); 
+    await generateTagDevAliasPages(partials);       
 
     console.log('SSG build complete!');
   } catch (err) {
