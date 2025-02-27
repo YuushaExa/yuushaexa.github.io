@@ -169,6 +169,20 @@ async function generateSubforumPages(partials, subforums) {
     const posts = await loadSubforumData(subforum, key);
     subforum.posts = posts;
 
+ posts.forEach(post => { 
+      const tags = post.tags || []; // Default to empty array if undefined
+  const developers = post.developers || []; // Default to empty array if undefined
+
+    post.tags.forEach(tag => {
+      allTags[tag] = allTags[tag] || [];
+      allTags[tag].push(post);
+    });
+    post.developers.forEach(dev => {
+      allDevelopers[dev.name] = allDevelopers[dev.name] || [];
+      allDevelopers[dev.name].push(post);
+    });
+  });
+    
     // Generate RSS feed
     const rssFeed = template.generateRSSFeed(subforum, baseurl);
     await writeFile(path.join(dirs.public, `${subforum.link}.rss`), rssFeed); // Use subforum.link here
