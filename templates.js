@@ -1,6 +1,6 @@
 const templates = {
   gamesTemplate: {
-    generatePostLink: (subforumLink, post) => `${subforumLink}/${generateSlug(post.title)}`,
+    generatePostLink: (subforumLink, post) => `/${subforumLink}/${generateSlug(post.title)}`,
  
     generateSubforumPage: (subforum, baseurl) => `
       <h1>${subforum.title}</h1>  
@@ -53,7 +53,7 @@ const templates = {
   },
 
   programmingTemplate: {
-    generatePostLink: (subforumLink, post) => `${subforumLink}/${generateSlug(post.title)}`,
+    generatePostLink: (subforumLink, post) => `/${subforumLink}/${generateSlug(post.title)}`,
 
     generateSubforumPage: (subforum, baseurl) => `
       <h1>${subforum.title}</h1>
@@ -109,7 +109,7 @@ const templates = {
   },
 
    testTemplate: {
-    generatePostLink: (subforumLink, post) => `${subforumLink}/${generateSlug(post.title)}`,
+    generatePostLink: (subforumLink, post) => `/${subforumLink}/${generateSlug(post.title)}`,
 
     generateSubforumPage: (subforum, baseurl) => `
       <h1>${subforum.title}</h1>
@@ -162,7 +162,7 @@ const templates = {
   },
 
    vnTemplate: {
-    generatePostLink: (subforumLink, post) => `${subforumLink}/${generateSlug(post.title)}`,
+    generatePostLink: (subforumLink, post) => `/${subforumLink}/${generateSlug(post.title)}`,
 
     generateSubforumPage: (subforum, baseurl) => `
       <h1>${subforum.title}</h1>
