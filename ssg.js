@@ -156,7 +156,7 @@ async function generateSpecialPages(partials) {
 const allTags = {};
 const allDevelopers = {};
 
-async function generateSubforumPages(partials, subforums) {
+async function generateSubforumPages(partials, subforums, subforumLink) {
   const postsPerPage = 10; // Number of posts per page
 
   await Promise.all(Object.entries(subforums).map(async ([key, subforum]) => {
@@ -244,7 +244,7 @@ const paginationNav = `
   }));
 }
 
-async function generateTagDevAliasPages(partials) {
+async function generateTagDevAliasPages(partials, subforumLink) {
   const categories = [
     { type: 'tags', meta: 'Visual Novels', data: allTags },
     { type: 'developers', meta: 'Company', data: allDevelopers },
@@ -285,7 +285,7 @@ async function generateTagDevAliasPages(partials) {
               </li>
             `).join('')}
           </ul>
-          ${generatePaginationLinks(type, slug, page, totalPages)}
+          ${generatePaginationLinks(type, slug, page, totalPages, subforumLink)}
         `;
 
         const canonicalUrl = page === 1
@@ -350,7 +350,7 @@ async function generateTagDevAliasPages(partials) {
 }
 
 // Helper function to generate pagination links
-function generatePaginationLinks(type, slug, currentPage, totalPages) {
+function generatePaginationLinks(type, slug, currentPage, totalPages, subforumLink ) {
   return `
     <div class="pagination">
       ${currentPage > 1 ? `<a href="${baseurl}${subforumLink}${type}/${slug}${currentPage - 1 === 1 ? '' : `-${currentPage - 1}`}.html">&laquo; Previous</a>` : ''}
@@ -371,8 +371,8 @@ async function runSSG() {
     ]);
 
     await generateSpecialPages(partials);
-    await generateSubforumPages(partials, subforums); 
-    await generateTagDevAliasPages(partials);       
+    await generateSubforumPages(partials, subforums, subforumLink); 
+    await generateTagDevAliasPages(partials, subforumLink);       
 
     console.log('SSG build complete!');
   } catch (err) {
