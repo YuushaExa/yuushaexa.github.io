@@ -27,14 +27,14 @@ const templates = {
     `,
 
     generateRSSFeed: (subforum, baseurl) => {
-      const feedUrl = `${baseurl}${subforum.link}.rss`;
+      const feedUrl = `${baseurl}${subforum.link.replace(/^\//, '')}.rss`;
       const items = subforum.posts.map(post => `
         <item>
           <title>${post.title}</title>
-          <link>${baseurl}${post.link}.html</link>
+          <link>${baseurl}${post.link.replace(/^\//, '')}.html</link>
           <description>${post.content || ''}</description>
           <pubDate>${new Date(post.date).toUTCString()}</pubDate>
-          <guid>${baseurl}${post.link}.html</guid>
+          <guid>${baseurl}${post.link.replace(/^\//, '')}.html</guid>
         </item>
       `).join('');
 
@@ -42,7 +42,7 @@ const templates = {
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>${subforum.title}</title>
-    <link>${baseurl}${subforum.link}.html</link>
+    <link>${baseurl}${subforum.link.replace(/^\//, '')}.html</link>
     <description>${subforum.description}</description>
     <atom:link href="${feedUrl}" rel="self" type="application/rss+xml" />
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
@@ -82,14 +82,14 @@ const templates = {
     `,
 
     generateRSSFeed: (subforum, baseurl) => {
-      const feedUrl = `${baseurl}${subforum.link}.rss`;
+      const feedUrl = `${baseurl}${subforum.link.replace(/^\//, '')}.rss`;
       const items = subforum.posts.map(post => `
         <item>
           <title>${post.title}</title>
-          <link>${baseurl}${post.link}.html</link>
+          <link>${baseurl}${post.link.replace(/^\//, '')}.html</link>
           <description>${post.content1 || ''}</description>
           <pubDate>${new Date(post.date).toUTCString()}</pubDate>
-          <guid>${baseurl}${post.link}.html</guid>
+          <guid>${baseurl}${post.link.replace(/^\//, '')}.html</guid>
           <category>${post.flair}</category>
         </item>
       `).join('');
@@ -98,7 +98,7 @@ const templates = {
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>${subforum.title}</title>
-    <link>${baseurl}${subforum.link}.html</link>
+    <link>${baseurl}${subforum.link.replace(/^\//, '')}.html</link>
     <description>${subforum.description}</description>
     <atom:link href="${feedUrl}" rel="self" type="application/rss+xml" />
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
@@ -136,14 +136,14 @@ const templates = {
     `,
 
     generateRSSFeed: (subforum, baseurl) => {
-      const feedUrl = `${baseurl}${subforum.link}.rss`;
+      const feedUrl = `${baseurl}${subforum.link.replace(/^\//, '')}.rss`;
       const items = subforum.posts.map(post => `
         <item>
           <title>${post.title}</title>
-          <link>${baseurl}${post.link}.html</link>
+          <link>${baseurl}${post.link.replace(/^\//, '')}.html</link>
           <description>${post.content || ''}</description>
           <pubDate>${new Date(post.date).toUTCString()}</pubDate>
-          <guid>${baseurl}${post.link}.html</guid>
+          <guid>${baseurl}${post.link.replace(/^\//, '')}.html</guid>
         </item>
       `).join('');
 
@@ -151,7 +151,7 @@ const templates = {
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>${subforum.title}</title>
-    <link>${baseurl}${subforum.link}.html</link>
+    <link>${baseurl}${subforum.link.replace(/^\//, '')}.html</link>
     <description>${subforum.description}</description>
     <atom:link href="${feedUrl}" rel="self" type="application/rss+xml" />
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
@@ -218,14 +218,14 @@ const templates = {
     `,
 
     generateRSSFeed: (subforum, baseurl) => {
-      const feedUrl = `${baseurl}${subforum.link}.rss`;
+      const feedUrl = `${baseurl}${subforum.link.replace(/^\//, '')}.rss`;
       const items = subforum.posts.map(post => `
         <item>
           <title>${post.title}</title>
-          <link>${baseurl}${post.link}.html</link>
+          <link>${baseurl}${post.link.replace(/^\//, '')}.html</link>
           <description>${post.content || ''}</description>
           <pubDate>${new Date(post.date).toUTCString()}</pubDate>
-          <guid>${baseurl}${post.link}.html</guid>
+          <guid>${baseurl}${post.link.replace(/^\//, '')}.html</guid>
         </item>
       `).join('');
 
@@ -233,7 +233,7 @@ const templates = {
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>${subforum.title}</title>
-    <link>${baseurl}${subforum.link}.html</link>
+    <link>${baseurl}${subforum.link.replace(/^\//, '')}.html</link>
     <description>${subforum.description}</description>
     <atom:link href="${feedUrl}" rel="self" type="application/rss+xml" />
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
@@ -327,7 +327,7 @@ function getPostsByField(field, value, allPosts, options = {}) {
             <ul>
                 ${groupData.posts.map(post => `
                     <li>
-                        <a href="${baseurl}${post.link}.html">${post.title}</a>
+                        <a href="${baseurl}${post.link.replace(/^\//, '')}.html">${post.title}</a>
                         <br>By ${post.author} on ${post.date}
                     </li>
                 `).join('')}
