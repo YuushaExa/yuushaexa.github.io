@@ -243,7 +243,7 @@ async function generateSubforumPages(partials, subforums) {
     }
   }));
 }
-async function generateTagDevAliasPages(partials) {
+async function generateTagDevAliasPages(partials, subforumLink) {
   const categories = [
     { type: 'tags', meta: 'Visual Novels', data: allTags },
     { type: 'developers', meta: 'Company', data: allDevelopers },
@@ -284,12 +284,12 @@ async function generateTagDevAliasPages(partials) {
               </li>
             `).join('')}
           </ul>
-          ${generatePaginationLinks(type, slug, page, totalPages)}
+          ${generatePaginationLinks(type, slug, page, totalPages, subforumLink)} <!-- Pass subforumLink here -->
         `;
 
         const canonicalUrl = page === 1
-          ? `${baseurl}vn/${type}/${slug}.html`
-          : `${baseurl}vn/${type}/${slug}-${page}.html`;
+          ? `${baseurl}${subforumLink}/${type}/${slug}.html` // Use subforumLink here
+          : `${baseurl}${subforumLink}/${type}/${slug}-${page}.html`; // Use subforumLink here
 
         pageGenerationPromises.push(
           (async () => {
@@ -303,8 +303,8 @@ async function generateTagDevAliasPages(partials) {
             );
 
             const outputFilePath = page === 1
-              ? path.join(dirs.public, `vn/${type}/${slug}.html`)
-              : path.join(dirs.public, `vn/${type}/${slug}-${page}.html`);
+              ? path.join(dirs.public, `${subforumLink}/${type}/${slug}.html`) // Use subforumLink here
+              : path.join(dirs.public, `${subforumLink}/${type}/${slug}-${page}.html`); // Use subforumLink here
 
             await ensureDirectoryExists(path.dirname(outputFilePath));
             await writeFile(outputFilePath, outputContent);
@@ -320,7 +320,7 @@ async function generateTagDevAliasPages(partials) {
       <ul>
        ${Object.entries(data).map(([name, posts]) => `
   <li>
-    <a href="${baseurl}vn/${type}/${getSlug(name)}.html">${name} (${posts.length})</a>
+    <a href="${baseurl}${subforumLink}/${type}/${getSlug(name)}.html">${name} (${posts.length})</a> <!-- Use subforumLink here -->
   </li>
 `).join('')}
       </ul>
@@ -331,32 +331,31 @@ async function generateTagDevAliasPages(partials) {
         const outputContent = await createFullPage(
           partials,
           indexPageContent,
-          `${baseurl}vn/${type}/`,
+          `${baseurl}${subforumLink}/${type}/`, // Use subforumLink here
           `All ${type} - ${meta}`,
           `List of all ${type} related to visual novels`,
           ''
         );
 
-        const outputFilePath = path.join(dirs.public, `vn/${type}/index.html`);
+        const outputFilePath = path.join(dirs.public, `${subforumLink}/${type}/index.html`); // Use subforumLink here
         await ensureDirectoryExists(path.dirname(outputFilePath));
         await writeFile(outputFilePath, outputContent);
-        console.log(`Generated: vn/${type}/index.html`);
+        console.log(`Generated: ${subforumLink}/${type}/index.html`);
       })()
     );
   }
 
   await Promise.all(pageGenerationPromises);
 }
-
 // Helper function to generate pagination links
-function generatePaginationLinks(type, slug, currentPage, totalPages) {
+function generatePaginationLinks(type, slug, currentPage, totalPages, subforumLink) {
   return `
     <div class="pagination">
-      ${currentPage > 1 ? `<a href="${baseurl}vn/${type}/${slug}${currentPage - 1 === 1 ? '' : `-${currentPage - 1}`}.html">&laquo; Previous</a>` : ''}
+      ${currentPage > 1 ? `<a href="${baseurl}${subforumLink}/${type}/${slug}${currentPage - 1 === 1 ? '' : `-${currentPage - 1}`}.html">&laquo; Previous</a>` : ''}
       ${Array.from({ length: totalPages }, (_, i) => `
-        <a href="${baseurl}vn/${type}/${slug}${i === 0 ? '' : `-${i + 1}`}.html" ${i + 1 === currentPage ? 'class="active"' : ''}>${i + 1}</a>
+        <a href="${baseurl}${subforumLink}/${type}/${slug}${i === 0 ? '' : `-${i + 1}`}.html" ${i + 1 === currentPage ? 'class="active"' : ''}>${i + 1}</a>
       `).join(' ')}
-      ${currentPage < totalPages ? `<a href="${baseurl}vn/${type}/${slug}-${currentPage + 1}.html">Next &raquo;</a>` : ''}
+      ${currentPage < totalPages ? `<a href="${baseurl}${subforumLink}/${type}/${slug}-${currentPage + 1}.html">Next &raquo;</a>` : ''}
     </div>
   `;
 }
@@ -370,8 +369,12 @@ async function runSSG() {
     ]);
 
     await generateSpecialPages(partials);
-    await generateSubforumPages(partials, subforums); // First, generate all subforum pages
-    await generateTagDevAliasPages(partials);         // Then, generate tag/dev pages
+
+    // Generate subforum pages and pass the link field
+    await Promise.all(Object.entries(subforums).map(async ([key, subforum]) => {
+      await generateSubforumPages(partials, subforums);
+      await generateTagDevAliasPages(partials, subforum.link); // Pass the link field here
+    }));
 
     console.log('SSG build complete!');
   } catch (err) {
@@ -379,6 +382,5 @@ async function runSSG() {
     process.exit(1);
   }
 }
-
 
 runSSG();
