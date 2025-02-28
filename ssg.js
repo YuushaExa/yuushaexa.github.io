@@ -280,8 +280,7 @@ async function generateTagDevAliasPages(partials) {
           <ul>
             ${paginatedPosts.map(post => `
               <li>
-                <a href="${baseurl}${post.link.replace(/^\//, '')}.html">${post.title}</a>
-                by ${post.author} on ${post.date}
+                <a href="/${post.link.replace(/^\//, '')}.html">${post.title}</a>
               </li>
             `).join('')}
           </ul>
