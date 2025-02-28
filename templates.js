@@ -173,7 +173,7 @@ const templates = {
       <ul>${subforum.posts.map(post => `
         <li>
           <img src="${post.image.url}" alt="${post.title}" width="50">
-          <a href="/${post.link}">${post.title}</a>
+          <a href="${baseurl}${post.link.replace(/^\//, '')}">${post.title}</a>
           <span>(${post.flair})</span>
         </li>
       `).join('')}</ul>
