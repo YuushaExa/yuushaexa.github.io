@@ -328,7 +328,6 @@ function getPostsByField(field, value, allPosts, options = {}) {
                 ${groupData.posts.map(post => `
                     <li>
                         <a href="${post.link.replace(/^\//, '')}.html">${post.title}</a>
-                        <br>By ${post.author} on ${post.date}
                     </li>
                 `).join('')}
             </ul>
