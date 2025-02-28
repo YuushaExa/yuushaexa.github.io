@@ -307,8 +307,8 @@ async function generateTagDevAliasPages(partials, subforumLink) {
             );
 
             const outputFilePath = page === 1
-              ? path.join(dirs.public, `${subforumLink}/${type}/${slug}.html`)
-              : path.join(dirs.public, `${subforumLink}/${type}/${slug}-${page}.html`);
+              ? path.join(dirs.public, `${baseurl}${subforumLink}/${type}/${slug}.html`)
+              : path.join(dirs.public, `${baseurl}${subforumLink}/${type}/${slug}-${page}.html`);
 
             await ensureDirectoryExists(path.dirname(outputFilePath));
             await writeFile(outputFilePath, outputContent);
@@ -341,7 +341,7 @@ async function generateTagDevAliasPages(partials, subforumLink) {
           ''
         );
 
-        const outputFilePath = path.join(dirs.public, `${subforumLink}/${type}/index.html`);
+        const outputFilePath = path.join(dirs.public, `${baseurl}${subforumLink}/${type}/index.html`);
         await ensureDirectoryExists(path.dirname(outputFilePath));
         await writeFile(outputFilePath, outputContent);
         console.log(`Generated: ${subforumLink}/${type}/index.html`);
