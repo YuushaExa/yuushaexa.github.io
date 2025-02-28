@@ -1,7 +1,7 @@
 const templates = {
   gamesTemplate: {
-    generatePostLink: (subforum, post) => `${subforum.link}/${generateSlug(post.title)}`,
-
+    generatePostLink: (subforumKey, post) => `${subforumKey}/${generateSlug(post.title)}`,
+ 
     generateSubforumPage: (subforum, baseurl) => `
       <h1>${subforum.title}</h1>  
       <p>${subforum.description}</p> 
@@ -11,7 +11,7 @@ const templates = {
       <ul>${subforum.posts.map(post => `
         <li>
           <img src="${post.image}" alt="${post.title}" width="50">
-          <a href="${baseurl}${subforum.link}/${generateSlug(post.title)}">${post.title}</a>
+          <a href="${baseurl}${post.link}">${post.title}</a>
           <span>(${post.flair})</span>
           <br>By ${post.author} on ${post.date}
         </li>
@@ -31,10 +31,10 @@ const templates = {
       const items = subforum.posts.map(post => `
         <item>
           <title>${post.title}</title>
-          <link>${baseurl}${subforum.link}/${generateSlug(post.title)}.html</link>
+          <link>${baseurl}${post.link.replace(/^\//, '')}.html</link>
           <description>${post.content || ''}</description>
           <pubDate>${new Date(post.date).toUTCString()}</pubDate>
-          <guid>${baseurl}${subforum.link}/${generateSlug(post.title)}.html</guid>
+          <guid>${baseurl}${post.link.replace(/^\//, '')}.html</guid>
         </item>
       `).join('');
 
@@ -53,7 +53,7 @@ const templates = {
   },
 
   programmingTemplate: {
-    generatePostLink: (subforum, post) => `${subforum.link}/${generateSlug(post.title)}`,
+    generatePostLink: (subforumKey, post) => `/${subforumKey}/${generateSlug(post.title)}`,
 
     generateSubforumPage: (subforum, baseurl) => `
       <h1>${subforum.title}</h1>
@@ -64,7 +64,7 @@ const templates = {
       <ul>${subforum.posts.map(post => `
         <li>
           <img src="${post.image}" alt="${post.title}" width="50">
-          <a href="${baseurl}${subforum.link}/${generateSlug(post.title)}">${post.title}</a>
+          <a href="${post.link}">${post.title}</a>
           <span>(${post.flair})</span>
           <br>By ${post.author} on ${post.date}
           <p>${post.content1}</p>
@@ -86,10 +86,10 @@ const templates = {
       const items = subforum.posts.map(post => `
         <item>
           <title>${post.title}</title>
-          <link>${baseurl}${subforum.link}/${generateSlug(post.title)}.html</link>
+          <link>${baseurl}${post.link.replace(/^\//, '')}.html</link>
           <description>${post.content1 || ''}</description>
           <pubDate>${new Date(post.date).toUTCString()}</pubDate>
-          <guid>${baseurl}${subforum.link}/${generateSlug(post.title)}.html</guid>
+          <guid>${baseurl}${post.link.replace(/^\//, '')}.html</guid>
           <category>${post.flair}</category>
         </item>
       `).join('');
@@ -108,8 +108,8 @@ const templates = {
     },
   },
 
-  testTemplate: {
-    generatePostLink: (subforum, post) => `${subforum.link}/${generateSlug(post.title)}`,
+   testTemplate: {
+    generatePostLink: (subforumKey, post) => `/${subforumKey}/${generateSlug(post.title)}`,
 
     generateSubforumPage: (subforum, baseurl) => `
       <h1>${subforum.title}</h1>
@@ -117,10 +117,10 @@ const templates = {
       <p>${subforum.created_at}</p>
       <img src="${subforum.banner}" alt="${subforum.title}">
       <img src="${subforum.icon}" alt="${subforum.title}">
-      <ul>${subforum.posts.map(post => `
+ <ul>${subforum.posts.map(post => `
         <li>
           <img src="${post.image}" alt="${post.title}" width="50">
-          <a href="${baseurl}${subforum.link}/${generateSlug(post.title)}">${post.title}</a>
+          <a href="${post.link}">${post.title}</a>
           <span>(${post.flair})</span>
           <br>By ${post.author} on ${post.date}
         </li>
@@ -140,10 +140,10 @@ const templates = {
       const items = subforum.posts.map(post => `
         <item>
           <title>${post.title}</title>
-          <link>${baseurl}${subforum.link}/${generateSlug(post.title)}.html</link>
+          <link>${baseurl}${post.link.replace(/^\//, '')}.html</link>
           <description>${post.content || ''}</description>
           <pubDate>${new Date(post.date).toUTCString()}</pubDate>
-          <guid>${baseurl}${subforum.link}/${generateSlug(post.title)}.html</guid>
+          <guid>${baseurl}${post.link.replace(/^\//, '')}.html</guid>
         </item>
       `).join('');
 
@@ -161,8 +161,8 @@ const templates = {
     },
   },
 
-  vnTemplate: {
-    generatePostLink: (subforum, post) => `${subforum.link}/${generateSlug(post.title)}`,
+   vnTemplate: {
+    generatePostLink: (subforumKey, post) => `${subforumKey}/${generateSlug(post.title)}`,
 
     generateSubforumPage: (subforum, baseurl) => `
       <h1>${subforum.title}</h1>
@@ -173,7 +173,7 @@ const templates = {
       <ul>${subforum.posts.map(post => `
         <li>
           <img src="${post.image.url}" alt="${post.title}" width="50">
-          <a href="${baseurl}${subforum.link}/${generateSlug(post.title)}">${post.title}</a>
+          <a href="${baseurl}${post.link}">${post.title}</a>
           <span>(${post.flair})</span>
           <br>By ${post.author} on ${post.date}
         </li>
@@ -185,36 +185,36 @@ const templates = {
       <img src="${post.image.url}" alt="${post.title}" width="200">
       <p>${post.description}</p>
       <h2>Developers</h2>
-      <ul>
-        ${post.developers.map(dev => `
-          <li><a href="${baseurl}vn/developers/${generateSlugtags(dev.name)}.html">${dev.name}</a>
-            ${getPostsByField('developers', dev.name, subforum.posts, 5, baseurl)}
-          </li>
-        `).join('')}
-      </ul>
+  <ul>
+    ${post.developers.map(dev => `
+      <li><a href="${baseurl}vn/developers/${generateSlugtags(dev.name)}.html">${dev.name}</a>
+        ${getPostsByField('developers', dev.name, subforum.posts, 5, baseurl)}
+      </li>
+    `).join('')}
+  </ul>
 
-      <h2>Aliases</h2>
-      <ul>
-        ${post.aliases.map(alias => `
-          <li>${alias}</li>
-        `).join('')}
-      </ul>
+  <h2>Aliases</h2>
+  <ul>
+    ${post.aliases.map(alias => `
+      <li>${alias}</li>
+    `).join('')}
+  </ul>
 
-      <h2>Tags</h2>
-      <ul>
-        ${post.tags.map(tag => `
-          <li><a href="${baseurl}vn/tags/${generateSlugtags(tag)}.html">${tag}</a>
-            ${getPostsByField('tags', tag, subforum.posts, baseurl, 5)}
-          </li>
-        `).join('')}
-      </ul>
+  <h2>Tags</h2>
+  <ul>
+ ${post.tags.map(tag => `
+      <li><a href="${baseurl}vn/tags/${generateSlugtags(tag)}.html">${tag}</a>
+      ${getPostsByField('tags', tag, subforum.posts, baseurl, 5)}
+</li>
+    `).join('')}
+  </ul>
 
-      <h2>Screenshots</h2>
-      <div>
-        ${post.screenshots.map(screenshot => `
-          <img src="${screenshot.url}" alt="Screenshot" width="200">
-        `).join('')}
-      </div>
+  <h2>Screenshots</h2>
+  <div>
+    ${post.screenshots.map(screenshot => `
+      <img src="${screenshot.url}" alt="Screenshot" width="200">
+    `).join('')}
+  </div>
     `,
 
     generateRSSFeed: (subforum, baseurl) => {
@@ -222,10 +222,10 @@ const templates = {
       const items = subforum.posts.map(post => `
         <item>
           <title>${post.title}</title>
-          <link>${baseurl}${subforum.link}/${generateSlug(post.title)}.html</link>
+          <link>${post.link.replace(/^\//, '')}.html</link>
           <description>${post.content || ''}</description>
           <pubDate>${new Date(post.date).toUTCString()}</pubDate>
-          <guid>${baseurl}${subforum.link}/${generateSlug(post.title)}.html</guid>
+          <guid>${baseurl}${post.link.replace(/^\//, '')}.html</guid>
         </item>
       `).join('');
 
@@ -242,9 +242,11 @@ const templates = {
 </rss>`;
     },
   },
+  
 };
 
 // Helper function to generate slugs
+
 const titleCounts = {};
 
 function generateSlug(text) {
@@ -258,9 +260,8 @@ function generateSlug(text) {
   titleCounts[baseSlug] = (titleCounts[baseSlug] || 0) + 1;
   return titleCounts[baseSlug] === 1 ? baseSlug : `${baseSlug}-${titleCounts[baseSlug]}`;
 }
-
 // tags etc
-function generateSlugtags(text) {
+ function generateSlugtags(text) {
   const defaultTitle = "untitled-post";
   const title = (text || defaultTitle).toLowerCase(); // Normalize title and convert to lowercase
   const baseSlug = title
@@ -326,7 +327,7 @@ function getPostsByField(field, value, allPosts, options = {}) {
             <ul>
                 ${groupData.posts.map(post => `
                     <li>
-                        <a href="${baseurl}${subforum.link}/${generateSlug(post.title)}.html">${post.title}</a>
+                        <a href="${baseurl}${post.link.replace(/^\//, '')}.html">${post.title}</a>
                         <br>By ${post.author} on ${post.date}
                     </li>
                 `).join('')}
