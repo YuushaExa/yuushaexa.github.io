@@ -288,8 +288,8 @@ async function generateTagDevAliasPages(partials) {
         `;
 
         const canonicalUrl = page === 1
-          ? `${baseurl}vn/${type}/${slug}.html`
-          : `${baseurl}vn/${type}/${slug}-${page}.html`;
+          ? `${baseurl}/${type}/${slug}.html`
+          : `${baseurl}/${type}/${slug}-${page}.html`;
 
         pageGenerationPromises.push(
           (async () => {
@@ -331,7 +331,7 @@ async function generateTagDevAliasPages(partials) {
         const outputContent = await createFullPage(
           partials,
           indexPageContent,
-          `${baseurl}vn/${type}/`,
+          `${baseurl}/${type}/`,
           `All ${type} - ${meta}`,
           `List of all ${type} related to visual novels`,
           ''
