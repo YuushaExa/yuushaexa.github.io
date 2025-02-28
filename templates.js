@@ -163,7 +163,7 @@ const templates = {
 
    vnTemplate: {
     generatePostLink: (subforumKey, post) => `/${subforumKey}/${generateSlug(post.title)}`,
-
+// index and pages
     generateSubforumPage: (subforum, baseurl) => `
       <h1>${subforum.title}</h1>
       <p>${subforum.description}</p>
@@ -173,13 +173,12 @@ const templates = {
       <ul>${subforum.posts.map(post => `
         <li>
           <img src="${post.image.url}" alt="${post.title}" width="50">
-          <a href="${baseurl}${post.link}">${post.title}</a>
+          <a href="/${post.link}">${post.title}</a>
           <span>(${post.flair})</span>
-          <br>By ${post.author} on ${post.date}
         </li>
       `).join('')}</ul>
     `,
-
+// post 
     generatePostPage: (post, subforum, baseurl) => `
       <h1>${post.title}</h1>
       <img src="${post.image.url}" alt="${post.title}" width="200">
