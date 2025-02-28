@@ -173,7 +173,7 @@ const templates = {
       <ul>${subforum.posts.map(post => `
         <li>
           <img src="${post.image.url}" alt="${post.title}" width="50">
-          <a href="/${post.link}">${post.title}</a>
+          <a href="${baseurl}${post.link}">${post.title}</a>
           <span>(${post.flair})</span>
           <br>By ${post.author} on ${post.date}
         </li>
