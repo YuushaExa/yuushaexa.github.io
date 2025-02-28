@@ -1,7 +1,7 @@
 const fs = require('fs').promises;
 const path = require('path');
 const { templates, generateSlugtags } = require('./templates');
-const baseurl = 'https://yuushaexa.github.io/'; // You can change this to any base URL
+const baseurl = 'https://yuushaexa.github.io'; // You can change this to any base URL
 
 const dirs = {
   partials: path.join(__dirname, 'partials'),
