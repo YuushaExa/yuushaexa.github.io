@@ -280,7 +280,8 @@ async function generateTagDevAliasPages(partials) {
           <ul>
             ${paginatedPosts.map(post => `
               <li>
-                <a href="/${post.link.replace(/^\//, '')}.html">${post.title}</a>
+                <a href="${baseurl}${post.link.replace(/^\//, '')}.html">${post.title}</a>
+                by ${post.author} on ${post.date}
               </li>
             `).join('')}
           </ul>
@@ -288,8 +289,8 @@ async function generateTagDevAliasPages(partials) {
         `;
 
         const canonicalUrl = page === 1
-          ? `${baseurl}/${type}/${slug}.html`
-          : `${baseurl}/${type}/${slug}-${page}.html`;
+          ? `${baseurl}vn/${type}/${slug}.html`
+          : `${baseurl}vn/${type}/${slug}-${page}.html`;
 
         pageGenerationPromises.push(
           (async () => {
@@ -331,7 +332,7 @@ async function generateTagDevAliasPages(partials) {
         const outputContent = await createFullPage(
           partials,
           indexPageContent,
-          `${baseurl}/${type}/`,
+          `${baseurl}vn/${type}/`,
           `All ${type} - ${meta}`,
           `List of all ${type} related to visual novels`,
           ''
