@@ -1,6 +1,6 @@
 const templates = {
   gamesTemplate: {
-    generatePostLink: (subforumKey, post) => `/${subforumKey}/${generateSlug(post.title)}`,
+    generatePostLink: (subforumKey, post) => `${baseurl}/${subforumKey}/${generateSlug(post.title)}`,
  
     generateSubforumPage: (subforum, baseurl) => `
       <h1>${subforum.title}</h1>  
