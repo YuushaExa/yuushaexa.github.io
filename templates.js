@@ -162,7 +162,7 @@ const templates = {
   },
 
    vnTemplate: {
-    generatePostLink: (subforumKey, post) => `/${subforumKey}/${generateSlug(post.title)}`,
+    generatePostLink: (subforumKey, post) => `${baseurl}${subforumKey}/${generateSlug(post.title)}`,
 
     generateSubforumPage: (subforum, baseurl) => `
       <h1>${subforum.title}</h1>
@@ -222,7 +222,7 @@ const templates = {
       const items = subforum.posts.map(post => `
         <item>
           <title>${post.title}</title>
-          <link>${baseurl}${post.link.replace(/^\//, '')}.html</link>
+          <link>${post.link.replace(/^\//, '')}.html</link>
           <description>${post.content || ''}</description>
           <pubDate>${new Date(post.date).toUTCString()}</pubDate>
           <guid>${baseurl}${post.link.replace(/^\//, '')}.html</guid>
