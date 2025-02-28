@@ -1,6 +1,6 @@
 const templates = {
   gamesTemplate: {
-    generatePostLink: (subforumKey, post) => `${subforumKey}/${generateSlug(post.title)}`,
+    generatePostLink: (subforumKey, post) => `/${subforumKey}/${generateSlug(post.title)}`,
  
     generateSubforumPage: (subforum, baseurl) => `
       <h1>${subforum.title}</h1>  
@@ -162,7 +162,7 @@ const templates = {
   },
 
    vnTemplate: {
-    generatePostLink: (subforumKey, post) => `${subforumKey}/${generateSlug(post.title)}`,
+    generatePostLink: (subforumKey, post) => `/${subforumKey}/${generateSlug(post.title)}`,
 
     generateSubforumPage: (subforum, baseurl) => `
       <h1>${subforum.title}</h1>
