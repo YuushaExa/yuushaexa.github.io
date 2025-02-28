@@ -162,7 +162,7 @@ const templates = {
   },
 
    vnTemplate: {
-    generatePostLink: (subforumKey, post) => `/${generateSlug(post.title)}`,
+    generatePostLink: (subforumKey, post) => `/${subforumKey}/${generateSlug(post.title)}`,
 
     generateSubforumPage: (subforum, baseurl) => `
       <h1>${subforum.title}</h1>
@@ -327,7 +327,7 @@ function getPostsByField(field, value, allPosts, options = {}) {
             <ul>
                 ${groupData.posts.map(post => `
                     <li>
-                        <a href="${post.link.replace(/^\//, '')}.html">${post.title}</a>
+                        <a href="/vn${post.link.replace(/^\//, '')}.html">${post.title}</a>
                     </li>
                 `).join('')}
             </ul>
