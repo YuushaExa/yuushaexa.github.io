@@ -195,6 +195,22 @@ const templates = {
       <li>${alias}</li>
     `).join('')}
   </ul>
+
+    <h2>Tags</h2>
+  <ul>
+ ${post.tags.map(tag => `
+      <li><a href="${baseurl}vn/tags/${generateSlugtags(tag)}.html">${tag}</a>
+      ${getPostsByField('tags', tag, subforum.posts, baseurl, 5)}
+</li>
+    `).join('')}
+  </ul>
+
+  <h2>Screenshots</h2>
+  <div>
+    ${post.screenshots.map(screenshot => `
+      <img src="${screenshot.url}" alt="Screenshot" width="200">
+    `).join('')}
+  </div>
     `,
 
     generateRSSFeed: (subforum, baseurl) => {
@@ -252,6 +268,7 @@ function generateSlug(text) {
   return baseSlug; // Return the base slug without a counter
 }
 
+//         ${getPostsByField('developers', dev.name, subforum.posts, 5, baseurl)} = example, very ineffective 
 // related posts
 function getPostsByField(field, value, allPosts, options = {}) {
     const { baseurl = '', limit = 5 } = options; // Destructure options with defaults
