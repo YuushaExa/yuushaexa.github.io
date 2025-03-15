@@ -5,7 +5,7 @@
   "created_at": "2025-10-09",
   "banner": "https://picsum.photos/1072/128",
   "icon": "https://picsum.photos/88",
-  "highlights": "",
+  "highlights": "", 
   "template": "vnTemplate",
   "data": ["https://raw.githubusercontent.com/YuushaExa/testapi/refs/heads/main/result/1.json"],
   "metadata": {
