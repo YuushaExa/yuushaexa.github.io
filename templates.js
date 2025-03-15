@@ -182,33 +182,33 @@ const templates = {
       <p>${post.description}</p>
       <h2>Developers</h2>
   <ul>
-    ${post.developers.map(dev => `
+    ${(post.developers || []).map(dev => `
       <li><a href="${baseurl}vn/developers/${generateSlugtags(dev.name)}.html">${dev.name}</a>
         ${getPostsByField('developers', dev.name, subforum.posts, 5, baseurl)}
       </li>
     `).join('')}
   </ul>
 
-  <h2>Aliases</h2>
+ <h2>Aliases</h2>
   <ul>
-    ${post.aliases.map(alias => `
+    ${(post.aliases || []).map(alias => `
       <li>${alias}</li>
     `).join('')}
   </ul>
 
   <h2>Tags</h2>
   <ul>
- ${post.tags.map(tag => `
+    ${(post.tags || []).map(tag => `
       <li><a href="${baseurl}vn/tags/${generateSlugtags(tag)}.html">${tag}</a>
       ${getPostsByField('tags', tag, subforum.posts, baseurl, 5)}
-</li>
+      </li>
     `).join('')}
   </ul>
 
   <h2>Screenshots</h2>
   <div>
-    ${post.screenshots.map(screenshot => `
-      <img src="${screenshot.url}" alt="Screenshot" width="200">
+    ${(post.screenshots || []).map(screenshot => `
+      <img src="${screenshot?.url ?? ''}" alt="Screenshot" width="200">
     `).join('')}
   </div>
     `,
