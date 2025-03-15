@@ -180,6 +180,13 @@ const templates = {
       <h1>${post.title}</h1>
       <img src="${post.image.url}" alt="${post.title}" width="200">
       <p>${post.description}</p>
+
+        <h2>Aliases</h2>
+  <ul>
+    ${post.aliases.map(alias => `
+      <li>${alias}</li>
+    `).join('')}
+  </ul>
     `,
 
     generateRSSFeed: (subforum, baseurl) => {
