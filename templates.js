@@ -181,6 +181,15 @@ const templates = {
       <img src="${post.image.url}" alt="${post.title}" width="200">
       <p>${post.description}</p>
 
+      <h2>Developers</h2>
+  <ul>
+    ${post.developers.map(dev => `
+      <li><a href="${baseurl}vn/developers/${generateSlugtags(dev.name)}.html">${dev.name}</a>
+        ${getPostsByField('developers', dev.name, subforum.posts, 5, baseurl)}
+      </li>
+    `).join('')}
+  </ul>
+
         <h2>Aliases</h2>
   <ul>
     ${post.aliases.map(alias => `
