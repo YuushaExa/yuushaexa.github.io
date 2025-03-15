@@ -249,6 +249,7 @@ function generateSlug(text) {
   const defaultTitle = "untitled-post";
   const title = (text || defaultTitle).toLowerCase(); // Normalize title and convert to lowercase
   const baseSlug = title
+        .replace(/\?/g, '') // Remove any question marks
     .replace(/\s+/g, '-') // Replace spaces with hyphens
     .replace(/-+/g, '-') // Collapse multiple hyphens into one
     .trim() // Trim leading/trailing spaces
