@@ -102,7 +102,9 @@ async function loadSubforumData(subforum, subforumKey) {
         title: post.title || 'Default Title',
         link: post.link || template.generatePostLink(subforum.link, post),
         tags: post.tags || [],           // Ensure tags is always an array
-        developers: post.developers || [] // Ensure developers is always an array
+        developers: post.developers || [], // Ensure developers is always an array
+        image: post.image || { url: '' }, // Ensure image is always an object with a url property
+        screenshots: post.screenshots || [], // Ensure screenshots is always an array
       }));
     } catch (err) {
       console.error(`Error loading data from ${file}:`, err.message);
