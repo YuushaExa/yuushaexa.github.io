@@ -272,7 +272,8 @@ function generateSlug(text) {
 
 //         ${getPostsByField('developers', dev.name, subforum.posts, 5, baseurl)} = example, very ineffective 
 // related posts
-function getPostsByField(field, value, allPosts, options = {}) {
+
+        function getPostsByField(field, value, allPosts, options = {}) {
     const { baseurl = '', limit = 5 } = options; // Destructure options with defaults
 
     const filters = {
@@ -292,20 +293,20 @@ function getPostsByField(field, value, allPosts, options = {}) {
     const priorityFirstWord = posts[0].title.split(' ')[0].toLowerCase();
 
     // Group posts by their first word and sort them
-    const groupedPosts = new Map();
+    const groupedPosts = {}; // Use a plain object instead of Map
 
     posts.forEach(post => {
         const firstWord = post.title.split(' ')[0];
         const normalizedFirstWord = firstWord.toLowerCase();
 
-        if (!groupedPosts.has(normalizedFirstWord)) {
-            groupedPosts.set(normalizedFirstWord, { original: firstWord, posts: [] });
+        if (!groupedPosts[normalizedFirstWord]) {
+            groupedPosts[normalizedFirstWord] = { original: firstWord, posts: [] };
         }
-        groupedPosts.get(normalizedFirstWord).posts.push(post);
+        groupedPosts[normalizedFirstWord].posts.push(post);
     });
 
     // Sort the groups
-    const sortedGroups = Array.from(groupedPosts.keys()).sort((a, b) => {
+    const sortedGroups = Object.keys(groupedPosts).sort((a, b) => {
         if (a === priorityFirstWord) return -1; // The priority group goes first
         if (b === priorityFirstWord) return 1;
 
@@ -320,9 +321,10 @@ function getPostsByField(field, value, allPosts, options = {}) {
     const limitedGroups = sortedGroups.slice(0, limit);
 
     // Generate the HTML list with grouped posts
-    const postList = limitedGroups.map(group => {
-        const groupData = groupedPosts.get(group);
-        return `
+    let postList = '';
+    limitedGroups.forEach(group => {
+        const groupData = groupedPosts[group];
+        postList += `
             <ul>
                 ${groupData.posts.map(post => `
                     <li>
@@ -331,7 +333,7 @@ function getPostsByField(field, value, allPosts, options = {}) {
                 `).join('')}
             </ul>
         `;
-    }).join('');
+    });
 
     // Display the total number of results
     const totalResults = posts.length;
@@ -345,7 +347,6 @@ function splitAlphaNum(str) {
     const match = str.match(/^([a-zA-Z]+)(\d+)?$/);
     return match ? [match[1], match[2] ? parseInt(match[2], 10) : 0] : [str, 0];
 }
-
 module.exports = {
   templates,
   generateSlugtags
