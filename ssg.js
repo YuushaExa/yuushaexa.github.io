@@ -159,8 +159,9 @@ const allTags = {};
 const allDevelopers = {};
 
 async function generateSubforumPages(partials, subforums) {
-  const postsPerPage = 10; // Number of posts per page
-  const subfolderPostCounts = {}; // Object to track post counts per subfolder
+  const postsPerPage = 10;
+  const subfolderPostCounts = {};
+  const batchSize = 50; // Process 50 posts at a time
 
   await Promise.all(Object.entries(subforums).map(async ([key, subforum]) => {
     const template = templates[subforum.template];
@@ -168,11 +169,8 @@ async function generateSubforumPages(partials, subforums) {
       throw new Error(`Template ${subforum.template} not found for subforum ${key}`);
     }
 
-    // Load posts with folder-based links
     const posts = await loadSubforumData(subforum, key);
     subforum.posts = posts;
-
-    // Track post count for this subfolder
     subfolderPostCounts[key] = posts.length;
 
     // Generate RSS feed
@@ -180,27 +178,27 @@ async function generateSubforumPages(partials, subforums) {
     await writeFile(path.join(dirs.public, `${key}.rss`), rssFeed);
     console.log(`Generated: ${key}.rss`);
 
-    // Generate individual post pages
-    await Promise.all(subforum.posts.map(async post => {
-      const postContent = template.generatePostPage(post, subforum, baseurl);
-
-      const postOutputContent = await createFullPage(
-        partials,
-        postContent,
-        `${baseurl}${post.link.replace(/^\//, '')}`,
-        post.title,
-        post.content || subforum.description,
-        post.image || subforum.icon
-      );
-
-      const postOutputFilePath = path.join(dirs.public, `${post.link.replace(/^\//, '')}.html`);
-      await ensureDirectoryExists(path.dirname(postOutputFilePath));
-      await writeFile(postOutputFilePath, postOutputContent);
-    }));
+    // Process posts in batches
+    for (let i = 0; i < posts.length; i += batchSize) {
+      const batch = posts.slice(i, i + batchSize);
+      await Promise.all(batch.map(async post => {
+        const postContent = template.generatePostPage(post, subforum, baseurl);
+        const postOutputContent = await createFullPage(
+          partials,
+          postContent,
+          `${baseurl}${post.link.replace(/^\//, '')}`,
+          post.title,
+          post.content || subforum.description,
+          post.image || subforum.icon
+        );
+        const postOutputFilePath = path.join(dirs.public, `${post.link.replace(/^\//, '')}.html`);
+        await ensureDirectoryExists(path.dirname(postOutputFilePath));
+        await writeFile(postOutputFilePath, postOutputContent);
+      }));
+    }
 
     // Paginate subforum posts and generate pages
     const totalPages = Math.ceil(posts.length / postsPerPage);
-
     for (let page = 1; page <= totalPages; page++) {
       const start = (page - 1) * postsPerPage;
       const end = start + postsPerPage;
@@ -233,13 +231,11 @@ async function generateSubforumPages(partials, subforums) {
     }
   }));
 
-  // Log total number of generated posts per subfolder
   console.log('Total generated posts per subfolder:');
   Object.entries(subfolderPostCounts).forEach(([subfolder, count]) => {
     console.log(`${subfolder}: ${count} posts`);
   });
 }
-
 async function generateTagDevAliasPages(partials) {
   const categories = [
     { type: 'tags', meta: 'Visual Novels', data: allTags },
