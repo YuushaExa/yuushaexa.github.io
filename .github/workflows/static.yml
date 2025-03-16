@@ -35,11 +35,7 @@ jobs:
 
       - name: Run ssg script
         run: node ssg.js  # Your script to generate posts
-      - name: Minify HTML files
-        run: |
-          npm install html-minifier -g  # Install html-minifier globally
-          html-minifier --input-dir ./public --output-dir ./public --collapse-whitespace --remove-comments --minify-css --minify-js
-          
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
