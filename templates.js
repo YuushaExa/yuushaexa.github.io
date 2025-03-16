@@ -200,6 +200,7 @@ const templates = {
   <ul>
  ${post.tags.map(tag => `
       <li><a href="${baseurl}vn/tags/${generateSlugtags(tag)}.html">${tag}</a>
+      ${getPostsByField('tags', tag, subforum.posts, baseurl, 5)}
 </li>
     `).join('')}
   </ul>
@@ -210,9 +211,6 @@ const templates = {
       <img src="${screenshot.url}" alt="Screenshot" width="200">
     `).join('')}
   </div>
-
-   <h2>Subforum Statistics</h2>
-    <p>Total posts in this subforum: ${subforum.posts.length}</p>
     `,
 
     generateRSSFeed: (subforum, baseurl) => {
@@ -269,6 +267,82 @@ function generateSlug(text) {
     .trim() // Trim leading/trailing spaces
     .substring(0, 40); // Limit to 40 characters
   return baseSlug; // Return the base slug without a counter
+}
+
+//         ${getPostsByField('developers', dev.name, subforum.posts, 5, baseurl)} = example, very ineffective 
+// related posts
+function getPostsByField(field, value, allPosts, options = {}) {
+    const { baseurl = '', limit = 5 } = options; // Destructure options with defaults
+
+    const filters = {
+        tags: (post) => post.tags.some(tag => tag === value),
+        developers: (post) => post.developers.some(dev => dev.name === value),
+    };
+
+    if (!filters[field]) throw new Error(`Unsupported field: ${field}`);
+
+    // Filter the posts
+    const posts = allPosts.filter(filters[field]);
+
+    // If no posts are found, return a message
+    if (posts.length === 0) return '<p>No posts found.</p>';
+
+    // Get the first word of the first post's title to determine priority
+    const priorityFirstWord = posts[0].title.split(' ')[0].toLowerCase();
+
+    // Group posts by their first word and sort them
+    const groupedPosts = new Map();
+
+    posts.forEach(post => {
+        const firstWord = post.title.split(' ')[0];
+        const normalizedFirstWord = firstWord.toLowerCase();
+
+        if (!groupedPosts.has(normalizedFirstWord)) {
+            groupedPosts.set(normalizedFirstWord, { original: firstWord, posts: [] });
+        }
+        groupedPosts.get(normalizedFirstWord).posts.push(post);
+    });
+
+    // Sort the groups
+    const sortedGroups = Array.from(groupedPosts.keys()).sort((a, b) => {
+        if (a === priorityFirstWord) return -1; // The priority group goes first
+        if (b === priorityFirstWord) return 1;
+
+        const [alphaA, numA] = splitAlphaNum(a);
+        const [alphaB, numB] = splitAlphaNum(b);
+
+        if (alphaA !== alphaB) return alphaA.localeCompare(alphaB); // Alphabetical sorting
+        return numA - numB; // Numerical sorting
+    });
+
+    // Limit the number of groups displayed 
+    const limitedGroups = sortedGroups.slice(0, limit);
+
+    // Generate the HTML list with grouped posts
+    const postList = limitedGroups.map(group => {
+        const groupData = groupedPosts.get(group);
+        return `
+            <ul>
+                ${groupData.posts.map(post => `
+                    <li>
+                        <a href="/${post.link.replace(/^\//, '')}.html">${post.title}</a>
+                    </li>
+                `).join('')}
+            </ul>
+        `;
+    }).join('');
+
+    // Display the total number of results
+    const totalResults = posts.length;
+    const totalResultsHtml = `<p>Total results: ${totalResults}</p>`;
+
+    return `<ul>${postList}</ul>${totalResultsHtml}`;
+}
+
+// Function to extract alphabetical and numeric parts for sorting
+function splitAlphaNum(str) {
+    const match = str.match(/^([a-zA-Z]+)(\d+)?$/);
+    return match ? [match[1], match[2] ? parseInt(match[2], 10) : 0] : [str, 0];
 }
 
 module.exports = {
