@@ -160,6 +160,7 @@ const allDevelopers = {};
 
 async function generateSubforumPages(partials, subforums) {
   const postsPerPage = 10; // Number of posts per page
+  const subfolderPostCounts = {}; // Object to track post counts per subfolder
 
   await Promise.all(Object.entries(subforums).map(async ([key, subforum]) => {
     const template = templates[subforum.template];
@@ -171,20 +172,9 @@ async function generateSubforumPages(partials, subforums) {
     const posts = await loadSubforumData(subforum, key);
     subforum.posts = posts;
 
-  posts.forEach(post => {
-      const tags = post.tags || []; // Default to empty array if undefined
-  const developers = post.developers || []; // Default to empty array if undefined
+    // Track post count for this subfolder
+    subfolderPostCounts[key] = posts.length;
 
-    post.tags.forEach(tag => {
-      allTags[tag] = allTags[tag] || [];
-      allTags[tag].push(post);
-    });
-    post.developers.forEach(dev => {
-      allDevelopers[dev.name] = allDevelopers[dev.name] || [];
-      allDevelopers[dev.name].push(post);
-    });
-  });
-    
     // Generate RSS feed
     const rssFeed = template.generateRSSFeed(subforum, baseurl);
     await writeFile(path.join(dirs.public, `${key}.rss`), rssFeed);
@@ -206,7 +196,6 @@ async function generateSubforumPages(partials, subforums) {
       const postOutputFilePath = path.join(dirs.public, `${post.link.replace(/^\//, '')}.html`);
       await ensureDirectoryExists(path.dirname(postOutputFilePath));
       await writeFile(postOutputFilePath, postOutputContent);
-      console.log(`Generated: ${post.link.replace(/^\//, '')}.html`);
     }));
 
     // Paginate subforum posts and generate pages
@@ -217,13 +206,13 @@ async function generateSubforumPages(partials, subforums) {
       const end = start + postsPerPage;
       const paginatedPosts = posts.slice(start, end);
 
-const paginationNav = `
-  <div class="pagination">
-    ${page > 1 ? `<a href="${subforum.link}${page - 1 === 1 ? '' : `-${page - 1}`}.html">&laquo; Previous</a>` : ''}
-    ${Array.from({ length: totalPages }, (_, i) => `<a href="${subforum.link}${i === 0 ? '' : `-${i + 1}`}.html">${i + 1}</a>`).join(' ')}
-    ${page < totalPages ? `<a href="${subforum.link}-${page + 1}.html">Next &raquo;</a>` : ''}
-  </div>
-`;
+      const paginationNav = `
+        <div class="pagination">
+          ${page > 1 ? `<a href="${subforum.link}${page - 1 === 1 ? '' : `-${page - 1}`}.html">&laquo; Previous</a>` : ''}
+          ${Array.from({ length: totalPages }, (_, i) => `<a href="${subforum.link}${i === 0 ? '' : `-${i + 1}`}.html">${i + 1}</a>`).join(' ')}
+          ${page < totalPages ? `<a href="${subforum.link}-${page + 1}.html">Next &raquo;</a>` : ''}
+        </div>
+      `;
 
       const subforumContent = template.generateSubforumPage(
         { ...subforum, posts: paginatedPosts },
@@ -241,9 +230,14 @@ const paginationNav = `
 
       const fileName = page === 1 ? `${key}.html` : `${key}-${page}.html`;
       await writeFile(path.join(dirs.public, fileName), subforumOutputContent);
-      console.log(`Generated: ${fileName}`);
     }
   }));
+
+  // Log total number of generated posts per subfolder
+  console.log('Total generated posts per subfolder:');
+  Object.entries(subfolderPostCounts).forEach(([subfolder, count]) => {
+    console.log(`${subfolder}: ${count} posts`);
+  });
 }
 
 async function generateTagDevAliasPages(partials) {
