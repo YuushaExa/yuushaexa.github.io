@@ -274,7 +274,7 @@ function generateSlug(text) {
 // related posts
 
         function getPostsByField(field, value, allPosts, options = {}) {
-    const { baseurl = '', limit = 5 } = options; // Destructure options with defaults
+    const { baseurl = '', limit = 5 } = options;
 
     const filters = {
         tags: (post) => post.tags.some(tag => tag === value),
@@ -283,17 +283,14 @@ function generateSlug(text) {
 
     if (!filters[field]) throw new Error(`Unsupported field: ${field}`);
 
-    // Filter the posts
+    // Filter the posts early
     const posts = allPosts.filter(filters[field]);
 
-    // If no posts are found, return a message
     if (posts.length === 0) return '<p>No posts found.</p>';
 
-    // Get the first word of the first post's title to determine priority
+    // Cache the first word of each post's title
     const priorityFirstWord = posts[0].title.split(' ')[0].toLowerCase();
-
-    // Group posts by their first word and sort them
-    const groupedPosts = {}; // Use a plain object instead of Map
+    const groupedPosts = {};
 
     posts.forEach(post => {
         const firstWord = post.title.split(' ')[0];
@@ -305,44 +302,38 @@ function generateSlug(text) {
         groupedPosts[normalizedFirstWord].posts.push(post);
     });
 
-    // Sort the groups
-    const sortedGroups = Object.keys(groupedPosts).sort((a, b) => {
-        if (a === priorityFirstWord) return -1; // The priority group goes first
-        if (b === priorityFirstWord) return 1;
+    // Sort only the top `limit` groups
+    const sortedGroups = Object.keys(groupedPosts)
+        .sort((a, b) => {
+            if (a === priorityFirstWord) return -1;
+            if (b === priorityFirstWord) return 1;
 
-        const [alphaA, numA] = splitAlphaNum(a);
-        const [alphaB, numB] = splitAlphaNum(b);
+            const [alphaA, numA] = splitAlphaNum(a);
+            const [alphaB, numB] = splitAlphaNum(b);
 
-        if (alphaA !== alphaB) return alphaA.localeCompare(alphaB); // Alphabetical sorting
-        return numA - numB; // Numerical sorting
-    });
+            if (alphaA !== alphaB) return alphaA.localeCompare(alphaB);
+            return numA - numB;
+        })
+        .slice(0, limit); // Limit sorting to only what's needed
 
-    // Limit the number of groups displayed 
-    const limitedGroups = sortedGroups.slice(0, limit);
-
-    // Generate the HTML list with grouped posts
+    // Batch HTML generation
     let postList = '';
-    limitedGroups.forEach(group => {
+    sortedGroups.forEach(group => {
         const groupData = groupedPosts[group];
-        postList += `
-            <ul>
-                ${groupData.posts.map(post => `
-                    <li>
-                        <a href="/${post.link.replace(/^\//, '')}.html">${post.title}</a>
-                    </li>
-                `).join('')}
-            </ul>
-        `;
+        const groupHtml = groupData.posts.map(post => `
+            <li>
+                <a href="/${post.link.replace(/^\//, '')}.html">${post.title}</a>
+            </li>
+        `).join('');
+        postList += `<ul>${groupHtml}</ul>`;
     });
 
-    // Display the total number of results
     const totalResults = posts.length;
     const totalResultsHtml = `<p>Total results: ${totalResults}</p>`;
 
     return `<ul>${postList}</ul>${totalResultsHtml}`;
 }
 
-// Function to extract alphabetical and numeric parts for sorting
 function splitAlphaNum(str) {
     const match = str.match(/^([a-zA-Z]+)(\d+)?$/);
     return match ? [match[1], match[2] ? parseInt(match[2], 10) : 0] : [str, 0];
