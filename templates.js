@@ -210,6 +210,9 @@ const templates = {
       <img src="${screenshot.url}" alt="Screenshot" width="200">
     `).join('')}
   </div>
+
+   <h2>Subforum Statistics</h2>
+    <p>Total posts in this subforum: ${subforum.posts.length}</p>
     `,
 
     generateRSSFeed: (subforum, baseurl) => {
