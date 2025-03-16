@@ -186,6 +186,7 @@ const templates = {
     ${post.developers.map(dev => `
       <li><a href="${baseurl}vn/developers/${generateSlugtags(dev.name)}.html">${dev.name}</a>
       </li>
+      ${getPostsByField('developers', dev.name, subforum.posts, 5, baseurl)}
     `).join('')}
   </ul>
 
