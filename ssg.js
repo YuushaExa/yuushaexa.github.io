@@ -242,16 +242,13 @@ async function generateSubforumPages(partials, subforums) {
         subforum.banner
       );
 
-        const fileName = page === 1 ? `${key}.html` : `${key}-${page}.html`;
+          const fileName = page === 1 ? `${key}.html` : `${key}-${page}.html`;
       await writeFile(path.join(dirs.public, fileName), subforumOutputContent);
+      console.log(`Generated: ${fileName}`);
     }
   }));
-
-  console.log('Total generated posts per subfolder:');
-  Object.entries(subfolderPostCounts).forEach(([subfolder, count]) => {
-    console.log(`${subfolder}: ${count} posts`);
-  });
 }
+
 async function generateTagDevAliasPages(partials) {
   const categories = [
     { type: 'tags', meta: 'Visual Novels', data: allTags },
