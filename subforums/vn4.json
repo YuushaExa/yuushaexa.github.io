@@ -7,7 +7,7 @@
   "icon": "https://picsum.photos/88",
   "highlights": "", 
   "template": "vnTemplate",  
-  "data": ["https://raw.githubusercontent.com/YuushaExa/testapi/refs/heads/main/merged.json", "https://raw.githubusercontent.com/YuushaExa/testapi/refs/heads/main/merged.json"],
+  "data": ["https://raw.githubusercontent.com/YuushaExa/testapi/refs/heads/main/merged.json"],
   "metadata": {
     "tags": "https://raw.githubusercontent.com/YuushaExa/testapi/refs/heads/main/result/tags.json"
   }
