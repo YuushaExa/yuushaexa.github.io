@@ -319,11 +319,11 @@ async function generateTagDevAliasPages(partials) {
     const indexPageContent = `
       <h1>All ${type}</h1>
       <ul>
-       ${Object.entries(data).map(([name, posts]) => `
-  <li>
-    <a href="${baseurl}vn/${type}/${getSlug(name)}.html">${name} (${posts.length})</a>
-  </li>
-`).join('')}
+        ${Object.entries(data).map(([name, posts]) => `
+          <li>
+            <a href="${baseurl}vn/${type}/${getSlug(name)}.html">${name} (${posts.length})</a>
+          </li>
+        `).join('')}
       </ul>
     `;
 
