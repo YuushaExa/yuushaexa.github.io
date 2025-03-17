@@ -127,21 +127,6 @@ async function loadSubforumData(subforum, subforumKey) {
   return mergedPosts;
 }
 
-// Minify HTML content without plugins
-function minifyHTML(content) {
-  return content
-    .replace(/\s+/g, ' ') // Replace multiple spaces with a single space
-    .replace(/\n/g, '')   // Remove newlines
-    .replace(/\t/g, '')   // Remove tabs
-    .replace(/<!--[\s\S]*?-->/g, ''); // Remove HTML comments
-}
-
-// Helper function to write minified HTML files
-async function writeMinifiedFile(filePath, content) {
-  const minifiedContent = minifyHTML(content); // Minify the content
-  await writeFile(filePath, minifiedContent); // Write the minified content
-}
-
 async function createFullPage(partials, mainContent, canonicalUrl = '', title = 'Default Title', description = '', image = '') {
   // Replace placeholders in the head template
   const headContent = (partials.head || '')
@@ -151,7 +136,7 @@ async function createFullPage(partials, mainContent, canonicalUrl = '', title = 
     .replace(/{{image}}/g, image);
 
   // Replace placeholders in the base template
-  const fullPageContent = partials.base
+  return partials.base
     .replace(/{{head}}/g, headContent)
     .replace(/{{header}}/g, partials.header || '')
     .replace(/{{main}}/g, mainContent)
@@ -159,17 +144,16 @@ async function createFullPage(partials, mainContent, canonicalUrl = '', title = 
     .replace(/{{aside}}/g, partials.aside || '')
     .replace(/{{canonicalUrl}}/g, canonicalUrl)
     .replace(/{{title}}/g, title);
-
-  return fullPageContent;
 }
 
 async function generateSpecialPages(partials) {
   await Promise.all([
-    writeMinifiedFile(path.join(dirs.public, 'index.html'), partials.index),
-    writeMinifiedFile(path.join(dirs.public, '404.html'), partials['404']),
+    writeFile(path.join(dirs.public, 'index.html'), partials.index),
+    writeFile(path.join(dirs.public, '404.html'), partials['404']),
   ]);
   console.log('Generated: index.html and 404.html');
 }
+
 
 const allTags = {};
 const allDevelopers = {};
@@ -223,7 +207,7 @@ async function generateSubforumPages(partials, subforums) {
         );
         const postOutputFilePath = path.join(dirs.public, `${post.link.replace(/^\//, '')}.html`);
         await ensureDirectoryExists(path.dirname(postOutputFilePath));
-        await writeMinifiedFile(postOutputFilePath, postOutputContent); // Use minified write
+        await writeFile(postOutputFilePath, postOutputContent);
         console.log(`Generated: ${post.link.replace(/^\//, '')}.html`);
       }));
     }
@@ -258,8 +242,8 @@ async function generateSubforumPages(partials, subforums) {
         subforum.banner
       );
 
-      const fileName = page === 1 ? `${key}.html` : `${key}-${page}.html`;
-      await writeMinifiedFile(path.join(dirs.public, fileName), subforumOutputContent); // Use minified write
+          const fileName = page === 1 ? `${key}.html` : `${key}-${page}.html`;
+      await writeFile(path.join(dirs.public, fileName), subforumOutputContent);
       console.log(`Generated: ${fileName}`);
     }
   }));
@@ -329,7 +313,7 @@ async function generateTagDevAliasPages(partials) {
               : path.join(dirs.public, `vn/${type}/${slug}-${page}.html`);
 
             await ensureDirectoryExists(path.dirname(outputFilePath));
-            await writeMinifiedFile(outputFilePath, outputContent); // Use minified write
+            await writeFile(outputFilePath, outputContent);
             console.log(`Generated: ${outputFilePath}`);
           })()
         );
@@ -340,11 +324,11 @@ async function generateTagDevAliasPages(partials) {
     const indexPageContent = `
       <h1>All ${type}</h1>
       <ul>
-        ${Object.entries(data).map(([name, posts]) => `
-          <li>
-            <a href="${baseurl}vn/${type}/${getSlug(name)}.html">${name} (${posts.length})</a>
-          </li>
-        `).join('')}
+       ${Object.entries(data).map(([name, posts]) => `
+  <li>
+    <a href="${baseurl}vn/${type}/${getSlug(name)}.html">${name} (${posts.length})</a>
+  </li>
+`).join('')}
       </ul>
     `;
 
@@ -361,7 +345,7 @@ async function generateTagDevAliasPages(partials) {
 
         const outputFilePath = path.join(dirs.public, `vn/${type}/index.html`);
         await ensureDirectoryExists(path.dirname(outputFilePath));
-        await writeMinifiedFile(outputFilePath, outputContent); // Use minified write
+        await writeFile(outputFilePath, outputContent);
         console.log(`Generated: vn/${type}/index.html`);
       })()
     );
@@ -392,8 +376,8 @@ async function runSSG() {
     ]);
 
     await generateSpecialPages(partials);
-    await generateSubforumPages(partials, subforums);
-    await generateTagDevAliasPages(partials);
+    await generateSubforumPages(partials, subforums); // First, generate all subforum pages
+    await generateTagDevAliasPages(partials);         // Then, generate tag/dev pages
 
     console.log('SSG build complete!');
   } catch (err) {
@@ -401,5 +385,6 @@ async function runSSG() {
     process.exit(1);
   }
 }
+
 
 runSSG();
