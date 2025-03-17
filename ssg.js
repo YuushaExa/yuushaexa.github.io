@@ -232,16 +232,18 @@ const paginationNav = `
         baseurl
       ) + paginationNav;
 
-      const subforumOutputContent = await createFullPage(
-        partials,
-        subforumContent,
-        `${baseurl}${key}${page === 1 ? '' : `-${page}`}.html`,
-        subforum.title,
-        subforum.description,
-        subforum.banner
-      );
+     const fileName = page === 1 ? `${key}.html` : `${key}/page/${page}.html`;
+  const outputUrl = `${baseurl}${fileName}`;
 
-      const fileName = page === 1 ? `${key}.html` : `${key}-${page}.html`;
+  // Create the full HTML page
+  const subforumOutputContent = await createFullPage(
+    partials,
+    subforumContent,
+    outputUrl,
+    subforum.title,
+    subforum.description,
+    subforum.banner
+  );
       await writeFile(path.join(dirs.public, fileName), subforumOutputContent);
       console.log(`Generated: ${fileName}`);
     }
