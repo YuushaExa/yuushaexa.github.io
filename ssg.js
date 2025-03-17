@@ -10,20 +10,20 @@ const dirs = {
 };
 
 // Helper functions
-async function handleFileOperation(operation, filePath, content) {
+async function readFile(filePath) {
   try {
-    return await operation(filePath, content, 'utf-8');
+    return await fs.readFile(filePath, 'utf-8');
   } catch (err) {
-    throw new Error(`Error during file operation on ${filePath}: ${err.message}`);
+    throw new Error(`Error reading file ${filePath}: ${err.message}`);
   }
 }
 
-async function readFile(filePath) {
-  return handleFileOperation(fs.readFile, filePath);
-}
-
 async function writeFile(filePath, content) {
-  return handleFileOperation(fs.writeFile, filePath, content);
+  try {
+    await fs.writeFile(filePath, content, 'utf-8');
+  } catch (err) {
+    throw new Error(`Error writing file ${filePath}: ${err.message}`);
+  }
 }
 
 async function ensureDirectoryExists(dirPath) {
@@ -112,15 +112,16 @@ async function loadSubforumData(subforum, subforumKey) {
     }
   }));
 
-  // Load and merge metadata in parallel
-  const metadata = await Promise.all(Object.entries(metadataSources).map(async ([type, file]) => {
-    return { type, data: await loadMetadata(file) };
-  }));
+  // Load and merge metadata
+  const metadata = {};
+  for (const [type, file] of Object.entries(metadataSources)) {
+    metadata[type] = await loadMetadata(file);
+  }
 
   // Merge metadata into posts
   let mergedPosts = posts.flat();
-  for (const { type, data } of metadata) {
-    mergedPosts = await mergeMetadata(mergedPosts, data, 'title');
+  for (const [type, metadataItems] of Object.entries(metadata)) {
+    mergedPosts = await mergeMetadata(mergedPosts, metadataItems, 'title');
   }
 
   return mergedPosts;
@@ -153,24 +154,6 @@ async function generateSpecialPages(partials) {
   console.log('Generated: index.html and 404.html');
 }
 
-// Unified Pagination Function
-function generatePagination(baseUrl, currentPage, totalPages, slug = '') {
-  const paginationLinks = [];
-
-  if (currentPage > 1) {
-    paginationLinks.push(`<a href="${baseUrl}${slug}${currentPage - 1 === 1 ? '' : `-${currentPage - 1}`}.html">&laquo; Previous</a>`);
-  }
-
-  for (let i = 1; i <= totalPages; i++) {
-    paginationLinks.push(`<a href="${baseUrl}${slug}${i === 1 ? '' : `-${i}`}.html" ${i === currentPage ? 'class="active"' : ''}>${i}</a>`);
-  }
-
-  if (currentPage < totalPages) {
-    paginationLinks.push(`<a href="${baseUrl}${slug}-${currentPage + 1}.html">Next &raquo;</a>`);
-  }
-
-  return `<div class="pagination">${paginationLinks.join(' ')}</div>`;
-}
 
 const allTags = {};
 const allDevelopers = {};
@@ -191,6 +174,9 @@ async function generateSubforumPages(partials, subforums) {
 
     // Process tags and developers
     posts.forEach(post => {
+      const tags = post.tags || []; // Default to empty array if undefined
+      const developers = post.developers || []; // Default to empty array if undefined
+
       post.tags.forEach(tag => {
         allTags[tag] = allTags[tag] || [];
         allTags[tag].push(post);
@@ -234,7 +220,13 @@ async function generateSubforumPages(partials, subforums) {
       const end = start + postsPerPage;
       const paginatedPosts = posts.slice(start, end);
 
-      const paginationNav = generatePagination(`${baseurl}${key}`, page, totalPages);
+      const paginationNav = `
+        <div class="pagination">
+          ${page > 1 ? `<a href="${subforum.link}${page - 1 === 1 ? '' : `-${page - 1}`}.html">&laquo; Previous</a>` : ''}
+          ${Array.from({ length: totalPages }, (_, i) => `<a href="${subforum.link}${i === 0 ? '' : `-${i + 1}`}.html">${i + 1}</a>`).join(' ')}
+          ${page < totalPages ? `<a href="${subforum.link}-${page + 1}.html">Next &raquo;</a>` : ''}
+        </div>
+      `;
 
       const subforumContent = template.generateSubforumPage(
         { ...subforum, posts: paginatedPosts },
@@ -250,7 +242,7 @@ async function generateSubforumPages(partials, subforums) {
         subforum.banner
       );
 
-      const fileName = page === 1 ? `${key}.html` : `${key}-${page}.html`;
+          const fileName = page === 1 ? `${key}.html` : `${key}-${page}.html`;
       await writeFile(path.join(dirs.public, fileName), subforumOutputContent);
       console.log(`Generated: ${fileName}`);
     }
@@ -298,7 +290,7 @@ async function generateTagDevAliasPages(partials) {
               </li>
             `).join('')}
           </ul>
-          ${generatePagination(`${baseurl}vn/${type}/${slug}`, page, totalPages)}
+          ${generatePaginationLinks(type, slug, page, totalPages)}
         `;
 
         const canonicalUrl = page === 1
@@ -332,11 +324,11 @@ async function generateTagDevAliasPages(partials) {
     const indexPageContent = `
       <h1>All ${type}</h1>
       <ul>
-        ${Object.entries(data).map(([name, posts]) => `
-          <li>
-            <a href="${baseurl}vn/${type}/${getSlug(name)}.html">${name} (${posts.length})</a>
-          </li>
-        `).join('')}
+       ${Object.entries(data).map(([name, posts]) => `
+  <li>
+    <a href="${baseurl}vn/${type}/${getSlug(name)}.html">${name} (${posts.length})</a>
+  </li>
+`).join('')}
       </ul>
     `;
 
@@ -362,6 +354,19 @@ async function generateTagDevAliasPages(partials) {
   await Promise.all(pageGenerationPromises);
 }
 
+// Helper function to generate pagination links
+function generatePaginationLinks(type, slug, currentPage, totalPages) {
+  return `
+    <div class="pagination">
+      ${currentPage > 1 ? `<a href="${baseurl}vn/${type}/${slug}${currentPage - 1 === 1 ? '' : `-${currentPage - 1}`}.html">&laquo; Previous</a>` : ''}
+      ${Array.from({ length: totalPages }, (_, i) => `
+        <a href="${baseurl}vn/${type}/${slug}${i === 0 ? '' : `-${i + 1}`}.html" ${i + 1 === currentPage ? 'class="active"' : ''}>${i + 1}</a>
+      `).join(' ')}
+      ${currentPage < totalPages ? `<a href="${baseurl}vn/${type}/${slug}-${currentPage + 1}.html">Next &raquo;</a>` : ''}
+    </div>
+  `;
+}
+
 async function runSSG() {
   try {
     await ensureDirectoryExists(dirs.public);
@@ -380,5 +385,6 @@ async function runSSG() {
     process.exit(1);
   }
 }
+
 
 runSSG();
