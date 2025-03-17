@@ -253,6 +253,7 @@ function generateSlug(text) {
   
   // Remove all non-Latin characters and special symbols except spaces and hyphens
   const baseSlug = title
+    .replace(/"/g, ' ')
     .replace(/[^a-z0-9\s-]/g, '') // Keep only Latin letters, numbers, spaces, and hyphens
     .replace(/\s+/g, '-')        // Replace spaces with hyphens
     .replace(/-+/g, '-')         // Collapse multiple hyphens into one
