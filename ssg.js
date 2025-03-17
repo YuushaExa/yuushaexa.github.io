@@ -239,7 +239,7 @@ const paginationNav = `
         subforum.banner
       );
 
-      const fileName = page === 1 ? `${key}.html` : `${key}-${page}.html`;
+      const fileName = page === 1 ? `${key}.html` : `${key}/page/${page}.html`;
       await writeFile(path.join(dirs.public, fileName), subforumOutputContent);
       console.log(`Generated: ${fileName}`);
     }
