@@ -2,13 +2,13 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: ["main"]  # Change this to your default branch if it's different
-  workflow_dispatch:  # Allows manual triggering
+    branches: ["main"]
+  workflow_dispatch:
 
 permissions:
-  contents: read  # Allow reading repository contents
-  pages: write    # Allow writing to GitHub Pages
-  id-token: write # Required for GitHub Pages deployment
+  contents: read
+  pages: write
+  id-token: write
 
 concurrency:
   group: "pages"
@@ -23,36 +23,36 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
-          fetch-depth: 1  # Limit the checkout to the latest commit
+          fetch-depth: 1
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'  # Specify the Node.js version
+          node-version: '20'
 
       - name: Install dependencies
-        run: npm install  # Install dependencies before running the script
+        run: npm install
 
       - name: Run ssg script
-        run: node ssg.js  # Your script to generate posts
+        run: node ssg.js
 
-      - name: Zip generated files
+      - name: Create tar.gz archive
         run: |
           mkdir -p public
-          zip -r public/site.zip public/*  # Zip all generated files into site.zip
+          tar -czf public/site.tar.gz -C public .  # Bundle and compress all files
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: public/site.zip  # Path to the zipped file
+          path: public/site.tar.gz  # Path to the .tar.gz file
 
-      - name: Download and unzip artifact
+      - name: Download and extract artifact
         run: |
           mkdir -p github-pages-deploy
-          unzip public/site.zip -d github-pages-deploy  # Unzip the .zip file
+          tar -xzf public/site.tar.gz -C github-pages-deploy  # Extract the .tar.gz file
 
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
         with:
-          path: github-pages-deploy  # Path to the unzipped files
+          path: github-pages-deploy
