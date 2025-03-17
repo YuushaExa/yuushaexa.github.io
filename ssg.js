@@ -158,7 +158,7 @@ const allDevelopers = {};
 
 async function generateSubforumPages(partials, subforums) {
   const postsPerPage = 10; // Number of posts per page
-  const batchSize = 50; // Process 50 posts at a time
+  const batchSize = 500; // Process 50 posts at a time
 
   await Promise.all(Object.entries(subforums).map(async ([key, subforum]) => {
     const template = templates[subforum.template];
