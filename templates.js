@@ -247,13 +247,19 @@ const titleCounts = {};
 
 function generateSlug(text) {
   const defaultTitle = "untitled-post";
-  const title = (text || defaultTitle).toLowerCase(); // Normalize title and convert to lowercase
+  
+  // Normalize title and convert to lowercase
+  const title = (text || defaultTitle).toLowerCase();
+  
+  // Remove all non-Latin characters and special symbols except spaces and hyphens
   const baseSlug = title
-        .replace(/\?/g, '') // Remove any question marks
-    .replace(/\s+/g, '-') // Replace spaces with hyphens
-    .replace(/-+/g, '-') // Collapse multiple hyphens into one
-    .trim() // Trim leading/trailing spaces
-    .substring(0, 40); // Limit to 40 characters
+    .replace(/[^a-z0-9\s-]/g, '') // Keep only Latin letters, numbers, spaces, and hyphens
+    .replace(/\s+/g, '-')        // Replace spaces with hyphens
+    .replace(/-+/g, '-')         // Collapse multiple hyphens into one
+    .trim()                      // Trim leading/trailing spaces or hyphens
+    .substring(0, 40);           // Limit to 40 characters
+  
+  // Count occurrences of the slug and append a number if necessary
   titleCounts[baseSlug] = (titleCounts[baseSlug] || 0) + 1;
   return titleCounts[baseSlug] === 1 ? baseSlug : `${baseSlug}-${titleCounts[baseSlug]}`;
 }
