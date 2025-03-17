@@ -112,16 +112,14 @@ async function loadSubforumData(subforum, subforumKey) {
     }
   }));
 
-  // Load and merge metadata
-  const metadata = {};
-  for (const [type, file] of Object.entries(metadataSources)) {
-    metadata[type] = await loadMetadata(file);
-  }
+  const metadata = await Promise.all(Object.entries(metadataSources).map(async ([type, file]) => {
+    return { type, data: await loadMetadata(file) };
+  }));
 
   // Merge metadata into posts
   let mergedPosts = posts.flat();
-  for (const [type, metadataItems] of Object.entries(metadata)) {
-    mergedPosts = await mergeMetadata(mergedPosts, metadataItems, 'title');
+  for (const { type, data } of metadata) {
+    mergedPosts = await mergeMetadata(mergedPosts, data, 'title');
   }
 
   return mergedPosts;
