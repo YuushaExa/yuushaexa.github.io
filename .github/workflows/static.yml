@@ -37,7 +37,7 @@ jobs:
         run: node ssg.js  # Your script to generate posts
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-pages-artifact@v3
         with:
           path: public  # Path to the directory containing your generated files
           
