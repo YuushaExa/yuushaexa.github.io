@@ -184,7 +184,7 @@ const templates = {
       <h2>Developers</h2>
   <ul>
     ${post.developers.map(dev => `
-      <li><a href="${baseurl}vn/developers/${generateSlug(dev.name)}.html">${dev.name}</a>
+      <li><a href="${baseurl}vn/developers/${generateSlugtags(dev.name)}.html">${dev.name}</a>
       </li>
     `).join('')}
   </ul>
@@ -199,7 +199,7 @@ const templates = {
     <h2>Tags</h2>
   <ul>
  ${post.tags.map(tag => `
-      <li><a href="${baseurl}vn/tags/${generateSlug(tag)}.html">${tag}</a>
+      <li><a href="${baseurl}vn/tags/${generateSlugtags(tag)}.html">${tag}</a>
       ${getPostsByField('tags', tag, subforum.posts, baseurl, 5)}
 </li>
     `).join('')}
@@ -247,20 +247,13 @@ const titleCounts = {};
 
 function generateSlug(text) {
   const defaultTitle = "untitled-post";
-  
-  // Normalize title and convert to lowercase
-  const title = (text || defaultTitle).toLowerCase();
-  
-  // Remove all non-Latin characters and special symbols except spaces and hyphens
+  const title = (text || defaultTitle).toLowerCase(); // Normalize title and convert to lowercase
   const baseSlug = title
-    .replace(/"/g, ' ')
-    .replace(/[^a-z0-9\s-]/g, '') // Keep only Latin letters, numbers, spaces, and hyphens
-    .replace(/\s+/g, '-')        // Replace spaces with hyphens
-    .replace(/-+/g, '-')         // Collapse multiple hyphens into one
-    .trim()                      // Trim leading/trailing spaces or hyphens
-    .substring(0, 40);           // Limit to 40 characters
-  
-  // Count occurrences of the slug and append a number if necessary
+        .replace(/\?/g, '') // Remove any question marks
+    .replace(/\s+/g, '-') // Replace spaces with hyphens
+    .replace(/-+/g, '-') // Collapse multiple hyphens into one
+    .trim() // Trim leading/trailing spaces
+    .substring(0, 40); // Limit to 40 characters
   titleCounts[baseSlug] = (titleCounts[baseSlug] || 0) + 1;
   return titleCounts[baseSlug] === 1 ? baseSlug : `${baseSlug}-${titleCounts[baseSlug]}`;
 }
@@ -269,8 +262,6 @@ function generateSlug(text) {
   const defaultTitle = "untitled-post";
   const title = (text || defaultTitle).toLowerCase(); // Normalize title and convert to lowercase
   const baseSlug = title
-      .replace(/"/g, ' ')
-    .replace(/[^a-z0-9\s-]/g, '') // Keep only Latin letters, numbers, spaces, and hyphens
     .replace(/\s+/g, '-') // Replace spaces with hyphens
     .replace(/-+/g, '-') // Collapse multiple hyphens into one
     .trim() // Trim leading/trailing spaces
