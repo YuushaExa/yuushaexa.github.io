@@ -1,6 +1,6 @@
 const fs = require('fs').promises;
 const path = require('path');
-const { templates } = require('./templates');
+const { templates, generateSlug } = require('./templates');
 const baseurl = 'https://yuushaexa.github.io/'; // You can change this to any base URL
 
 const dirs = {
