@@ -1,6 +1,6 @@
 const fs = require('fs').promises;
 const path = require('path');
-const { templates, generateSlugtags } = require('./templates');
+const { templates } = require('./templates');
 const baseurl = 'https://yuushaexa.github.io/'; // You can change this to any base URL
 
 const dirs = {
@@ -74,6 +74,97 @@ async function mergeMetadata(posts, metadata, key = 'title') {
       ...matchedMetadata // Merge metadata into the post
     };
   });
+}
+
+// Helper function to get posts by a specific field (e.g., tags, developers)
+function getPostsByField(field, value, posts, baseurl, limit = 5) {
+  const filteredPosts = posts.filter(post => post[field] && post[field].includes(value));
+  const limitedPosts = filteredPosts.slice(0, limit);
+  return limitedPosts.map(post => `
+    <li>
+      <a href="${baseurl}${post.link.replace(/^\//, '')}">${post.title}</a>
+    </li>
+  `).join('');
+}
+
+// Helper function to generate tag pages
+async function generateTagPages(partials, subforum, baseurl) {
+  const tags = new Set();
+  subforum.posts.forEach(post => {
+    if (post.tags) {
+      post.tags.forEach(tag => tags.add(tag));
+    }
+  });
+
+  await Promise.all([...tags].map(async tag => {
+    const tagSlug = generateSlug(tag);
+    const tagPosts = subforum.posts.filter(post => post.tags && post.tags.includes(tag));
+
+    const tagContent = `
+      <h1>Tag: ${tag}</h1>
+      <ul>
+        ${tagPosts.map(post => `
+          <li>
+            <a href="${baseurl}${post.link.replace(/^\//, '')}">${post.title}</a>
+          </li>
+        `).join('')}
+      </ul>
+    `;
+
+    const tagOutputContent = await createFullPage(
+      partials,
+      tagContent,
+      `${baseurl}${subforum.link}/tags/${tagSlug}.html`,
+      `Tag: ${tag}`,
+      `Posts tagged with ${tag}`,
+      subforum.icon
+    );
+
+    const tagOutputFilePath = path.join(dirs.public, `${subforum.link}/tags/${tagSlug}.html`);
+    await ensureDirectoryExists(path.dirname(tagOutputFilePath));
+    await writeFile(tagOutputFilePath, tagOutputContent);
+    console.log(`Generated: ${subforum.link}/tags/${tagSlug}.html`);
+  }));
+}
+
+// Helper function to generate developer pages
+async function generateDeveloperPages(partials, subforum, baseurl) {
+  const developers = new Set();
+  subforum.posts.forEach(post => {
+    if (post.developers) {
+      post.developers.forEach(dev => developers.add(dev.name));
+    }
+  });
+
+  await Promise.all([...developers].map(async dev => {
+    const devSlug = generateSlug(dev);
+    const devPosts = subforum.posts.filter(post => post.developers && post.developers.some(d => d.name === dev));
+
+    const devContent = `
+      <h1>Developer: ${dev}</h1>
+      <ul>
+        ${devPosts.map(post => `
+          <li>
+            <a href="${baseurl}${post.link.replace(/^\//, '')}">${post.title}</a>
+          </li>
+        `).join('')}
+      </ul>
+    `;
+
+    const devOutputContent = await createFullPage(
+      partials,
+      devContent,
+      `${baseurl}${subforum.link}/developers/${devSlug}.html`,
+      `Developer: ${dev}`,
+      `Posts by ${dev}`,
+      subforum.icon
+    );
+
+    const devOutputFilePath = path.join(dirs.public, `${subforum.link}/developers/${devSlug}.html`);
+    await ensureDirectoryExists(path.dirname(devOutputFilePath));
+    await writeFile(devOutputFilePath, devOutputContent);
+    console.log(`Generated: ${subforum.link}/developers/${devSlug}.html`);
+  }));
 }
 
 async function loadSubforumData(subforum, subforumKey) {
@@ -172,6 +263,12 @@ async function generateSubforumPages(partials, subforums) {
     const rssFeed = template.generateRSSFeed(subforum, baseurl);
     await writeFile(path.join(dirs.public, `${key}.rss`), rssFeed);
     console.log(`Generated: ${key}.rss`);
+
+    // Generate tag pages
+    await generateTagPages(partials, subforum, baseurl);
+
+    // Generate developer pages
+    await generateDeveloperPages(partials, subforum, baseurl);
 
     // Process posts in batches
     for (let i = 0; i < posts.length; i += batchSize) {
