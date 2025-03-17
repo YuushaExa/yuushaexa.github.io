@@ -219,9 +219,11 @@ async function generateSubforumPages(partials, subforums) {
 
 const paginationNav = `
   <div class="pagination">
-    ${page > 1 ? `<a href="${subforum.link}${page - 1 === 1 ? '' : `-${page - 1}`}.html">&laquo; Previous</a>` : ''}
-    ${Array.from({ length: totalPages }, (_, i) => `<a href="${subforum.link}${i === 0 ? '' : `-${i + 1}`}.html">${i + 1}</a>`).join(' ')}
-    ${page < totalPages ? `<a href="${subforum.link}-${page + 1}.html">Next &raquo;</a>` : ''}
+    ${page > 1 ? `<a href="${subforum.link}/page/${page - 1}.html">&laquo; Previous</a>` : ''}
+    ${Array.from({ length: totalPages }, (_, i) => 
+        `<a href="${subforum.link}/page/${i + 1}.html">${i + 1}</a>`
+    ).join(' ')}
+    ${page < totalPages ? `<a href="${subforum.link}/page/${page + 1}.html">Next &raquo;</a>` : ''}
   </div>
 `;
 
@@ -355,11 +357,11 @@ async function generateTagDevAliasPages(partials) {
 function generatePaginationLinks(type, slug, currentPage, totalPages) {
   return `
     <div class="pagination">
-      ${currentPage > 1 ? `<a href="${baseurl}vn/${type}/${slug}${currentPage - 1 === 1 ? '' : `-${currentPage - 1}`}.html">&laquo; Previous</a>` : ''}
+      ${currentPage > 1 ? `<a href="${baseurl}vn/${type}/${slug}/page/${currentPage - 1}.html">&laquo; Previous</a>` : ''}
       ${Array.from({ length: totalPages }, (_, i) => `
-        <a href="${baseurl}vn/${type}/${slug}${i === 0 ? '' : `-${i + 1}`}.html" ${i + 1 === currentPage ? 'class="active"' : ''}>${i + 1}</a>
+        <a href="${baseurl}vn/${type}/${slug}/page/${i + 1}.html" ${i + 1 === currentPage ? 'class="active"' : ''}>${i + 1}</a>
       `).join(' ')}
-      ${currentPage < totalPages ? `<a href="${baseurl}vn/${type}/${slug}-${currentPage + 1}.html">Next &raquo;</a>` : ''}
+      ${currentPage < totalPages ? `<a href="${baseurl}vn/${type}/${slug}/page/${currentPage + 1}.html">Next &raquo;</a>` : ''}
     </div>
   `;
 }
