@@ -172,9 +172,6 @@ async function generateSubforumPages(partials, subforums) {
 
     // Process tags and developers
     posts.forEach(post => {
-      const tags = post.tags || []; // Default to empty array if undefined
-      const developers = post.developers || []; // Default to empty array if undefined
-
       post.tags.forEach(tag => {
         allTags[tag] = allTags[tag] || [];
         allTags[tag].push(post);
@@ -240,7 +237,7 @@ async function generateSubforumPages(partials, subforums) {
         subforum.banner
       );
 
-          const fileName = page === 1 ? `${key}.html` : `${key}-${page}.html`;
+      const fileName = page === 1 ? `${key}.html` : `${key}-${page}.html`;
       await writeFile(path.join(dirs.public, fileName), subforumOutputContent);
       console.log(`Generated: ${fileName}`);
     }
