@@ -36,11 +36,16 @@ jobs:
       - name: Run ssg script
         run: node ssg.js  # Your script to generate posts
 
+      - name: Zip generated files
+        run: |
+          mkdir -p public
+          zip -r public/site.zip public/*  # Zip all generated files into site.zip
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: public  # Path to the directory containing your generated files
-          
+          path: public/site.zip  # Path to the zipped file
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
