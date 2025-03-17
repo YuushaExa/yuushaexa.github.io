@@ -184,7 +184,7 @@ const templates = {
       <h2>Developers</h2>
   <ul>
     ${post.developers.map(dev => `
-      <li><a href="${baseurl}vn/developers/${generateSlugtags(dev.name)}.html">${dev.name}</a>
+      <li><a href="${baseurl}vn/developers/${generateSlug(dev.name)}.html">${dev.name}</a>
       </li>
     `).join('')}
   </ul>
@@ -199,7 +199,7 @@ const templates = {
     <h2>Tags</h2>
   <ul>
  ${post.tags.map(tag => `
-      <li><a href="${baseurl}vn/tags/${generateSlugtags(tag)}.html">${tag}</a>
+      <li><a href="${baseurl}vn/tags/${generateSlug(tag)}.html">${tag}</a>
       ${getPostsByField('tags', tag, subforum.posts, baseurl, 5)}
 </li>
     `).join('')}
