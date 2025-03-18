@@ -158,7 +158,7 @@ async function generateSpecialPages(partials) {
 const allTags = {};
 const allDevelopers = {};
 
-async function generateSubforumPages(partials, subforums) {
+async function generateSubforumPages(subforums) {
   const postsPerPage = 10; // Number of posts per page
 
   await Promise.all(Object.entries(subforums).map(async ([key, subforum]) => {
@@ -208,10 +208,10 @@ async function generateSubforumPages(partials, subforums) {
       await writeFile(filePath, JSON.stringify(subforumJsonContent, null, 2));
       console.log(`Generated: ${fileName}`);
     }
-  }));
+  });
 }
 
-async function generateTagDevAliasPages(partials) {
+async function generateTagDevAliasPages() {
   const categories = [
     { type: 'tags', meta: 'Visual Novels', data: allTags },
     { type: 'developers', meta: 'Company', data: allDevelopers },
@@ -226,8 +226,6 @@ async function generateTagDevAliasPages(partials) {
     }
     return slugCache.get(name);
   };
-
-  const pageGenerationPromises = [];
 
   for (const { type, meta, data } of categories) {
     // Generate individual JSON files for each tag/dev
@@ -319,8 +317,8 @@ async function runSSG() {
     await ensureDirectoryExists(dirs.public);
     const subforums = await loadFilesFromDir(dirs.subforums, '.json', JSON.parse);
 
-    await generateSubforumPages({}, subforums); // Generate subforum JSON files
-    await generateTagDevAliasPages({});         // Generate tag/dev JSON files
+    await generateSubforumPages(subforums); // Generate subforum JSON files
+    await generateTagDevAliasPages();      // Generate tag/dev JSON files
 
     console.log('SSG build complete!');
   } catch (err) {
