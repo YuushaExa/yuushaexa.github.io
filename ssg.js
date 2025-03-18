@@ -208,8 +208,8 @@ async function generateSubforumPages(subforums) {
       await writeFile(filePath, JSON.stringify(subforumJsonContent, null, 2));
       console.log(`Generated: ${fileName}`);
     }
-  });
-}
+  })
+};
 
 async function generateTagDevAliasPages() {
   const categories = [
