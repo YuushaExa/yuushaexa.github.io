@@ -171,51 +171,16 @@ async function generateSubforumPages(partials, subforums) {
     const posts = await loadSubforumData(subforum, key);
     subforum.posts = posts;
 
-    posts.forEach(post => {
-      const tags = post.tags || []; // Default to empty array if undefined
-      const developers = post.developers || []; // Default to empty array if undefined
-
-      post.tags.forEach(tag => {
-        allTags[tag] = allTags[tag] || [];
-        allTags[tag].push(post);
-      });
-      post.developers.forEach(dev => {
-        allDevelopers[dev.name] = allDevelopers[dev.name] || [];
-        allDevelopers[dev.name].push(post);
-      });
-    });
-
-    // Generate RSS feed
-    const rssFeed = template.generateRSSFeed(subforum, baseurl);
-    await writeFile(path.join(dirs.public, `${key}.rss`), rssFeed);
-    console.log(`Generated: ${key}.rss`);
-
-    // Generate individual post pages and JSON files
+    // Generate individual post JSON files
     await Promise.all(subforum.posts.map(async post => {
-      const postContent = template.generatePostPage(post, subforum, baseurl);
-
-      const postOutputContent = await createFullPage(
-        partials,
-        postContent,
-        `${baseurl}${post.link.replace(/^\//, '')}`,
-        post.title,
-        post.content || subforum.description,
-        post.image || subforum.icon
-      );
-
-      const postOutputFilePath = path.join(dirs.public, `${post.link.replace(/^\//, '')}.html`);
-      await ensureDirectoryExists(path.dirname(postOutputFilePath));
-      await writeFile(postOutputFilePath, postOutputContent);
-      console.log(`Generated: ${post.link.replace(/^\//, '')}.html`);
-
-      // Generate JSON file
       const jsonContent = template.generateJSON(post, subforum, baseurl);
       const jsonFilePath = path.join(dirs.public, `${post.link.replace(/^\//, '')}.json`);
-      await writeFile(jsonFilePath, jsonContent);
+      await ensureDirectoryExists(path.dirname(jsonFilePath));
+      await writeFile(jsonFilePath, JSON.stringify(jsonContent, null, 2));
       console.log(`Generated: ${post.link.replace(/^\//, '')}.json`);
     }));
 
-    // Paginate subforum posts and generate pages
+    // Paginate subforum posts and generate JSON files
     const totalPages = Math.ceil(posts.length / postsPerPage);
 
     for (let page = 1; page <= totalPages; page++) {
@@ -223,34 +188,24 @@ async function generateSubforumPages(partials, subforums) {
       const end = start + postsPerPage;
       const paginatedPosts = posts.slice(start, end);
 
-      const paginationNav = `
-        <div class="pagination">
-          ${page > 1 ? `<a href="${subforum.link}${page - 1 === 1 ? '' : `/page/${page - 1}`}.html">&laquo; Previous</a>` : ''}
-          ${Array.from({ length: totalPages }, (_, i) => `<a href="${subforum.link}${i === 0 ? '' : `/page/${i + 1}`}.html">${i + 1}</a>`).join(' ')}
-          ${page < totalPages ? `<a href="${subforum.link}/page/${page + 1}.html">Next &raquo;</a>` : ''}
-        </div>
-      `;
+      const subforumJsonContent = {
+        title: subforum.title,
+        description: subforum.description,
+        link: `${baseurl}${key}${page === 1 ? '' : `/page/${page}`}.json`,
+        posts: paginatedPosts.map(post => ({
+          title: post.title,
+          link: `${baseurl}${post.link.replace(/^\//, '')}.json`,
+          date: post.date,
+          author: post.author,
+        })),
+      };
 
-      const subforumContent = template.generateSubforumPage(
-        { ...subforum, posts: paginatedPosts },
-        baseurl
-      ) + paginationNav;
-
-      const subforumOutputContent = await createFullPage(
-        partials,
-        subforumContent,
-        `${baseurl}${key}${page === 1 ? '' : `/page/${page}`}.html`,
-        subforum.title,
-        subforum.description,
-        subforum.banner
-      );
-
-      const fileName = page === 1 ? `${key}.html` : `${key}/page/${page}.html`;
+      const fileName = page === 1 ? `${key}.json` : `${key}/page/${page}.json`;
       const filePath = path.join(dirs.public, fileName);
 
       // Ensure the directory exists before writing the file
       await ensureDirectoryExists(path.dirname(filePath));
-      await writeFile(filePath, subforumOutputContent);
+      await writeFile(filePath, JSON.stringify(subforumJsonContent, null, 2));
       console.log(`Generated: ${fileName}`);
     }
   }));
@@ -275,7 +230,7 @@ async function generateTagDevAliasPages(partials) {
   const pageGenerationPromises = [];
 
   for (const { type, meta, data } of categories) {
-    // Generate individual pages for each tag/dev
+    // Generate individual JSON files for each tag/dev
     for (const [name, posts] of Object.entries(data)) {
       const slug = getSlug(name);
 
@@ -287,63 +242,28 @@ async function generateTagDevAliasPages(partials) {
         const end = start + postsPerPage;
         const paginatedPosts = posts.slice(start, end);
 
-        const pageContent = `
-          <h1>${name} (${posts.length})</h1>
-          <ul>
-            ${paginatedPosts.map(post => `
-              <li>
-                <a href="${baseurl}${post.link.replace(/^\//, '')}.html">${post.title}</a>
-                by ${post.author} on ${post.date}
-              </li>
-            `).join('')}
-          </ul>
-          ${generatePaginationLinks(type, slug, page, totalPages, false)} <!-- isIndex = false -->
-        `;
+        const jsonContent = {
+          title: `${name} - ${meta}`,
+          description: `All visual novels related to ${name}`,
+          link: page === 1
+            ? `${baseurl}vn/${type}/${slug}.json`
+            : `${baseurl}vn/${type}/${slug}/page/${page}.json`,
+          posts: paginatedPosts.map(post => ({
+            title: post.title,
+            link: `${baseurl}${post.link.replace(/^\//, '')}.json`,
+            author: post.author,
+            date: post.date,
+          })),
+        };
 
-        const canonicalUrl = page === 1
-          ? `${baseurl}vn/${type}/${slug}.html`
-          : `${baseurl}vn/${type}/${slug}/page/${page}.html`;
+        const jsonFilePath = page === 1
+          ? path.join(dirs.public, `vn/${type}/${slug}.json`)
+          : path.join(dirs.public, `vn/${type}/${slug}/page/${page}.json`);
 
-        pageGenerationPromises.push(
-          (async () => {
-            const outputContent = await createFullPage(
-              partials,
-              pageContent,
-              canonicalUrl,
-              `${name} - ${meta}`,
-              `All visual novels related to ${name}`,
-              ''
-            );
-
-            const outputFilePath = page === 1
-              ? path.join(dirs.public, `vn/${type}/${slug}.html`)
-              : path.join(dirs.public, `vn/${type}/${slug}/page/${page}.html`);
-
-            // Ensure the directory exists before writing the file
-            await ensureDirectoryExists(path.dirname(outputFilePath));
-            await writeFile(outputFilePath, outputContent);
-            console.log(`Generated: ${outputFilePath}`);
-
-            // Generate JSON file
-            const jsonContent = JSON.stringify({
-              title: `${name} - ${meta}`,
-              description: `All visual novels related to ${name}`,
-              posts: paginatedPosts.map(post => ({
-                title: post.title,
-                link: `${baseurl}${post.link.replace(/^\//, '')}.html`,
-                author: post.author,
-                date: post.date,
-              })),
-            }, null, 2);
-
-            const jsonFilePath = page === 1
-              ? path.join(dirs.public, `vn/${type}/${slug}.json`)
-              : path.join(dirs.public, `vn/${type}/${slug}/page/${page}.json`);
-
-            await writeFile(jsonFilePath, jsonContent);
-            console.log(`Generated: ${jsonFilePath}`);
-          })()
-        );
+        // Ensure the directory exists before writing the file
+        await ensureDirectoryExists(path.dirname(jsonFilePath));
+        await writeFile(jsonFilePath, JSON.stringify(jsonContent, null, 2));
+        console.log(`Generated: ${jsonFilePath}`);
       }
     }
 
@@ -356,66 +276,29 @@ async function generateTagDevAliasPages(partials) {
       const end = start + postsPerPage;
       const paginatedEntries = allEntries.slice(start, end);
 
-      const indexPageContent = `
-        <h1>All ${type}</h1>
-        <p>Displaying ${paginatedEntries.length} ${type} (page ${page} of ${totalPages}).</p>
-        <ul>
-          ${paginatedEntries.map(([name, posts]) => `
-            <li>
-              <a href="${baseurl}vn/${type}/${getSlug(name)}.html">${name} (${posts.length})</a>
-            </li>
-          `).join('')}
-        </ul>
-        ${generatePaginationLinks(type, '', page, totalPages, true)} <!-- isIndex = true -->
-      `;
+      const indexJsonContent = {
+        title: `All ${type} - ${meta}`,
+        description: `List of all ${type} related to visual novels`,
+        link: page === 1
+          ? `${baseurl}vn/${type}/index.json`
+          : `${baseurl}vn/${type}/page/${page}.json`,
+        entries: paginatedEntries.map(([name, posts]) => ({
+          name,
+          count: posts.length,
+          link: `${baseurl}vn/${type}/${getSlug(name)}.json`,
+        })),
+      };
 
-      const canonicalUrl = page === 1
-        ? `${baseurl}vn/${type}/index.html`
-        : `${baseurl}vn/${type}/page/${page}.html`;
+      const jsonFilePath = page === 1
+        ? path.join(dirs.public, `vn/${type}/index.json`)
+        : path.join(dirs.public, `vn/${type}/page/${page}.json`);
 
-      pageGenerationPromises.push(
-        (async () => {
-          const outputContent = await createFullPage(
-            partials,
-            indexPageContent,
-            canonicalUrl,
-            `All ${type} - ${meta}`,
-            `List of all ${type} related to visual novels`,
-            ''
-          );
-
-          const outputFilePath = page === 1
-            ? path.join(dirs.public, `vn/${type}/index.html`)
-            : path.join(dirs.public, `vn/${type}/page/${page}.html`);
-
-          // Ensure the directory exists before writing the file
-          await ensureDirectoryExists(path.dirname(outputFilePath));
-          await writeFile(outputFilePath, outputContent);
-          console.log(`Generated: ${outputFilePath}`);
-
-          // Generate JSON file
-          const jsonContent = JSON.stringify({
-            title: `All ${type} - ${meta}`,
-            description: `List of all ${type} related to visual novels`,
-            entries: paginatedEntries.map(([name, posts]) => ({
-              name,
-              count: posts.length,
-              link: `${baseurl}vn/${type}/${getSlug(name)}.html`,
-            })),
-          }, null, 2);
-
-          const jsonFilePath = page === 1
-            ? path.join(dirs.public, `vn/${type}/index.json`)
-            : path.join(dirs.public, `vn/${type}/page/${page}.json`);
-
-          await writeFile(jsonFilePath, jsonContent);
-          console.log(`Generated: ${jsonFilePath}`);
-        })()
-      );
+      // Ensure the directory exists before writing the file
+      await ensureDirectoryExists(path.dirname(jsonFilePath));
+      await writeFile(jsonFilePath, JSON.stringify(indexJsonContent, null, 2));
+      console.log(`Generated: ${jsonFilePath}`);
     }
   }
-
-  await Promise.all(pageGenerationPromises);
 }
 // Helper function to generate pagination links
 function generatePaginationLinks(type, slug, currentPage, totalPages, isIndex = false) {
@@ -434,14 +317,10 @@ function generatePaginationLinks(type, slug, currentPage, totalPages, isIndex = 
 async function runSSG() {
   try {
     await ensureDirectoryExists(dirs.public);
-    const [partials, subforums] = await Promise.all([
-      loadFilesFromDir(dirs.partials, '.html'),
-      loadFilesFromDir(dirs.subforums, '.json', JSON.parse),
-    ]);
+    const subforums = await loadFilesFromDir(dirs.subforums, '.json', JSON.parse);
 
-    await generateSpecialPages(partials);
-    await generateSubforumPages(partials, subforums); // First, generate all subforum pages
-    await generateTagDevAliasPages(partials);         // Then, generate tag/dev pages
+    await generateSubforumPages({}, subforums); // Generate subforum JSON files
+    await generateTagDevAliasPages({});         // Generate tag/dev JSON files
 
     console.log('SSG build complete!');
   } catch (err) {
@@ -449,6 +328,4 @@ async function runSSG() {
     process.exit(1);
   }
 }
-
-
 runSSG();
