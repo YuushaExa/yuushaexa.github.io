@@ -341,7 +341,7 @@ async function generateTagDevAliasPages(partials) {
             </li>
           `).join('')}
         </ul>
-        ${generatePaginationLinks(type, page, totalPages)}
+        ${generatePaginationLinks(type, 'index', page, totalPages)}
       `;
 
       const canonicalUrl = page === 1
