@@ -341,7 +341,7 @@ async function generateTagDevAliasPages(partials) {
             </li>
           `).join('')}
         </ul>
-        ${generatePaginationLinks(type, 'index', page, totalPages)}
+        ${generatePaginationLinks(type, '', page, totalPages, true)} <!-- Pass `isIndex` as true -->
       `;
 
       const canonicalUrl = page === 1
@@ -376,17 +376,19 @@ async function generateTagDevAliasPages(partials) {
 }
 
 // Helper function to generate pagination links
-function generatePaginationLinks(type, slug, currentPage, totalPages) {
+function generatePaginationLinks(type, slug, currentPage, totalPages, isIndex = false) {
+  const basePath = isIndex ? `${baseurl}vn/${type}` : `${baseurl}vn/${type}/${slug}`;
   return `
     <div class="pagination">
-      ${currentPage > 1 ? `<a href="${baseurl}vn/${type}/${slug}${currentPage - 1 === 1 ? '' : `/page/${currentPage - 1}`}.html">&laquo; Previous</a>` : ''}
+      ${currentPage > 1 ? `<a href="${basePath}${currentPage - 1 === 1 ? '/index.html' : `/page/${currentPage - 1}.html`}">&laquo; Previous</a>` : ''}
       ${Array.from({ length: totalPages }, (_, i) => `
-        <a href="${baseurl}vn/${type}/${slug}${i === 0 ? '' : `/page/${i + 1}`}.html" ${i + 1 === currentPage ? 'class="active"' : ''}>${i + 1}</a>
+        <a href="${basePath}${i === 0 ? '/index.html' : `/page/${i + 1}.html`}" ${i + 1 === currentPage ? 'class="active"' : ''}>${i + 1}</a>
       `).join(' ')}
-      ${currentPage < totalPages ? `<a href="${baseurl}vn/${type}/${slug}/page/${currentPage + 1}.html">Next &raquo;</a>` : ''}
+      ${currentPage < totalPages ? `<a href="${basePath}/page/${currentPage + 1}.html">Next &raquo;</a>` : ''}
     </div>
   `;
 }
+
 async function runSSG() {
   try {
     await ensureDirectoryExists(dirs.public);
