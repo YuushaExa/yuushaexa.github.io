@@ -67,7 +67,7 @@ const templates = {
       }, null, 2);
     },
   },
-  },
+
 
   programmingTemplate: {
     generatePostLink: (subforumKey, post) => `/${subforumKey}/${generateSlug(post.title)}`,
@@ -142,7 +142,6 @@ const templates = {
       }, null, 2);
     },
   },
-  },
 
    testTemplate: {
     generatePostLink: (subforumKey, post) => `/${subforumKey}/${generateSlug(post.title)}`,
@@ -213,7 +212,6 @@ const templates = {
         },
       }, null, 2);
     },
-  },
   },
 
    vnTemplate: {
