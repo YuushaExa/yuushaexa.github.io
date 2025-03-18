@@ -291,7 +291,7 @@ async function generateTagDevAliasPages(partials) {
               </li>
             `).join('')}
           </ul>
-          ${generatePaginationLinks(type, slug, page, totalPages)}
+          ${generatePaginationLinks(type, slug, page, totalPages, false)} <!-- isIndex = false -->
         `;
 
         const canonicalUrl = page === 1
@@ -341,7 +341,7 @@ async function generateTagDevAliasPages(partials) {
             </li>
           `).join('')}
         </ul>
-        ${generatePaginationLinks(type, '', page, totalPages, true)} <!-- Pass `isIndex` as true -->
+        ${generatePaginationLinks(type, '', page, totalPages, true)} <!-- isIndex = true -->
       `;
 
       const canonicalUrl = page === 1
