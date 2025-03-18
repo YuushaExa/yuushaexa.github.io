@@ -322,35 +322,54 @@ async function generateTagDevAliasPages(partials) {
       }
     }
 
-    // Generate index page for all tags/devs
-    const indexPageContent = `
-      <h1>All ${type}</h1>
-      <ul>
-       ${Object.entries(data).map(([name, posts]) => `
-  <li>
-    <a href="${baseurl}vn/${type}/${getSlug(name)}.html">${name} (${posts.length})</a>
-  </li>
-`).join('')}
-      </ul>
-    `;
+    // Paginate the index page for all tags/devs
+    const allEntries = Object.entries(data);
+    const totalPages = Math.ceil(allEntries.length / postsPerPage);
 
-    pageGenerationPromises.push(
-      (async () => {
-        const outputContent = await createFullPage(
-          partials,
-          indexPageContent,
-          `${baseurl}vn/${type}/`,
-          `All ${type} - ${meta}`,
-          `List of all ${type} related to visual novels`,
-          ''
-        );
+    for (let page = 1; page <= totalPages; page++) {
+      const start = (page - 1) * postsPerPage;
+      const end = start + postsPerPage;
+      const paginatedEntries = allEntries.slice(start, end);
 
-        const outputFilePath = path.join(dirs.public, `vn/${type}/index.html`);
-        await ensureDirectoryExists(path.dirname(outputFilePath));
-        await writeFile(outputFilePath, outputContent);
-        console.log(`Generated: vn/${type}/index.html`);
-      })()
-    );
+      const indexPageContent = `
+        <h1>All ${type}</h1>
+        <p>Displaying ${paginatedEntries.length} ${type} (page ${page} of ${totalPages}).</p>
+        <ul>
+          ${paginatedEntries.map(([name, posts]) => `
+            <li>
+              <a href="${baseurl}vn/${type}/${getSlug(name)}.html">${name} (${posts.length})</a>
+            </li>
+          `).join('')}
+        </ul>
+        ${generatePaginationLinks(type, 'index', page, totalPages)}
+      `;
+
+      const canonicalUrl = page === 1
+        ? `${baseurl}vn/${type}/index.html`
+        : `${baseurl}vn/${type}/page/${page}.html`;
+
+      pageGenerationPromises.push(
+        (async () => {
+          const outputContent = await createFullPage(
+            partials,
+            indexPageContent,
+            canonicalUrl,
+            `All ${type} - ${meta}`,
+            `List of all ${type} related to visual novels`,
+            ''
+          );
+
+          const outputFilePath = page === 1
+            ? path.join(dirs.public, `vn/${type}/index.html`)
+            : path.join(dirs.public, `vn/${type}/page/${page}.html`);
+
+          // Ensure the directory exists before writing the file
+          await ensureDirectoryExists(path.dirname(outputFilePath));
+          await writeFile(outputFilePath, outputContent);
+          console.log(`Generated: ${outputFilePath}`);
+        })()
+      );
+    }
   }
 
   await Promise.all(pageGenerationPromises);
