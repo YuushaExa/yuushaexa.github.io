@@ -237,8 +237,7 @@ const templates = {
   </channel>
 </rss>`;
     },
-  },
-  generateJSON: (post, subforum, baseurl) => {
+       generateJSON: (post, subforum, baseurl) => {
       return JSON.stringify({
         title: post.title,
         link: `${baseurl}${post.link.replace(/^\//, '')}.html`,
@@ -256,6 +255,7 @@ const templates = {
         },
       }, null, 2);
     },
+  },
   
 };
 
