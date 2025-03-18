@@ -48,6 +48,25 @@ const templates = {
   </channel>
 </rss>`;
     },
+       generateJSON: (post, subforum, baseurl) => {
+      return JSON.stringify({
+        title: post.title,
+        link: `${baseurl}${post.link.replace(/^\//, '')}.html`,
+        description: post.description || '',
+        date: post.date,
+        image: post.image,
+        developers: post.developers,
+        aliases: post.aliases,
+        tags: post.tags,
+        screenshots: post.screenshots,
+        subforum: {
+          title: subforum.title,
+          description: subforum.description,
+          link: `${baseurl}${subforum.link.replace(/^\//, '')}.html`,
+        },
+      }, null, 2);
+    },
+  },
   },
 
   programmingTemplate: {
@@ -104,6 +123,25 @@ const templates = {
   </channel>
 </rss>`;
     },
+       generateJSON: (post, subforum, baseurl) => {
+      return JSON.stringify({
+        title: post.title,
+        link: `${baseurl}${post.link.replace(/^\//, '')}.html`,
+        description: post.description || '',
+        date: post.date,
+        image: post.image,
+        developers: post.developers,
+        aliases: post.aliases,
+        tags: post.tags,
+        screenshots: post.screenshots,
+        subforum: {
+          title: subforum.title,
+          description: subforum.description,
+          link: `${baseurl}${subforum.link.replace(/^\//, '')}.html`,
+        },
+      }, null, 2);
+    },
+  },
   },
 
    testTemplate: {
@@ -157,6 +195,25 @@ const templates = {
   </channel>
 </rss>`;
     },
+        generateJSON: (post, subforum, baseurl) => {
+      return JSON.stringify({
+        title: post.title,
+        link: `${baseurl}${post.link.replace(/^\//, '')}.html`,
+        description: post.description || '',
+        date: post.date,
+        image: post.image,
+        developers: post.developers,
+        aliases: post.aliases,
+        tags: post.tags,
+        screenshots: post.screenshots,
+        subforum: {
+          title: subforum.title,
+          description: subforum.description,
+          link: `${baseurl}${subforum.link.replace(/^\//, '')}.html`,
+        },
+      }, null, 2);
+    },
+  },
   },
 
    vnTemplate: {
