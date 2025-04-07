@@ -10,5 +10,9 @@
   "data": ["https://raw.githubusercontent.com/YuushaExa/testapi/refs/heads/main/merged.json"],
   "metadata": {
     "tags": "https://raw.githubusercontent.com/YuushaExa/testapi/refs/heads/main/result/tags.json"
+  },
+  "taxonomies": {
+    "tag": "tags",        
+    "developer": "developers"
   }
 }
