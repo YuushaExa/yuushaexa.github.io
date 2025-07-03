@@ -6,6 +6,7 @@
             {{ .Content }}
             <ul>
             {{ range .Pages }}
+                        {{ partial "widgets/post-card.html" . }}
                 <li><a href="{{ .Permalink }}">{{ .Title }}</a></li>
             {{ end }}
             </ul>
