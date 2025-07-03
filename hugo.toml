@@ -1,3 +1,28 @@
-baseURL = 'https://example.org/'
-languageCode = 'en-US'
-theme = "bloggeri"
+baseURL = 'https://yuushaexa.github.io/'
+languageCode = 'en-us'
+title = "GameLibrary"
+theme = "bloggeri" 
+paginate = 50
+summarylength = 10
+[params]
+    description = "Games Library"
+    author = "Yuusha"
+    [security]
+[security.gotemplates]
+allowActionJSTmpl = true
+[markup]
+    defaultMarkdownHandler = "goldmark"
+    [markup.goldmark]
+        [markup.goldmark.renderer]
+            unsafe = true
+            [outputs]
+home = [ "HTML", "RSS", "JSON" ]
+            
+            [taxonomies]
+    tag = "tags"
+    category = "categories"
+    genres = "genres"
+    publisher = "publisher"
+    developer = "developer"
+    gametype = "gametype"
+    year = "year"
