@@ -1,6 +1,6 @@
 {{/* Get remote data. */}}
 {{ $data := dict }}
-{{ $url := "https://raw.githubusercontent.com/YuushaExa/testapi/refs/heads/main/merged.json" }}
+{{ $url := "https://raw.githubusercontent.com/YuushaExa/testapi/refs/heads/main/merged.json" }} {{/* Replace with your actual data URL */}}
 {{ with try (resources.GetRemote $url) }}
   {{ with .Err }}
     {{ errorf "Unable to get remote resource %s: %s" $url . }}
@@ -15,22 +15,25 @@
 {{ range $data }}
 
   {{/* Add page. */}}
-  {{ $content := dict "mediaType" "text/markdown" "value" .summary }}
-  {{ $dates := dict "date" (time.AsTime .date) }}
-  {{ $params := dict "author" .author "isbn" .isbn "rating" .rating "tags" .tags }}
+  {{ $content := dict "mediaType" "text/markdown" "value" .description }}
+  {{ $params := dict 
+    "id" .id
+    "developers" .developers
+    "aliases" .aliases
+    "title" .title
+  }}
   {{ $page := dict
     "content" $content
-    "dates" $dates
     "kind" "page"
     "params" $params
-    "path" .title
+    "path" .id
     "title" .title
   }}
   {{ $.AddPage $page }}
 
   {{/* Add page resource. */}}
   {{ $item := . }}
-  {{ with $url := $item.cover }}
+  {{ with $url := $item.image.url }}
     {{ with try (resources.GetRemote $url) }}
       {{ with .Err }}
         {{ errorf "Unable to get remote resource %s: %s" $url . }}
@@ -40,7 +43,7 @@
         {{ $resource := dict
           "content" $content
           "params" $params
-          "path" (printf "%s/cover.%s" $item.title .MediaType.SubType)
+          "path" (printf "%s/cover.%s" $item.id .MediaType.SubType)
         }}
         {{ $.AddResource $resource }}
       {{ else }}
