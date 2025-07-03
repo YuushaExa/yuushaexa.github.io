@@ -4,5 +4,8 @@
     <div class="content">
       {{ .Content }}
     </div>
+       {{ range $idx, $category := .Params.categories }}
+      {{- if ne $idx 0 }}, {{ end }}<a href="{{ "categories/" | relURL }}{{ $category | urlize }}">{{ $category }}</a>
+      {{- end }}
   </div>
 </div>
