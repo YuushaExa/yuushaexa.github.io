@@ -30,7 +30,7 @@
 
   {{/* Add page resource. */}}
   {{ $item := . }}
-  {{ with $url := $item.image.url }}
+  {{ with $url := $item.cover }}
     {{ with try (resources.GetRemote $url) }}
       {{ with .Err }}
         {{ errorf "Unable to get remote resource %s: %s" $url . }}
@@ -40,7 +40,7 @@
         {{ $resource := dict
           "content" $content
           "params" $params
-          "path" (printf "%s/image.url.%s" $item.title .MediaType.SubType)
+          "path" (printf "%s/cover.%s" $item.title .MediaType.SubType)
         }}
         {{ $.AddResource $resource }}
       {{ else }}
