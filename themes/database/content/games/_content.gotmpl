@@ -27,24 +27,6 @@
       {{ $image_url = .image.url }}
     {{ end }}
   {{ end }}
-
-  {{ $content := dict "mediaType" "text/markdown" "value" $description }}
-  
-  {{ $params := dict 
-    "id" $id
-    "developers" $developers
-    "aliases" $aliases
-    "title" $title
-    "image_url" $image_url
-  }}
-  
-  {{ $page := dict
-    "content" $content
-    "kind" "page"
-    "params" $params
-    "path" $id
-    "title" $title
-  }}
   
   {{ $.AddPage $page }}
 {{ end }}
