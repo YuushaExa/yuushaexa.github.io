@@ -1,6 +1,6 @@
 {{/* Get remote data */}}
 {{ $data := dict }}
-{{ $url := "https://raw.githubusercontent.com/YuushaExa/testapi/refs/heads/main/merged.json" }}
+{{ $url := "YOUR_DATA_URL_HERE" }}
 {{ with try (resources.GetRemote $url) }}
   {{ with .Err }}
     {{ errorf "Unable to get remote resource %s: %s" $url . }}
@@ -13,19 +13,30 @@
 
 {{/* Create pages */}}
 {{ range $data }}
-  {{/* Handle all fields with defaults */}}
-  {{ $id := default "" .id }}
-  {{ $title := default "" .title }}
-  {{ $description := default "" .description }}
-  {{ $developers := default (slice) .developers }}
-  {{ $aliases := default (slice) .aliases }}
+  {{/* Handle all fields with defaults - safer than isset */}}
+  {{ $id := cond (isset . "id") .id "" }}
+  {{ $title := cond (isset . "title") .title "" }}
+  {{ $description := cond (isset . "description") .description "" }}
+  {{ $developers := cond (isset . "developers") .developers (slice) }}
+  {{ $aliases := cond (isset . "aliases") .aliases (slice) }}
   
-  {{/* Safe nested image URL handling */}}
+  {{/* Safe image URL handling without isset warnings */}}
   {{ $image_url := "" }}
-  {{ if isset . "image" }}
-    {{ if isset .image "url" }}
-      {{ $image_url = .image.url }}
+  {{ with .image }}
+    {{ if and (reflect.IsMap .) (isset . "url") }}
+      {{ $image_url = .url }}
     {{ end }}
   {{ end }}
+
+  {{ $content := dict "mediaType" "text/markdown" "value" $description }}
   
+  {{ $params := dict 
+    "id" $id
+    "developers" $developers
+    "aliases" $aliases
+    "title" $title
+    "image_url" $image_url
+  }}
+  
+  {{ $.AddPage }}
 {{ end }}
