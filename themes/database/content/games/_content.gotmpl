@@ -1,6 +1,6 @@
 {{/* Get remote data */}}
 {{ $data := dict }}
-{{ $url := "https://raw.githubusercontent.com/YuushaExa/testapi/refs/heads/main/merged.json" }}
+{{ $url := "YOUR_DATA_URL_HERE" }}
 {{ with try (resources.GetRemote $url) }}
   {{ with .Err }}
     {{ errorf "Unable to get remote resource %s: %s" $url . }}
@@ -14,12 +14,17 @@
 {{/* Create pages */}}
 {{ range $data }}
   {{ $content := dict "mediaType" "text/markdown" "value" .description }}
+  
+  {{/* Safely handle image URL */}}
+  {{ $image_url := "" }}
+  {{ with .image }}{{ with .url }}{{ $image_url = . }}{{ end }}{{ end }}
+
   {{ $params := dict 
     "id" .id
     "developers" .developers
     "aliases" .aliases
     "title" .title
-    "image_url" .image.url 
+    "image_url" $image_url
   }}
   
   {{ $page := dict
@@ -30,5 +35,10 @@
     "title" .title
   }}
   
-  {{ $.AddPage $page }}
+  {{/* Only create page if required fields exist */}}
+  {{ if and .id .title .description }}
+    {{ $.AddPage $page }}
+  {{ else }}
+    {{ warnf "Skipping entry due to missing required fields: %v" . }}
+  {{ end }}
 {{ end }}
