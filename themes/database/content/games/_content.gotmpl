@@ -13,17 +13,28 @@
 
 {{/* Create pages */}}
 {{ range $data }}
-  {{ $content := dict "mediaType" "text/markdown" "value" .description }}
+  {{/* Handle all fields with defaults */}}
+  {{ $id := default "" .id }}
+  {{ $title := default "" .title }}
+  {{ $description := default "" .description }}
+  {{ $developers := default (slice) .developers }}
+  {{ $aliases := default (slice) .aliases }}
   
-  {{/* Safely handle image URL */}}
+  {{/* Safe nested image URL handling */}}
   {{ $image_url := "" }}
-  {{ with .image }}{{ with .url }}{{ $image_url = . }}{{ end }}{{ end }}
+  {{ if isset . "image" }}
+    {{ if isset .image "url" }}
+      {{ $image_url = .image.url }}
+    {{ end }}
+  {{ end }}
 
+  {{ $content := dict "mediaType" "text/markdown" "value" $description }}
+  
   {{ $params := dict 
-    "id" .id
-    "developers" .developers
-    "aliases" .aliases
-    "title" .title
+    "id" $id
+    "developers" $developers
+    "aliases" $aliases
+    "title" $title
     "image_url" $image_url
   }}
   
@@ -31,14 +42,9 @@
     "content" $content
     "kind" "page"
     "params" $params
-    "path" .id
-    "title" .title
+    "path" $id
+    "title" $title
   }}
   
-  {{/* Only create page if required fields exist */}}
-  {{ if and .id .title .description }}
-    {{ $.AddPage $page }}
-  {{ else }}
-    {{ warnf "Skipping entry due to missing required fields: %v" . }}
-  {{ end }}
+  {{ $.AddPage $page }}
 {{ end }}
