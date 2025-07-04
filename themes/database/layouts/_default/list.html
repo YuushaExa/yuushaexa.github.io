@@ -1,10 +1,19 @@
 {{ define "main" }}
   <h1>{{ .Title }}</h1>
-  {{ range .Paginator.Pages }}
-    <h2><a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a></h2>
-  {{ end }}
+  <div class="page-list">
+    {{ range .Paginator.Pages }}
+      <article class="page-card">
+        {{ if .Params.image }}  <!-- Check if image exists -->
+          <div class="card-image">
+            <img src="{{ .Params.image }}" alt="{{ .LinkTitle }} thumbnail">
+          </div>
+        {{ end }}
+        <h2><a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a></h2>
+      </article>
+    {{ end }}
+  </div>
 
-    <div class="column is-narrow">
-        {{ partial "widgets/pagination.html" . }}
-    </div>
+  <div class="column is-narrow">
+    {{ partial "widgets/pagination.html" . }}
+  </div>
 {{ end }}
