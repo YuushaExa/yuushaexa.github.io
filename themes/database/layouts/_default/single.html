@@ -5,10 +5,7 @@
 			<div>
 				{{ .Content }}
 			</div>
-{{ range $idx, $tag := .Params.developers }}
-    {{- if ne $idx 0 }}, {{ end -}}
-        <a href="{{ "developers/" | relURL }}{{ .name | urlize }}">{{ .name }}</a>
-{{ end }}
+
 		</article>
 	</main>
 {{ end }}
