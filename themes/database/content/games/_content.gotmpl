@@ -25,7 +25,7 @@
   
   {{/* Process developers into taxonomy format */}}
   {{ $developers := slice }}
-  {{ range .developers }}
+  {{ range .developers.name }}
     {{ $developers = $developers | append (urlize .) }}
   {{ end }}
   
