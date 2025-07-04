@@ -1,5 +1,5 @@
 {{ $data := dict }}
-{{ $url := "https://raw.githubusercontent.com/YuushaExa/testapi/refs/heads/main/merged.json" }}
+{{ $url := "https://www.veriphor.com/shared/data/posts.json" }}
 {{ with try (resources.GetRemote $url) }}
   {{ with .Err }}
     {{ errorf "Unable to get remote resource %s: %s" $url . }}
