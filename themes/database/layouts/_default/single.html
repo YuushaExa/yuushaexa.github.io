@@ -5,12 +5,12 @@
 			<div>
 				{{ .Content }}
 			</div>
-           {{ with .Params.developers }}
-    {{ range $idx, $tag := . }}
-        {{- if ne $idx 0 }}, {{ end -}}
-        {{ with .name }}
-            <a href="{{ "developers/" | relURL }}{{ . | urlize }}">{{ . }}</a>
-        {{ end }}
+{{ range $idx, $tag := .Params.developers }}
+    {{- if ne $idx 0 }}, {{ end -}}
+    {{ with .name }}
+        <a href="{{ "developers/" | relURL }}{{ . | urlize }}">{{ . }}</a>
+    {{ else }}
+        <span>Unknown Developer</span>
     {{ end }}
 {{ end }}
 		</article>
