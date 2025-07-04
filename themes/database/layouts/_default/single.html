@@ -9,7 +9,7 @@
   <p>Developers:</p>
   <ul>
     {{ range .Params.developers }}
-      <li>{{ .name }}</li>
+      <li><a href="/developers/{{ .name | urlize }}/">{{ .name }}</a></li>
     {{ end }}
   </ul>
 {{ end }}
