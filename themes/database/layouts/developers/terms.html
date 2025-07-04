@@ -1,19 +1,11 @@
 {{ define "main" }}
-<div class="container">
-    <div class="row">
-        {{ range .Data.Terms.ByCount }}
-        <div class="col-md-4 mb-3">
-            <div class="card">
-                <div class="card-body">
-                    <div>
-                        <a class="title is-5 is-size-6-mobile" href="{{ .Page.Permalink }}">{{ .Page.Title }}</a>
-                        {{ $Totalpage:= len .Pages }}
-                        <p>{{ $Totalpage }} post{{ if ne $Totalpage 1 }}s{{ end }} </p>
-                    </div>
-                </div>               
-            </div>
-        </div>
-    {{ end }}
-  </div>
-</div>
+<h1>Developers</h1>
+<ul>
+  {{ range .Data.Terms.Alphabetical }}
+    <li>
+      <a href="{{ .Page.Permalink }}">{{ .Page.Title }}</a>
+      ({{ .Count }} projects)
+    </li>
+  {{ end }}
+</ul>
 {{ end }}
