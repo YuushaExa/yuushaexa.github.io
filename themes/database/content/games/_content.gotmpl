@@ -14,21 +14,22 @@
 {{ range $data }}
 
   {{/* Add page. */}}
-  {{ $content := dict "mediaType" "text/markdown" "value" .description  }}
-  {{ $params := dict "aliases" .aliases "developers" .developers }}
 {{ $image := "" }}
 {{ if isset . "image" }} {{/* Check if .image exists at all */}}
     {{ if .image }} {{/* Check if .image is not nil */}}
         {{ $image = .image.url | default "" }} {{/* Safely get .url */}}
     {{ end }}
 {{ end }}
+
+  {{ $content := dict "mediaType" "text/markdown" "value" .description  }}
+  {{ $params := dict "image" $image "aliases" .aliases "developers" .developers }}
+
   {{ $page := dict
     "content" $content
     "kind" "page"
     "params" $params
     "path" .id
     "title" .title
-    "image" $image
   }}
   {{ $.AddPage $page }}
 
