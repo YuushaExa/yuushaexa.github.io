@@ -1,5 +1,5 @@
 {{ $data := dict }}
-{{ $url := "https://jsonplaceholder.typicode.com/posts" }}
+{{ $url := "https://jsonplaceholder.typicode.com/photos" }}
 {{ with try (resources.GetRemote $url) }}
   {{ with .Err }}
     {{ errorf "Unable to get remote resource %s: %s" $url . }}
@@ -14,7 +14,7 @@
 {{ range $data }}
 
   {{/* Add page. */}}
-  {{ $content := dict "mediaType" "text/markdown" "value" .body  }}
+  {{ $content := dict "mediaType" "text/markdown" "value" .url  }}
   {{ $page := dict
     "content" $content
     "kind" "page"
