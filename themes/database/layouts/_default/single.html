@@ -5,14 +5,14 @@
 			<div>
 				{{ .Content }}
 			</div>
-  {{ with .GetTerms "developers" }}
-    <p>Tags:</p>
-    <ul>
-      {{ range . }}
-        <li><a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a></li>
-      {{ end }}
-    </ul>
-  {{ end }}
+{{ if .Params.developers }}
+  <p>Developers:</p>
+  <ul>
+    {{ range .Params.developers }}
+      <li>{{ . }}</li>
+    {{ end }}
+  </ul>
+{{ end }}
 
 		</article>
 	</main>
