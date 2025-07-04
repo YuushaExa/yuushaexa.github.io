@@ -27,4 +27,4 @@ allowActionJSTmpl = true
     gametype = "gametype"
     year = "year"
 [outputs]
-    page = [ "html", "json" ]
+    page = [ "html" ]
