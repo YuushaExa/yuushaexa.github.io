@@ -1,31 +1,26 @@
-{{/* Get remote data. */}}
 {{ $data := dict }}
-{{ $url := "https://github.com/swimlane/ngx-datatable/raw/refs/heads/master/src/assets/data/100k.json" }}
+{{ $url := "https://raw.githubusercontent.com/YuushaExa/testapi/refs/heads/main/merged.json" }}
 {{ with try (resources.GetRemote $url) }}
   {{ with .Err }}
     {{ errorf "Unable to get remote resource %s: %s" $url . }}
   {{ else with .Value }}
     {{ $data = . | transform.Unmarshal }}
   {{ else }}
-    {{ errorf "Unable to get remote resource %q" $url }}
+    {{ errorf "Unable to get remote resource %s" $url }}
   {{ end }}
 {{ end }}
 
-{{/* Add pages. */}}
+{{/* Add pages and page resources. */}}
 {{ range $data }}
-  {{ $content := dict
-    "mediaType" "text/markdown"
-    "value" .name
-  }}
-  {{ $dates := dict
-    "date" (time.AsTime .date)
-  }}
+
+  {{/* Add page. */}}
+  {{ $content := dict "mediaType" "text/markdown" "value" .description }}
   {{ $page := dict
     "content" $content
-    "dates" $dates
     "kind" "page"
     "path" .id
-    "title" .id
+    "title" .title
   }}
   {{ $.AddPage $page }}
+
 {{ end }}
