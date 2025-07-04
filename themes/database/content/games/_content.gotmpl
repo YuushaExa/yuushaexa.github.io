@@ -14,8 +14,15 @@
 {{ range $data }}
 
   {{/* Add page. */}}
+{{ $image := "" }}
+{{ if isset . "image" }} {{/* Check if .image exists at all */}}
+    {{ if .image }} {{/* Check if .image is not nil */}}
+        {{ $image = .image.url | default "" }} {{/* Safely get .url */}}
+    {{ end }}
+{{ end }} 
+
   {{ $content := dict "mediaType" "text/markdown" "value" .description  }}
-  {{ $params := dict "image" .image "aliases" .aliases "developers.name" .developers }}
+  {{ $params := dict "image" $image "aliases" .aliases "developers" .developers.name }}
 
   {{ $page := dict
     "content" $content
