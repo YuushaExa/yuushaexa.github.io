@@ -3,9 +3,9 @@
   <div class="page-list">
     {{ range .Paginator.Pages }}
       <article class="page-card">
-        {{ if .Params.image }}  <!-- Check if image exists -->
+        {{ if .Params$image }}  <!-- Check if image exists -->
           <div class="card-image">
-            <img src="{{ .Params.image }}" alt="{{ .LinkTitle }} thumbnail">
+            <img src="{{ .Params$image }}" alt="{{ .LinkTitle }} thumbnail">
           </div>
         {{ end }}
         <h2><a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a></h2>
