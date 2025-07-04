@@ -21,16 +21,8 @@
     {{ end }}
 {{ end }} 
 
-  {{ $params := dict }}
-    {{ range $key, $value := . }}
-        {{ if eq $key "developers" }}
-            {{ $taxonomy := printf "%ss" $key }}
-            {{ $params = merge $params (dict $taxonomy $value) }}
-        {{ end }}
-    {{ end }}
-
   {{ $content := dict "mediaType" "text/markdown" "value" .description  }}
-  {{ $params := dict "image" $image "aliases" .aliases "developers" .developers }}
+  {{ $params := dict "image" $image "aliases" .aliases "developers" (slice .developer) }}
 
   {{ $page := dict
     "content" $content
