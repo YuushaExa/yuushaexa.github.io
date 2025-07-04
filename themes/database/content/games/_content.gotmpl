@@ -1,5 +1,5 @@
 {{ $data := dict }}
-{{ $url := "https://raw.githubusercontent.com/YuushaExa/testapi/refs/heads/main/merged.json" }}
+{{ $url := "https://www.veriphor.com/shared/data/posts.json" }}
 {{ with try (resources.GetRemote $url) }}
   {{ with .Err }}
     {{ errorf "Unable to get remote resource %s: %s" $url . }}
@@ -14,11 +14,11 @@
 {{ range $data }}
 
   {{/* Add page. */}}
-  {{ $content := dict "mediaType" "text/markdown" "value" .description }}
+  {{ $content := dict "mediaType" "text/markdown" "value" .content }}
   {{ $page := dict
     "content" $content
     "kind" "page"
-    "path" .id
+    "path" .title
     "title" .title
   }}
   {{ $.AddPage $page }}
