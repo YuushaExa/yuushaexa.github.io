@@ -14,12 +14,16 @@
 {{ range $data }}
 
   {{/* Add page. */}}
-  {{ $content := dict "mediaType" "text/markdown" "value" .description }}
+  {{ $content := dict "mediaType" "text/markdown" "value" .description  }}
+  {{ $params := dict "developers" .developers }}
   {{ $page := dict
     "content" $content
+    "dates" $dates
     "kind" "page"
+    "params" $params
     "path" .id
     "title" .title
+    "aliases" .aliases
   }}
   {{ $.AddPage $page }}
 
