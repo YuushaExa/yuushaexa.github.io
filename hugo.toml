@@ -23,7 +23,7 @@ allowActionJSTmpl = true
     category = "categories"
     genres = "genres"
     publisher = "publisher"
-    developer = "developer"
+    developers = "developers"
     gametype = "gametype"
     year = "year"
 [outputs]
