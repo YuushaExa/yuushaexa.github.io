@@ -14,15 +14,26 @@
 {{ range $data }}
 
   {{/* Add page. */}}
-{{ $image := "" }}
-{{ if isset . "image" }} 
-    {{ if .image }} 
-        {{ $image = .image.url | default "" }}
-    {{ end }}
-{{ end }} 
+  {{ $image := "" }}
+  {{ if isset . "image" }} 
+      {{ if .image }} 
+          {{ $image = .image.url | default "" }}
+      {{ end }}
+  {{ end }} 
 
   {{ $content := dict "mediaType" "text/markdown" "value" .description  }}
-  {{ $params := dict "image" $image "aliases" .aliases "developers" .developers }}
+  
+  {{/* Process developers into taxonomy format */}}
+  {{ $developers := slice }}
+  {{ range .developers }}
+    {{ $developers = $developers | append (urlize .) }}
+  {{ end }}
+  
+  {{ $params := dict 
+    "image" $image 
+    "aliases" .aliases 
+    "developers" $developers
+  }}
 
   {{ $page := dict
     "content" $content
@@ -32,5 +43,4 @@
     "title" .title
   }}
   {{ $.AddPage $page }}
-
 {{ end }}
