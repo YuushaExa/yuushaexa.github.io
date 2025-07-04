@@ -38,5 +38,13 @@
     "image_url" $image_url
   }}
   
-  {{ $.AddPage }}
+  {{ $page := dict
+    "content" $content
+    "kind" "page"
+    "params" $params
+    "path" $id
+    "title" $title
+  }}
+  
+  {{ $.AddPage $page }}
 {{ end }}
