@@ -1,6 +1,6 @@
 {{/* Get remote data. */}}
 {{ $data := dict }}
-{{ $url := "https://www.veriphor.com/shared/data/posts.json" }}
+{{ $url := "https://github.com/swimlane/ngx-datatable/raw/refs/heads/master/src/assets/data/100k.json" }}
 {{ with try (resources.GetRemote $url) }}
   {{ with .Err }}
     {{ errorf "Unable to get remote resource %s: %s" $url . }}
@@ -15,7 +15,7 @@
 {{ range $data }}
   {{ $content := dict
     "mediaType" "text/markdown"
-    "value" .content
+    "value" .name
   }}
   {{ $dates := dict
     "date" (time.AsTime .date)
@@ -24,8 +24,8 @@
     "content" $content
     "dates" $dates
     "kind" "page"
-    "path" .title
-    "title" .title
+    "path" .id
+    "title" .id
   }}
   {{ $.AddPage $page }}
 {{ end }}
