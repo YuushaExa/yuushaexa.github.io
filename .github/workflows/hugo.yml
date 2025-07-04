@@ -1,4 +1,5 @@
 
+
 name: Deploy Hugo to GitHub Pages
 on:
 
@@ -26,7 +27,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Build
-        run: hugo --minify --templateMetrics --templateMetricsHints --baseURL "https://yuushaexa.github.io/vnovel/"
+        run: hugo --minify --renderToMemory --templateMetrics --templateMetricsHints --baseURL "https://yuushaexa.github.io/vnovel/"
       - name: Upload Artifact
         uses: actions/upload-pages-artifact@v3
         with:
