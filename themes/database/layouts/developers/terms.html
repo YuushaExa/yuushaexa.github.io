@@ -6,7 +6,7 @@
             {{ .Content }}
         </div>
         <div class="columns is-mobile is-multiline">
-            {{ .Paginate .Data.Terms.ByCount }} 
+            {{ range .Paginate .Data.Terms.ByCount }} 
             <div class="column is-half-mobile is-one-third-tablet is-one-quarter-desktop is-one-fifth-widescreen">
                 <div class="card">
                     <div class="card-image">
