@@ -15,13 +15,15 @@
 
   {{/* Add page. */}}
   {{ $content := dict "mediaType" "text/markdown" "value" .description  }}
-  {{ $params := dict "image" .image.url "aliases" .aliases "developers" .developers }}
+  {{ $params := dict "aliases" .aliases "developers" .developers }}
+  {{ $image := default "" .image.url }}
   {{ $page := dict
     "content" $content
     "kind" "page"
     "params" $params
     "path" .id
     "title" .title
+    "image" $image
   }}
   {{ $.AddPage $page }}
 
