@@ -18,9 +18,6 @@ allowActionJSTmpl = true
     [markup.goldmark]
         [markup.goldmark.renderer]
             unsafe = true
-            [outputs]
-games = [ "HTML", "JSON" ]
-            
             [taxonomies]
     tag = "tags"
     category = "categories"
@@ -29,3 +26,5 @@ games = [ "HTML", "JSON" ]
     developer = "developer"
     gametype = "gametype"
     year = "year"
+[outputs]
+    games = [ "html", "json" ]
