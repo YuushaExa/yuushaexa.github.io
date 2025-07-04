@@ -1,5 +1,5 @@
 {{ $data := dict }}
-{{ $url := "https://jsonplaceholder.typicode.com/photos" }}
+{{ $url := "https://raw.githubusercontent.com/YuushaExa/testapi/refs/heads/main/merged.json" }}
 {{ with try (resources.GetRemote $url) }}
   {{ with .Err }}
     {{ errorf "Unable to get remote resource %s: %s" $url . }}
@@ -14,7 +14,7 @@
 {{ range $data }}
 
   {{/* Add page. */}}
-  {{ $content := dict "mediaType" "text/markdown" "value" .url  }}
+  {{ $content := dict "mediaType" "text/markdown" "value" .description }}
   {{ $page := dict
     "content" $content
     "kind" "page"
