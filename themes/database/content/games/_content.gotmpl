@@ -25,7 +25,7 @@
 
   {{ $developers := slice }}
   {{ range .developers }}
-    {{ $developers = $developers | append (urlize .) }}
+    {{ $developers = $developers | append (urlize .name) }}
   {{ end }}
 
   {{ $params := dict "image" $image "aliases" .aliases "developers" $developers }}
