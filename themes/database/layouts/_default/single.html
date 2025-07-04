@@ -5,11 +5,9 @@
 			<div>
 				{{ .Content }}
 			</div>
-{{ range $idx, $tag := .Params.developers }}
-    {{- if .name -}}
-        {{- if ne $idx 0 }}, {{ end -}}
-        <a href="{{ "developers/" | relURL }}{{ .name | urlize }}">{{ .name }}</a>
-    {{- end -}}
+{{ range $idx, $dev := (where (.Params.developers | default slice) "name" "!=" "") }}
+    {{ if ne $idx 0 }}, {{ end }}
+    <a href="{{ "developers/" | relURL }}{{ $dev.name | urlize }}">{{ $dev.name }}</a>
 {{ end }}
 		</article>
 	</main>
