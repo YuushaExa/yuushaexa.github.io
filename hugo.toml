@@ -27,4 +27,4 @@ allowActionJSTmpl = true
     gametype = "gametype"
     year = "year"
 [outputs]
-    games = [ "html", "json" ]
+    home = [ "html", "json" ]
