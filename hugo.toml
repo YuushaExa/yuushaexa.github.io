@@ -9,7 +9,7 @@ theme = "database"
 [security.gotemplates]
 allowActionJSTmpl = true
 [pagination]
-  pagerSize = 500
+  pagerSize = 50
 [markup]
     defaultMarkdownHandler = "goldmark"
     [markup.goldmark]
