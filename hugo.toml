@@ -1,4 +1,4 @@
-baseURL = 'https://yuushaexa.github.io/'
+baseURL = 'https://yuushaexa.github.io/vnovel'
 languageCode = 'en-us'
 title = "GameLibrary"
 theme = "database" 
