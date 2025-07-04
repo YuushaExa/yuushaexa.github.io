@@ -19,7 +19,7 @@ allowActionJSTmpl = true
         [markup.goldmark.renderer]
             unsafe = true
             [outputs]
-home = [ "HTML" ]
+home = [ "HTML", "JSON" ]
             
             [taxonomies]
     tag = "tags"
