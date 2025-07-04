@@ -22,7 +22,13 @@
 {{ end }} 
 
   {{ $content := dict "mediaType" "text/markdown" "value" .description  }}
-  {{ $params := dict "image" $image "aliases" .aliases "developers" (slice .developer) }}
+
+  {{ $developers := slice }}
+  {{ range .developers }}
+    {{ $developers = $developers | append (urlize .) }}
+  {{ end }}
+
+  {{ $params := dict "image" $image "aliases" .aliases "developers" $developers }}
 
   {{ $page := dict
     "content" $content
