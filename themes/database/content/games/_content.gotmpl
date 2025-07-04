@@ -19,7 +19,7 @@
     {{ if .image }} {{/* Check if .image is not nil */}}
         {{ $image = .image.url | default "" }} {{/* Safely get .url */}}
     {{ end }}
-{{ end }}
+{{ end }} 
 
   {{ $content := dict "mediaType" "text/markdown" "value" .description  }}
   {{ $params := dict "image" $image "aliases" .aliases "developers.name" .developers }}
