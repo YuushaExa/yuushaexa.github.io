@@ -1,42 +1,61 @@
 {{ $pag := $.Paginator }}
 {{ if gt $pag.TotalPages 1 }}
-<nav class="pagination">
-<ul class="pagination-list">
-    {{ with $pag.First }}
+{{ $current := $pag.PageNumber }}
+<nav class="pagination" aria-label="Pagination">
+  <ul class="pagination-list">
+    <!-- First Page Link -->
     <li>
-        <a href="{{ .URL }}" class="pagination-link" {{ if not $pag.HasPrev }} disabled{{ end }} aria-label="First"><span aria-hidden="true">&laquo;&laquo;</span></a>
+      <a href="{{ $pag.First.URL }}" class="pagination-link" {{ if eq $current 1 }}disabled{{ end }} aria-label="First">
+        <span aria-hidden="true">&laquo;&laquo;</span>
+      </a>
     </li>
-    {{ end }}
+    
+    <!-- Previous Page Link -->
     <li>
-        <a href="{{ if $pag.HasPrev }}{{ $pag.Prev.URL }}{{ end }}" class="pagination-link" {{ if not $pag.HasPrev }} disabled{{ end }} aria-label="Previous"><span aria-hidden="true">&laquo;</span></a>
+      <a href="{{ if ne $current 1 }}{{ $pag.Prev.URL }}{{ end }}" class="pagination-link" {{ if eq $current 1 }}disabled{{ end }} aria-label="Previous">
+        <span aria-hidden="true">&laquo;</span>
+      </a>
     </li>
-    {{ $ellipsed := false }}
-    {{ $shouldEllipse := false }}
-    {{ range $pag.Pagers }}
-    {{ $right := sub .TotalPages .PageNumber }}
-    {{ $showNumber := or (le .PageNumber 3) (eq $right 0) }}
-    {{ $showNumber := or $showNumber (and (gt .PageNumber (sub $pag.PageNumber 2)) (lt .PageNumber (add $pag.PageNumber 2)))  }}
-    {{ if $showNumber }}
-        {{ $ellipsed = false }}
-        {{ $shouldEllipse = false }}
-    {{ else }}
-        {{ $shouldEllipse = not $ellipsed }}
-        {{ $ellipsed = true }}
+
+    <!-- Dynamic Page Numbers with Smart Ellipsis -->
+    {{ $maxVisible := 5 }}
+    {{ $halfVisible := div $maxVisible 2 }}
+    {{ $start := sub $current $halfVisible }}
+    {{ $start := cond (lt $start 1) 1 $start }}
+    {{ $end := add $start $maxVisible }}
+    {{ $end := cond (gt $end $pag.TotalPages) $pag.TotalPages $end }}
+    {{ $start := sub $end $maxVisible }}
+    {{ $start := cond (lt $start 1) 1 $start }}
+
+    {{ if gt $start 1 }}
+      <li><span class="pagination-ellipsis">&hellip;</span></li>
     {{ end }}
-    {{ if $showNumber }}
-    <li><a class="pagination-link {{ if eq . $pag }}is-current{{ end }}" href="{{ .URL }}">{{ .PageNumber }}</a></li>
-    {{ else if $shouldEllipse }}
-    <li class="pagination-link" disabled><span aria-hidden="true">&nbsp;&hellip;&nbsp;</span></li>
+
+    {{ range $i := seq $start $end }}
+      <li>
+        <a href="{{ (index $pag.Pagers (sub $i 1)).URL }}" class="pagination-link {{ if eq $i $current }}is-current{{ end }}">
+          {{ $i }}
+        </a>
+      </li>
     {{ end }}
+
+    {{ if lt $end $pag.TotalPages }}
+      <li><span class="pagination-ellipsis">&hellip;</span></li>
     {{ end }}
+
+    <!-- Next Page Link -->
     <li>
-    <a href="{{ if $pag.HasNext }}{{ $pag.Next.URL }}{{ end }}" class="pagination-link" {{ if not $pag.HasNext }}disabled{{ end }} aria-label="Next"><span aria-hidden="true">&raquo;</span></a>
+      <a href="{{ if ne $current $pag.TotalPages }}{{ $pag.Next.URL }}{{ end }}" class="pagination-link" {{ if eq $current $pag.TotalPages }}disabled{{ end }} aria-label="Next">
+        <span aria-hidden="true">&raquo;</span>
+      </a>
     </li>
-    {{ with $pag.Last }}
+
+    <!-- Last Page Link -->
     <li>
-        <a href="{{ .URL }}" class="pagination-link" {{ if not $pag.HasNext }}disabled{{ end }} aria-label="Last"><span aria-hidden="true">&raquo;&raquo;</span></a>
+      <a href="{{ $pag.Last.URL }}" class="pagination-link" {{ if eq $current $pag.TotalPages }}disabled{{ end }} aria-label="Last">
+        <span aria-hidden="true">&raquo;&raquo;</span>
+      </a>
     </li>
-    {{ end }}
-</ul>
+  </ul>
 </nav>
 {{ end }}
