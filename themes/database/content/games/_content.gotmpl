@@ -25,12 +25,13 @@
 
   {{ $developers := slice }}
   {{ range .developers }}
-    {{/* Extract the name field and ensure it doesn't end with a slash */}}
-    {{ $devName := urlize .name }}
-    {{ $devName = strings.TrimSuffix "/" $devName }}
-    {{ $developers = $developers | append $devName }}
+    {{ $dev := dict 
+      "name" .name
+      "id" .id
+      "url" (printf "developers/%s" (urlize .name | strings.TrimSuffix "/"))
+    }}
+    {{ $developers = $developers | append $dev }}
   {{ end }}
-
 
   {{ $params := dict "image" $image "aliases" .aliases "developers" $developers }}
 
