@@ -22,7 +22,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Build
-        run: hugo --minify --baseURL "https://yuushaexa.github.io/vn/"
+        run: hugo --minify --renderToMemory --baseURL "https://yuushaexa.github.io/vn/"
       - name: Upload Artifact
         uses: actions/upload-pages-artifact@v3
         with:
