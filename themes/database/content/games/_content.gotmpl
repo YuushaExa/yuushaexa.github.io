@@ -1,4 +1,3 @@
-{{/* Get remote data */}}
 {{ $data := dict }}
 {{ $url := "https://raw.githubusercontent.com/YuushaExa/testapi/refs/heads/main/merged.json" }}
 {{ with try (resources.GetRemote $url) }}
@@ -11,40 +10,42 @@
   {{ end }}
 {{ end }}
 
-{{/* Create pages */}}
+{{/* Add pages and page resources. */}}
 {{ range $data }}
-  {{/* Handle all fields with defaults - safer than isset */}}
-  {{ $id := cond (isset . "id") .id "" }}
-  {{ $title := cond (isset . "title") .title "" }}
-  {{ $description := cond (isset . "description") .description "" }}
-  {{ $developers := cond (isset . "developers") .developers (slice) }}
-  {{ $aliases := cond (isset . "aliases") .aliases (slice) }}
-  
-  {{/* Safe image URL handling without isset warnings */}}
-  {{ $image_url := "" }}
-  {{ with .image }}
-    {{ if and (reflect.IsMap .) (isset . "url") }}
-      {{ $image_url = .url }}
+
+  {{/* Add page. */}}
+  {{ $content := dict "mediaType" "text/markdown" "value" .description  }}
+  {{ $dates := dict "date" (time.AsTime .date) }}
+  {{ $params := dict "aliases" .aliases "developers" .developers }}
+  {{ $page := dict
+    "content" $content
+    "dates" $dates
+    "kind" "page"
+    "params" $params
+    "path" .id
+    "title" .title
+  }}
+  {{ $.AddPage $page }}
+
+  {{/* Add page resource. */}}
+  {{ $item := . }}
+  {{ with $url := $item.cover }}
+    {{ with try (resources.GetRemote $url) }}
+      {{ with .Err }}
+        {{ errorf "Unable to get remote resource %s: %s" $url . }}
+      {{ else with .Value }}
+        {{ $content := dict "mediaType" .MediaType.Type "value" .Content }}
+        {{ $params := dict "alt" $item.title }}
+        {{ $resource := dict
+          "content" $content
+          "params" $params
+          "path" (printf "%s/cover.%s" $item.title .MediaType.SubType)
+        }}
+        {{ $.AddResource $resource }}
+      {{ else }}
+        {{ errorf "Unable to get remote resource %s" $url }}
+      {{ end }}
     {{ end }}
   {{ end }}
 
-  {{ $content := dict "mediaType" "text/markdown" "value" $description }}
-  
-  {{ $params := dict 
-    "id" $id
-    "developers" $developers
-    "aliases" $aliases
-    "title" $title
-    "image_url" $image_url
-  }}
-  
-  {{ $page := dict
-    "content" $content
-    "kind" "page"
-    "params" $params
-    "path" $id
-    "title" $title
-  }}
-  
-  {{ $.AddPage $page }}
 {{ end }}
