@@ -1,16 +1,18 @@
 {{ define "main" }}
-  <main>
-    <article>
-      <h1>{{ .Title }}</h1>
-      <div>
-        {{ .Content }}
-      </div>
-      <div class="developers">
-        {{ range $idx, $dev := .Params.developers }}
-          {{- if ne $idx 0 }}, {{ end -}}
-          <a href="{{ $dev.url }}">{{ $dev.name }}</a>
-        {{ end }}
-      </div>
-    </article>
-  </main>
+	<main>
+		<article>
+			<h1>{{ .Title }}</h1>
+			<div>
+				{{ .Content }}
+			</div>
+{{ range $idx, $tag := .Params.developers }}
+    {{- if ne $idx 0 }}, {{ end -}}
+    {{ with .name }}
+        <a href="{{ "developers/" | relURL }}{{ . | urlize }}">{{ $dev.name }}</a>
+    {{ else }}
+        <span>Unknown Developer</span>
+    {{ end }}
+{{ end }}
+		</article>
+	</main>
 {{ end }}
