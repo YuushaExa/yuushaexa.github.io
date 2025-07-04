@@ -5,14 +5,9 @@
 			<div>
 				{{ .Content }}
 			</div>
-{{ with .GetTerms "developers" }}
-    <p>Tags:</p>
-    <ul>
-      {{ range . }}
-        <li><a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a></li>
-      {{ end }}
-    </ul>
-  {{ end }}
+                   {{ range $idx, $tag := .Params.developers }}
+          {{- if ne $idx 0 }}, {{ end }}<a href="{{ "developers/" | relURL }}{{ $tag | urlize }}">#{{ $tag }}</a>
+          {{- end }}
 
 		</article>
 	</main>
