@@ -1,3 +1,4 @@
+{{/* Get remote data. */}}
 {{ $data := dict }}
 {{ $url := "https://www.veriphor.com/shared/data/posts.json" }}
 {{ with try (resources.GetRemote $url) }}
@@ -6,21 +7,25 @@
   {{ else with .Value }}
     {{ $data = . | transform.Unmarshal }}
   {{ else }}
-    {{ errorf "Unable to get remote resource %s" $url }}
+    {{ errorf "Unable to get remote resource %q" $url }}
   {{ end }}
 {{ end }}
 
-{{/* Add pages and page resources. */}}
+{{/* Add pages. */}}
 {{ range $data }}
-
-  {{/* Add page. */}}
-  {{ $content := dict "mediaType" "text/markdown" "value" .content }}
+  {{ $content := dict
+    "mediaType" "text/markdown"
+    "value" .content
+  }}
+  {{ $dates := dict
+    "date" (time.AsTime .date)
+  }}
   {{ $page := dict
     "content" $content
+    "dates" $dates
     "kind" "page"
     "path" .title
     "title" .title
   }}
   {{ $.AddPage $page }}
-
 {{ end }}
