@@ -4,7 +4,7 @@
     {{ range .Paginator.Pages }}
       <article class="page-card">
           <div class="card-image">
-            <img src="{{ $Params.image }}" alt="{{ .LinkTitle }} thumbnail">
+            <img src="{{ .Params.image }}" alt="{{ .LinkTitle }} thumbnail">
           </div>
         <h2><a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a></h2>
       </article>
