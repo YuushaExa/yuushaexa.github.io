@@ -10,6 +10,9 @@ theme = "database"
 allowActionJSTmpl = true
 [pagination]
   pagerSize = 50
+  [services]
+  [services.rss]
+    limit = 5
 [markup]
     defaultMarkdownHandler = "goldmark"
     [markup.goldmark]
