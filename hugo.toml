@@ -18,13 +18,9 @@ allowActionJSTmpl = true
     [markup.goldmark]
         [markup.goldmark.renderer]
             unsafe = true
-            [taxonomies]
+[taxonomies]
     tag = "tags"
     category = "categories"
-    genres = "genres"
-    publisher = "publisher"
     developers = "developers"
-    gametype = "gametype"
-    year = "year"
 [outputs]
     page = [ "html" ]
