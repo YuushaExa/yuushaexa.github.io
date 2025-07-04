@@ -1,0 +1,26 @@
+{{ $data := dict }}
+{{ $url := "https://raw.githubusercontent.com/YuushaExa/testapi/refs/heads/main/merged.json" }}
+{{ with try (resources.GetRemote $url) }}
+  {{ with .Err }}
+    {{ errorf "Unable to get remote resource %s: %s" $url . }}
+  {{ else with .Value }}
+    {{ $data = . | transform.Unmarshal }}
+  {{ else }}
+    {{ errorf "Unable to get remote resource %s" $url }}
+  {{ end }}
+{{ end }}
+
+{{/* Add pages and page resources. */}}
+{{ range $data }}
+
+  {{/* Add page. */}}
+  {{ $content := dict "mediaType" "text/markdown" "value" .description }}
+  {{ $page := dict
+    "content" $content
+    "kind" "page"
+    "path" .id
+    "title" .title
+  }}
+  {{ $.AddPage $page }}
+
+{{ end }}
