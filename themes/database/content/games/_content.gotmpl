@@ -15,21 +15,14 @@
 
   {{/* Add page. */}}
 {{ $image := "" }}
-{{ if isset . "image" }} {{/* Check if .image exists at all */}}
-    {{ if .image }} {{/* Check if .image is not nil */}}
-        {{ $image = .image.url | default "" }} {{/* Safely get .url */}}
-    {{ end }}
-{{ end }} 
-
-{{ $developers := "" }}
-{{ if isset . "developers" }} 
-    {{ if .developers }} 
-        {{ $developers = .developers.name | default "" }} 
+{{ if isset . "image" }} 
+    {{ if .image }} 
+        {{ $image = .image.url | default "" }}
     {{ end }}
 {{ end }} 
 
   {{ $content := dict "mediaType" "text/markdown" "value" .description  }}
-  {{ $params := dict "image" $image "aliases" .aliases "developers" $developers }}
+  {{ $params := dict "image" $image "aliases" .aliases "developers" .developers }}
 
   {{ $page := dict
     "content" $content
