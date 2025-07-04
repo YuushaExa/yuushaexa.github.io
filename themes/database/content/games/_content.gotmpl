@@ -22,7 +22,7 @@
 {{ end }}
 
   {{ $content := dict "mediaType" "text/markdown" "value" .description  }}
-  {{ $params := dict "image" $image "aliases" .aliases "developers.names" .developers }}
+  {{ $params := dict "image" $image "aliases" .aliases "developers.name" .developers }}
 
   {{ $page := dict
     "content" $content
