@@ -8,6 +8,8 @@ theme = "database"
     [security]
 [security.gotemplates]
 allowActionJSTmpl = true
+[pagination]
+  paginate = 400
 [markup]
     defaultMarkdownHandler = "goldmark"
     [markup.goldmark]
