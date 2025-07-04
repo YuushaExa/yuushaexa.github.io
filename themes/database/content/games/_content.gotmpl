@@ -21,8 +21,15 @@
     {{ end }}
 {{ end }} 
 
+{{ $developers := "" }}
+{{ if isset . "developers" }} 
+    {{ if .developers }} 
+        {{ $developers = .developers.name | default "" }} 
+    {{ end }}
+{{ end }} 
+
   {{ $content := dict "mediaType" "text/markdown" "value" .description  }}
-  {{ $params := dict "image" $image "aliases" .aliases "developers" .developers.name }}
+  {{ $params := dict "image" $image "aliases" .aliases "developers" $developers }}
 
   {{ $page := dict
     "content" $content
