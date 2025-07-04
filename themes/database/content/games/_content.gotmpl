@@ -1,5 +1,5 @@
 {{ $data := dict }}
-{{ $url := "https://raw.githubusercontent.com/YuushaExa/testapi/refs/heads/main/merged.json" }}
+{{ $url := "https://jsonplaceholder.typicode.com/posts" }}
 {{ with try (resources.GetRemote $url) }}
   {{ with .Err }}
     {{ errorf "Unable to get remote resource %s: %s" $url . }}
@@ -14,14 +14,10 @@
 {{ range $data }}
 
   {{/* Add page. */}}
-  {{ $content := dict "mediaType" "text/markdown" "value" .description  }}
-  {{ $dates := dict "date" (time.AsTime .date) }}
-  {{ $params := dict "aliases" .aliases "developers" .developers }}
+  {{ $content := dict "mediaType" "text/markdown" "value" .body  }}
   {{ $page := dict
     "content" $content
-    "dates" $dates
     "kind" "page"
-    "params" $params
     "path" .id
     "title" .title
   }}
