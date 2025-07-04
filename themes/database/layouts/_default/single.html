@@ -8,8 +8,8 @@
 {{ if .Params.developers }}
   <p>Developers:</p>
   <ul>
-    {{ range .Params.developers.name }}
-        <a href="{{ "/developers/" | relLangURL }}{{ . | urlize }}/">{{ . }}</a>
+    {{ range .Params.developers }}
+        <a href="{{ "/developers/" | relLangURL }}{{ .name | urlize }}/">{{ .name }}</a>
     {{ end }}
   </ul>
 {{ end }}
