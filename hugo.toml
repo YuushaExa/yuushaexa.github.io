@@ -1,7 +1,7 @@
 baseURL = 'https://yuushaexa.github.io/vnovel'
 languageCode = 'en-us'
 title = "GameLibrary"
-theme = "database" 
+theme = "database"  
 [params]
     description = "Games Library"
     author = "Yuusha"
