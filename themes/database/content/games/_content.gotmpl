@@ -15,11 +15,9 @@
 
   {{/* Add page. */}}
   {{ $content := dict "mediaType" "text/markdown" "value" .description  }}
-  {{ $dates := dict "date" (time.AsTime .date) }}
   {{ $params := dict "aliases" .aliases "developers" .developers }}
   {{ $page := dict
     "content" $content
-    "dates" $dates
     "kind" "page"
     "params" $params
     "path" .title
