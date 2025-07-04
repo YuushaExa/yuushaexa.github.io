@@ -8,8 +8,8 @@
 {{ if .Params.developers }}
   <p>Developers:</p>
   <ul>
-    {{ range .Params.developers.name }}
-      <li>{{ . }}</li>
+    {{ range .Params.developers }}
+      <li>{{ .name }}</li>
     {{ end }}
   </ul>
 {{ end }}
