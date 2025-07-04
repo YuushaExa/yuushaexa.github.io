@@ -3,9 +3,9 @@
   <div class="page-list">
     {{ range .Paginator.Pages }}
       <article class="page-card">
-{{ with .Resources.GetMatch "image.*" }}
-    <img src="{{ .RelPermalink }}" width="{{ .Width }}" height="{{ .Height }}" alt="{{ .Params.alt }}">
-  {{ end }}
+          <div class="card-image">
+            <img src="{{ .Params.image }}" alt="{{ .LinkTitle }} thumbnail">
+          </div>
         <h2><a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a></h2>
       </article>
     {{ end }}
