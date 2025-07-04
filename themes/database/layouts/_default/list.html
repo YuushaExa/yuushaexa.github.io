@@ -1,13 +1,11 @@
 {{ define "main" }}
-<div class="container">
-    <div class="section">
-        <div class="content">
-            <h1>{{ .Title }}</h1>
-        
-        </div>
-    </div>
+  <h1>{{ .Title }}</h1>
+  {{ .Content }}
+  {{ range .Pages }}
+    <h2><a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a></h2>
+  {{ end }}
+
     <div class="column is-narrow">
         {{ partial "widgets/pagination.html" . }}
     </div>
-</div>
 {{ end }}
