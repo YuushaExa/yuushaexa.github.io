@@ -1,4 +1,4 @@
-{{ range $taxonomyObject.ByCount }}
+{{ range .Data.Terms.ByCount }}
   <h2><a href="{{ .Page.RelPermalink }}">{{ .Page.LinkTitle }}</a> ({{ .Count }})</h2>
   <ul>
     {{ range .Paginator.Pages }}
