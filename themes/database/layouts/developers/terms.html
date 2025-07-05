@@ -1,13 +1,22 @@
 {{ define "main" }}
   <h1>{{ .Title }}</h1>
   
+  {{/* Create temporary pages for pagination */}}
+  {{ $pages := slice }}
+  {{ range .Data.Terms.ByCount }}
+    {{ $page := newScratch }}
+    {{ $page.Set "Title" .Page.Title }}
+    {{ $page.Set "RelPermalink" .Page.RelPermalink }}
+    {{ $page.Set "Count" .Count }}
+    {{ $pages = $pages | append $page }}
+  {{ end }}
+
+  {{ $paginator := .Paginate $pages }}
   <div class="terms-list">
-    {{ $terms := .Data.Terms.ByCount }}
-    {{ $paginator := .Paginate ($terms) }}
     {{ range $paginator.Pages }}
       <article class="term-card">
         <h2>
-          <a href="{{ .Page.RelPermalink }}">{{ .Page.Title }}</a>
+          <a href="{{ .RelPermalink }}">{{ .Title }}</a>
         </h2>
         <p>{{ .Count }} post{{ if ne .Count 1 }}s{{ end }}</p>
       </article>
