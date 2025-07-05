@@ -1,22 +1,9 @@
-{{ define "main" }}
-<div class="container">
-            <h1>{{ .Title }}</h1>
-            {{ .Content }}
-        </div>
-        <div class="columns is-mobile is-multiline">
-            {{ range .Data.Terms.ByCount }}
-                    {{ range  .Paginator.Pages }}
-                <div class="card">
-                        <div>
-                            <a class="title link" href="{{ .Page.Permalink }}">{{ .Page.Title }}</a>
-                            {{ $pageCount := len .Pages }}
-                            <p>{{ $pageCount }} post{{ if ne $pageCount 1 }}s{{ end }} </p>
-                        </div>
-            </div>
+{{ $topaginate := slice }}
+
+{{ range $k, $v := .Data.Terms.ByCount}}
+{{ $topaginate = $topaginate | append  (site.GetPage (print $.Data.Plural "/" $v.Term )) }}
 {{ end }}
-            {{ end }}
-       <div class="column is-narrow">
-    {{ partial "widgets/pagination.html" . }}
-  </div>
-</div>
+
+{{ range (.Paginate $topaginate).Pages }}
+{{ . }}
 {{ end }}
