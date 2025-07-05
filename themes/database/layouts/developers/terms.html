@@ -1,9 +1,17 @@
 {{ define "main" }}
-  <h1>{{ .Title }}</h1>
-  {{ .Content }}
-  {{ range .Data.Terms.ByCount }}
-    <h2><a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a></h2>
-     {{ $pageCount := len .Pages }}
-      <p>{{ $pageCount }} post{{ if ne $pageCount 1 }}s{{ end }} </p>
-  {{ end }}
+<div class="container">
+            <h1>{{ .Title }}</h1>
+            {{ .Content }}
+        </div>
+        <div class="columns is-mobile is-multiline">
+            {{ range .Data.Terms.ByCount }}
+                <div class="card">
+                        <div>
+                            <a class="title link" href="{{ .Page.Permalink }}">{{ .Page.Title }}</a>
+                            {{ $pageCount := len .Pages }}
+                            <p>{{ $pageCount }} post{{ if ne $pageCount 1 }}s{{ end }} </p>
+                        </div>
+            </div>
+            {{ end }}
+</div>
 {{ end }}
