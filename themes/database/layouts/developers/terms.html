@@ -5,10 +5,8 @@
             <h1>{{ .Title }}</h1>
             {{ .Content }}
         </div>
-        
-        <!-- Paginated content -->
-        {{ $paginator := .Paginate .Data.Terms.ByCount }}
         <div class="columns is-mobile is-multiline">
+            {{ $paginator := .Paginate .Data.Terms.ByCount }}
             {{ range $paginator.Pages }}
             <div class="column is-half-mobile is-one-third-tablet is-one-quarter-desktop is-one-fifth-widescreen">
                 <div class="card">
@@ -16,8 +14,14 @@
                         <a href="{{ .Page.Permalink }}">
                             <figure class="image is-3by2">
                                 {{ $firstChild := index .Pages 0 }}
-                                {{ range findRE `<img.+?>` $firstChild.Content 1 }}
-                                <img src="{{ replaceRE `.*src="(.+?)".*` "$1" . }}&w=200"/>
+                                {{ with $firstChild }}
+                                    {{ range first 1 (.Resources.ByType "image") }}
+                                        <img src="{{ .RelPermalink }}?w=200" alt="{{ .Title }}">
+                                    {{ else }}
+                                        {{ range findRE `<img.+?>` .Content 1 }}
+                                            <img src="{{ replaceRE `.*src="(.+?)".*` "$1" . }}&w=200"/>
+                                        {{ end }}
+                                    {{ end }}
                                 {{ end }}
                             </figure>
                         </a>
@@ -26,7 +30,7 @@
                         <div>
                             <a class="title is-5 is-size-6-mobile" href="{{ .Page.Permalink }}">{{ .Page.Title }}</a>
                             {{ $pageCount := len .Pages }}
-                            <p>{{ $pageCount }} post{{ if ne $pageCount 1 }}s{{ end }} </p>
+                            <p>{{ $pageCount }} post{{ if ne $pageCount 1 }}s{{ end }}</p>
                         </div>
                     </div>
                 </div>
@@ -34,8 +38,10 @@
             {{ end }}
         </div>
         
-        <!-- Pagination navigation -->
+        <!-- Pagination at the bottom -->
+        <div class="section">
             {{ partial "widgets/pagination.html" . }}
+        </div>
     </div>
 </div>
 {{ end }}
