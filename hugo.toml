@@ -21,6 +21,8 @@ allowActionJSTmpl = true
 [taxonomies]
     tag = "tags"
     category = "categories"
+    developers = "developers"
 [outputs]
     page = [ "html" ]
-    disableKinds = ['rss']
+    taxonomy = ['html']
+    term = ['html']
