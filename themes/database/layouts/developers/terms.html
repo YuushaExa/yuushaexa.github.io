@@ -5,6 +5,7 @@
         </div>
         <div class="columns is-mobile is-multiline">
             {{ range .Data.Terms.ByCount }}
+                    {{ range  .Paginator.Pages }}
                 <div class="card">
                         <div>
                             <a class="title link" href="{{ .Page.Permalink }}">{{ .Page.Title }}</a>
@@ -12,6 +13,7 @@
                             <p>{{ $pageCount }} post{{ if ne $pageCount 1 }}s{{ end }} </p>
                         </div>
             </div>
+{{ end }}
             {{ end }}
 </div>
 {{ end }}
