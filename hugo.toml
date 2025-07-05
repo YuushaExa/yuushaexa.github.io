@@ -24,3 +24,4 @@ allowActionJSTmpl = true
     developers = "developers"
 [outputs]
     page = [ "html" ]
+    section = ["HTML"]
