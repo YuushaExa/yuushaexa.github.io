@@ -5,8 +5,11 @@
             <h1>{{ .Title }}</h1>
             {{ .Content }}
         </div>
+        
+        <!-- Paginated content -->
+        {{ $paginator := .Paginate .Data.Terms.ByCount }}
         <div class="columns is-mobile is-multiline">
-            {{ range .Paginate .Data.Terms.ByCount }} 
+            {{ range $paginator.Pages }}
             <div class="column is-half-mobile is-one-third-tablet is-one-quarter-desktop is-one-fifth-widescreen">
                 <div class="card">
                     <div class="card-image">
@@ -14,7 +17,7 @@
                             <figure class="image is-3by2">
                                 {{ $firstChild := index .Pages 0 }}
                                 {{ range findRE `<img.+?>` $firstChild.Content 1 }}
-                                    <img src="{{ replaceRE `.*src="(.+?)".*` "$1" . }}&w=200"/>
+                                <img src="{{ replaceRE `.*src="(.+?)".*` "$1" . }}&w=200"/>
                                 {{ end }}
                             </figure>
                         </a>
@@ -31,10 +34,8 @@
             {{ end }}
         </div>
         
-        <!-- Pagination -->
-        <div class="section">
-    {{ partial "widgets/pagination.html" . }}
-        </div>
+        <!-- Pagination navigation -->
+            {{ partial "widgets/pagination.html" . }}
     </div>
 </div>
 {{ end }}
