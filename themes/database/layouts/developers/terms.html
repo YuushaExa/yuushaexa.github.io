@@ -1,23 +1,23 @@
 {{ define "main" }}
   <h1>{{ .Title }}</h1>
   {{ .Content }}
-  
-  {{/* Create a slice of pages with their page counts */}}
+
+  {{/* Create a slice of pages with their recursive page counts */}}
   {{ $pagesWithCount := slice }}
   {{ range .Paginator.Pages }}
-    {{ $pageCount := len .Pages }}
+    {{ $pageCount := len (.Pages.Recursive) }}  <!-- Counts all nested pages -->
     {{ $pagesWithCount = $pagesWithCount | append (dict "Page" . "Count" $pageCount) }}
   {{ end }}
-  
+
   {{/* Sort pages by count (descending) */}}
   {{ $sortedPages := sort $pagesWithCount "Count" "desc" }}
-  
+
   {{/* Range through the sorted pages */}}
   {{ range $sortedPages }}
     <h2><a href="{{ .Page.RelPermalink }}">{{ .Page.LinkTitle }}</a></h2>
     <p>{{ .Count }} post{{ if ne .Count 1 }}s{{ end }}</p>
   {{ end }}
-  
+
   <div class="column is-narrow">
     {{ partial "widgets/pagination.html" . }}
   </div>
