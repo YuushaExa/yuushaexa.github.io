@@ -1,9 +1,34 @@
-{{ $topaginate := slice }}
+{{ define "main" }}
+  <h1>{{ .Title }}</h1>
 
-{{ range $k, $v := .Data.Terms.ByCount}}
-{{ $topaginate = $topaginate | append  (site.GetPage (print $.Data.Plural "/" $v.Term )) }}
-{{ end }}
+  {{/* Convert terms into Pages for pagination */}}
+  {{ $topaginate := slice }}
+  {{ range $term := .Data.Terms.ByCount }}
+    {{ $termPage := site.GetPage (printf "/%s/%s" $.Data.Plural $term.Term) }}
+    {{ if $termPage }}
+      {{ $topaginate = $topaginate | append $termPage }}
+    {{ end }}
+  {{ end }}
 
-{{ range (.Paginate $topaginate).Pages }}
-{{ . }}
+  {{/* Paginate the terms */}}
+  {{ $paginator := .Paginate $topaginate }}
+  
+  <div class="terms-list">
+    {{ range $paginator.Pages }}
+      <article class="term-card">
+        <h2>
+          <a href="{{ .RelPermalink }}">{{ .Title }}</a>
+        </h2>
+        <p>
+          {{ $count := len (index $.Data.Terms .Title) }}
+          {{ $count }} post{{ if ne $count 1 }}s{{ end }}
+        </p>
+      </article>
+    {{ end }}
+  </div>
+
+  {{/* Pagination controls */}}
+  <div class="pagination">
+    {{ partial "widgets/pagination.html" . }}
+  </div>
 {{ end }}
