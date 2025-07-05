@@ -1,34 +1,12 @@
 {{ define "main" }}
   <h1>{{ .Title }}</h1>
-
-  {{/* Convert terms into Pages for pagination */}}
-  {{ $topaginate := slice }}
-  {{ range $term := .Data.Terms.ByCount }}
-    {{ $termPage := site.GetPage (printf "/%s/%s" $.Data.Plural $term.Term) }}
-    {{ if $termPage }}
-      {{ $topaginate = $topaginate | append $termPage }}
-    {{ end }}
+  {{ .Content }}
+    {{ range .Paginator.Pages }}
+    <h2><a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a></h2>
+             {{ $pageCount := len .Pages }}
+                  <p>{{ $pageCount }} post{{ if ne $pageCount 1 }}s{{ end }} </p>
   {{ end }}
-
-  {{/* Paginate the terms */}}
-  {{ $paginator := .Paginate $topaginate }}
-  
-  <div class="terms-list">
-    {{ range $paginator.Pages }}
-      <article class="term-card">
-        <h2>
-          <a href="{{ .RelPermalink }}">{{ .Title }}</a>
-        </h2>
-        <p>
-          {{ $count := len (index $.Data.Terms .Title) }}
-          {{ $count }} post{{ if ne $count 1 }}s{{ end }}
-        </p>
-      </article>
-    {{ end }}
-  </div>
-
-  {{/* Pagination controls */}}
-  <div class="pagination">
+  <div class="column is-narrow">
     {{ partial "widgets/pagination.html" . }}
   </div>
 {{ end }}
