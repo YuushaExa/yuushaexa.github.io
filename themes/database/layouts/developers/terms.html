@@ -1,13 +1,28 @@
 {{ define "main" }}
   <h1>{{ .Title }}</h1>
+  
+  <!-- Existing page list -->
   <div class="page-list">
-    {{ range .Paginator.Pages.ByCount }}
+    {{ range .Paginator.Pages }}
       <article class="page-card">
         <h2><a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a></h2>
-            {{ $pageCount := len .Pages }}
+        {{ $pageCount := len .Pages }}
         <p>{{ $pageCount }} post{{ if ne $pageCount 1 }}s{{ end }} </p>
       </article>
     {{ end }}
+  </div>
+
+  <!-- Add taxonomy terms section -->
+  <div class="taxonomy-terms">
+    <h2>Tags/Categories</h2>
+    <ul>
+      {{ range .Data.Terms.ByCount }}
+        <li>
+          <a href="{{ .Page.RelPermalink }}">{{ .Page.Title }}</a>
+          <span>({{ .Count }})</span>
+        </li>
+      {{ end }}
+    </ul>
   </div>
 
   <div class="column is-narrow">
