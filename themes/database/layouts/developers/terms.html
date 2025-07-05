@@ -1,12 +1,11 @@
 {{ define "main" }}
   <h1>{{ .Title }}</h1>
   <div class="page-list">
-    {{ range .Paginator.Pages }}
+    {{ range .Paginator.Pages.ByCount }}
       <article class="page-card">
-          <div class="card-image">
-          <img src="{{ .Params.image }}" alt="{{ .LinkTitle }}"/>
-          </div>
         <h2><a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a></h2>
+            {{ $pageCount := len .Pages }}
+        <p>{{ $pageCount }} post{{ if ne $pageCount 1 }}s{{ end }} </p>
       </article>
     {{ end }}
   </div>
