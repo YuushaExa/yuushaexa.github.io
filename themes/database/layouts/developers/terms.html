@@ -1,9 +1,9 @@
-{{ $topaginate := slice }}
-
-{{ range $k, $v := .Data.Terms.ByCount}}
-{{ $topaginate = $topaginate | append  (site.GetPage (print $.Data.Plural "/" $v.Term )) }}
-{{ end }}
-
-{{ range (.Paginate $topaginate).Pages }}
-{{ . }}
+{{ define "main" }}
+  <h1>{{ .Title }}</h1>
+  {{ .Content }}
+  {{ range .Data.Terms.ByCount }}
+    <h2><a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a></h2>
+     {{ $pageCount := len .Pages }}
+      <p>{{ $pageCount }} post{{ if ne $pageCount 1 }}s{{ end }} </p>
+  {{ end }}
 {{ end }}
