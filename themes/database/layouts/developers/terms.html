@@ -2,7 +2,8 @@
   <h1>{{ .Title }}</h1>
   
   <div class="terms-list">
-    {{ $paginator := .Paginate .Data.Terms.ByCount }}
+    {{ $terms := .Data.Terms.ByCount }}
+    {{ $paginator := .Paginate ($terms) }}
     {{ range $paginator.Pages }}
       <article class="term-card">
         <h2>
@@ -13,7 +14,6 @@
     {{ end }}
   </div>
 
-  <!-- Pagination controls -->
   <div class="pagination">
     {{ partial "widgets/pagination.html" . }}
   </div>
