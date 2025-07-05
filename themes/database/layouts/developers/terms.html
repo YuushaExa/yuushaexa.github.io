@@ -1,11 +1,9 @@
-{{ range .Data.Terms.ByCount }}
-  <h2><a href="{{ .Page.RelPermalink }}">{{ .Page.LinkTitle }}</a> ({{ .Count }})</h2>
-  <ul>
-    {{ range .Paginator.Pages }}
-      <li><a href="{{ .RelPermalink }}">{{ .Title }}</a></li>
-    {{ end }}
-  </ul>
-  <div class="column is-narrow">
-    {{ partial "widgets/pagination.html" . }}
-  </div>
+{{ $topaginate := slice }}
+
+{{ range $k, $v := .Data.Terms.ByCount}}
+{{ $topaginate = $topaginate | append  (site.GetPage (print $.Data.Plural "/" $v.Term )) }}
+{{ end }}
+
+{{ range (.Paginate $topaginate).Pages }}
+{{ . }}
 {{ end }}
