@@ -1,7 +1,7 @@
 {{ define "main" }}
   <h1>{{ .Title }}</h1>
   <div class="page-list">
-    {{ range .Paginator.Pages }}
+    {{ range (.Paginator.Pages.ByTitle) }}
       <article class="page-card">
           <div class="card-image">
           <img src="{{ .Params.image }}" alt="{{ .LinkTitle }}"/>
