@@ -5,6 +5,7 @@ theme = "database"
 [params]
     description = "Games Library"
     author = "Yuusha"
+    disableKinds = ['rss']
     [security]
 [security.gotemplates]
 allowActionJSTmpl = true
@@ -24,5 +25,3 @@ allowActionJSTmpl = true
     developers = "developers"
 [outputs]
     page = [ 'html' ]
- disableKinds = ['rss']
-
