@@ -2,10 +2,10 @@ baseURL = 'https://yuushaexa.github.io/vnovel'
 languageCode = 'en-us'
 title = "GameLibrary"
 theme = "database"  
+disableKinds = ['rss']
 [params]
     description = "Games Library"
     author = "Yuusha"
-    disableKinds = ['rss']
     [security]
 [security.gotemplates]
 allowActionJSTmpl = true
