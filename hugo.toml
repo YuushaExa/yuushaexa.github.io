@@ -24,7 +24,6 @@ allowActionJSTmpl = true
     category = "categories"
     developers = "developers"
 [outputs]
-    page = [ 'html' ]
+    page = [ 'html', "JSON" ]
     taxonomy = [ "HTML", "JSON" ]
-    terms = [ "HTML", "JSON" ]
 
