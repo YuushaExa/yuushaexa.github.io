@@ -1,0 +1,13 @@
+{
+  "term": "{{ .Title }}",
+  "permalink": "{{ .Permalink }}",
+  "pages": [
+    {{ range $index, $page := .Pages }}{{ if $index }},{{ end }}
+    {
+      "title": "{{ .Title }}",
+      "url": "{{ .Permalink }}",
+      "date": "{{ .Date.Format "2006-01-02" }}"
+    }
+    {{ end }}
+  ]
+}
