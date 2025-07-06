@@ -24,4 +24,5 @@ allowActionJSTmpl = true
     developers = "developers"
 [outputs]
     page = [ 'html' ]
- 
+ disableKinds = ['rss']
+
