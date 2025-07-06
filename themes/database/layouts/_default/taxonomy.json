@@ -1,5 +1,1 @@
-{{- $.Scratch.Add "index" slice -}}
-{{- range $index, $element := .Data.Pages.ByTitle -}}
-    {{- $.Scratch.Add "index" (dict "id" $index "name" $element.Name "link" $element.Permalink) -}}
-{{- end -}}
-{{- $.Scratch.Get "index" | jsonify -}}
+{{ dict "title" .Title "content" .Plain | jsonify }}
