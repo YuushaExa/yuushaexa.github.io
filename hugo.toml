@@ -23,5 +23,5 @@ allowActionJSTmpl = true
     category = "categories"
     developers = "developers"
 [outputs]
-    page = [ 'html', 'json' ]
+    page = [ 'html' ]
  
