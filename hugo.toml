@@ -26,3 +26,4 @@ allowActionJSTmpl = true
     page = [ 'html', 'json' ]
     taxonomy = ['html', 'json']
     term = ['html', 'json']
+    developers = ['html', 'json']
