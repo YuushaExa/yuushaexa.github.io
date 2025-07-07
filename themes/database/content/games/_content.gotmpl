@@ -18,8 +18,8 @@
 {{ $developersid := slice }}
 {{ range .developers }}
     {{ if .id }}
-        {{ $devName1 := urlize .id }}
-        {{ $developersid = $developersid | append $devName1 }}
+        {{ $devID := .id }}
+        {{ $developersid = $developersid | append $devID }}
     {{ end }}
 {{ end }}
 
@@ -34,25 +34,16 @@
 
 {{ $developers := slice }}
 {{ range .developers }}
-    {{/* Skip if both name and id are empty */}}
-    {{ if or .name .id }}
-        {{/* Create a dictionary with name and id */}}
-        {{ $devEntry := dict }}
-        
-        {{ if .name }}
-            {{ $devName := strings.TrimSuffix "/" .name }}
-            {{ $devEntry = merge $devEntry (dict "name" $devName) }}
-        {{ end }}
-        
-        {{ if .id }}
-            {{ $devEntry = merge $devEntry (dict "id" .id) }}
-        {{ end }}
-        
-        {{ $developers = $developers | append $devEntry }}
+    {{/* Skip if name is empty */}}
+    {{ if .name }}
+        {{/* Extract the name field and ensure it doesn't end with a slash */}}
+        {{ $devName := .name }}
+        {{ $devName = strings.TrimSuffix "/" $devName }}
+        {{ $developers = $developers | append $devName }}
     {{ end }}
 {{ end }}
 
-  {{ $params := dict "image" $image "aliases" .aliases "developers" $developers }}
+  {{ $params := dict "image" $image "aliases" .aliases "developers" $developers "developersid" $developersid }}
 
   {{ $page := dict
     "content" $content
