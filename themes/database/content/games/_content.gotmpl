@@ -25,7 +25,7 @@
   {{ $content := dict "mediaType" "text/markdown" "value" .description  }}
 
 {{ $developers := slice }}
-      {{ with $item.developers }}
+      {{ with .developers }}
         {{ range . }}
           {{ if and .id .name }}
             {{ $dev := dict "id" .id "name" .name }}
