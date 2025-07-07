@@ -1,12 +1,103 @@
-{{ define "main" }}
-  <h1>{{ .Title }}</h1>
-  {{ .Content }}
-    {{ range .Paginator.Pages }}
-    <h2><a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a></h2>
-             {{ $pageCount := len .Pages }}
-                  <p>{{ $pageCount }} post{{ if ne $pageCount 1 }}s{{ end }} </p>
-  {{ end }}
-  <div class="column is-narrow">
-    {{ partial "widgets/pagination.html" . }}
-  </div>
-{{ end }}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VNovel Developers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .developer {
+            background: #f5f5f5;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .developer-name {
+            font-weight: bold;
+        }
+        .developer-posts {
+            color: #666;
+        }
+        a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+        .error {
+            color: #d32f2f;
+            padding: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>VNovel Developers</h1>
+    <div id="developers-container">
+        <div class="loading">Loading developers...</div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.getElementById('developers-container');
+            const jsonUrl = 'https://yuushaexa.github.io/vnovel/developers/index.json';
+            
+            fetch(jsonUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Clear loading message
+                    container.innerHTML = '';
+                    
+                    if (data.length === 0) {
+                        container.innerHTML = '<div class="error">No developers found</div>';
+                        return;
+                    }
+                    
+                    // Create developer entries
+                    data.forEach(dev => {
+                        const devElement = document.createElement('div');
+                        devElement.className = 'developer';
+                        
+                        // Create link to developer page
+                        const link = document.createElement('a');
+                        link.href = `/${dev.u}/`;  // Assuming URLs are relative to root
+                        link.className = 'developer-name';
+                        link.textContent = dev.t;
+                        
+                        // Create post count
+                        const count = document.createElement('span');
+                        count.className = 'developer-posts';
+                        count.textContent = `${dev.c} post${dev.c !== 1 ? 's' : ''}`;
+                        
+                        // Append elements
+                        devElement.appendChild(link);
+                        devElement.appendChild(count);
+                        container.appendChild(devElement);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                    container.innerHTML = `<div class="error">Failed to load developers. Please try again later.</div>`;
+                });
+        });
+    </script>
+</body>
+</html>
