@@ -15,6 +15,13 @@
 
 {{ range $data }}
 
+{{ $developersid := "" }}
+{{ if isset . "developers" }} 
+    {{ if .developers }} 
+        {{ $developersid = .developers.id | default "" }}
+    {{ end }}
+{{ end }} 
+
 {{ $image := "" }}
 {{ if isset . "image" }} 
     {{ if .image }} 
@@ -35,7 +42,7 @@
     {{ end }}
 {{ end }}
 
-  {{ $params := dict "image" $image "aliases" .aliases "developers" $developers "developersid" .developers.id }}
+  {{ $params := dict "image" $image "aliases" .aliases "developers" $developers "developersid" $developersid }}
 
   {{ $page := dict
     "content" $content
