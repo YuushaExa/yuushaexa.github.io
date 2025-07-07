@@ -15,12 +15,13 @@
 
 {{ range $data }}
 
-{{ $developersid := "" }}
-{{ if isset . "developers" }} 
-    {{ if .developers }} 
-        {{ $developersid = .developers.id | default "" }}
+{{ $developersid := slice }}
+{{ range .developers }}
+    {{ if .id }}
+        {{ $devName1 := urlize .id }}
+        {{ $developersid = $developersid | append $devName1 }}
     {{ end }}
-{{ end }} 
+{{ end }}
 
 {{ $image := "" }}
 {{ if isset . "image" }} 
