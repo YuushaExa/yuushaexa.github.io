@@ -34,16 +34,25 @@
 
 {{ $developers := slice }}
 {{ range .developers }}
-    {{/* Skip if name is empty */}}
-    {{ if .name }}
-        {{/* Extract the name field and ensure it doesn't end with a slash */}}
-        {{ $devName := .name }}
-        {{ $devName = strings.TrimSuffix "/" $devName }}
-        {{ $developers = $developers | append $devName }}
+    {{/* Skip if both name and id are empty */}}
+    {{ if or .name .id }}
+        {{/* Create a dictionary with name and id */}}
+        {{ $devEntry := dict }}
+        
+        {{ if .name }}
+            {{ $devName := strings.TrimSuffix "/" .name }}
+            {{ $devEntry = merge $devEntry (dict "name" $devName) }}
+        {{ end }}
+        
+        {{ if .id }}
+            {{ $devEntry = merge $devEntry (dict "id" .id) }}
+        {{ end }}
+        
+        {{ $developers = $developers | append $devEntry }}
     {{ end }}
 {{ end }}
 
-  {{ $params := dict "image" $image "aliases" .aliases "developers" $developers "developersid" $developersid }}
+  {{ $params := dict "image" $image "aliases" .aliases "developers" $developers }}
 
   {{ $page := dict
     "content" $content
