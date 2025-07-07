@@ -2,7 +2,7 @@
   <h1>{{ .Title }}</h1>
   {{ .Content }}
     {{ range .Paginator.Pages }}
-<h2><a href="{{ .RelPermalink | urlize }}">{{ .LinkTitle | urlize }}</a></h2>
+<h2><a href="{{ .RelPermalink | anchorize }}">{{ .LinkTitle | anchorize }}</a></h2>
              {{ $pageCount := len .Pages }}
                   <p>{{ $pageCount }} post{{ if ne $pageCount 1 }}s{{ end }} </p>
   {{ end }}
