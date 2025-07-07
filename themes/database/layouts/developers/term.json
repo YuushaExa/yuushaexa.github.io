@@ -1,5 +1,6 @@
 {{- $.Scratch.Add "index" slice -}}
 {{- range .Pages -}}
-  {{- $.Scratch.Add "index" (dict "title" .Title "url" .Permalink) -}}
+  {{- $pageCount := len .Pages -}}
+  {{- $.Scratch.Add "index" (dict "title" .Title "url" .Permalink "count" $pageCount) -}}
 {{- end -}}
 {{- $.Scratch.Get "index" | jsonify -}}
