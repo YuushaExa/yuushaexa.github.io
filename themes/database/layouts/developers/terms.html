@@ -11,41 +11,66 @@
             margin: 0 auto;
             padding: 20px;
             line-height: 1.6;
+            background-color: #f8f9fa;
         }
-        .developer {
-            background: #f5f5f5;
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .developers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        .developer-card {
+            background: white;
+            border-radius: 8px;
             padding: 15px;
-            margin-bottom: 10px;
-            border-radius: 5px;
-            display: flex;
-            justify-content: space-between;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        .developer-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
         }
         .developer-name {
             font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+            color: #3498db;
         }
         .developer-posts {
-            color: #666;
+            color: #7f8c8d;
+            font-size: 0.9em;
         }
-        a {
-            color: #0066cc;
-            text-decoration: none;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
-        .loading {
+        .loading, .error {
             text-align: center;
-            padding: 20px;
+            padding: 40px;
+            font-size: 1.2em;
         }
         .error {
-            color: #d32f2f;
-            padding: 20px;
-            text-align: center;
+            color: #e74c3c;
+        }
+        .search-container {
+            margin-bottom: 20px;
+        }
+        #search {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
         }
     </style>
 </head>
 <body>
     <h1>VNovel Developers</h1>
+    
+    <div class="search-container">
+        <input type="text" id="search" placeholder="Search developers...">
+    </div>
+    
     <div id="developers-container">
         <div class="loading">Loading developers...</div>
     </div>
@@ -66,37 +91,61 @@
                     // Clear loading message
                     container.innerHTML = '';
                     
-                    if (data.length === 0) {
+                    if (!data || data.length === 0) {
                         container.innerHTML = '<div class="error">No developers found</div>';
                         return;
                     }
                     
-                    // Create developer entries
+                    // Create grid container
+                    const grid = document.createElement('div');
+                    grid.className = 'developers-grid';
+                    container.appendChild(grid);
+                    
+                    // Create developer cards
                     data.forEach(dev => {
-                        const devElement = document.createElement('div');
-                        devElement.className = 'developer';
+                        const card = document.createElement('div');
+                        card.className = 'developer-card';
                         
-                        // Create link to developer page
-                        const link = document.createElement('a');
-                        link.href = `/${dev.u}/`;  // Assuming URLs are relative to root
-                        link.className = 'developer-name';
-                        link.textContent = dev.t;
+                        // Developer name with link
+                        const nameLink = document.createElement('a');
+                        nameLink.href = dev.url;
+                        nameLink.className = 'developer-name';
+                        nameLink.textContent = dev.title;
                         
-                        // Create post count
-                        const count = document.createElement('span');
+                        // Post count
+                        const count = document.createElement('div');
                         count.className = 'developer-posts';
-                        count.textContent = `${dev.c} post${dev.c !== 1 ? 's' : ''}`;
+                        count.textContent = `${dev.count} post${dev.count !== 1 ? 's' : ''}`;
                         
                         // Append elements
-                        devElement.appendChild(link);
-                        devElement.appendChild(count);
-                        container.appendChild(devElement);
+                        card.appendChild(nameLink);
+                        card.appendChild(count);
+                        grid.appendChild(card);
                     });
+                    
+                    // Add search functionality
+                    setupSearch(data);
                 })
                 .catch(error => {
                     console.error('Error fetching data:', error);
-                    container.innerHTML = `<div class="error">Failed to load developers. Please try again later.</div>`;
+                    container.innerHTML = '<div class="error">Failed to load developers. Please try again later.</div>';
                 });
+                
+            function setupSearch(data) {
+                const searchInput = document.getElementById('search');
+                const cards = document.querySelectorAll('.developer-card');
+                
+                searchInput.addEventListener('input', function(e) {
+                    const searchTerm = e.target.value.toLowerCase();
+                    
+                    cards.forEach((card, index) => {
+                        const dev = data[index];
+                        const matches = dev.title.toLowerCase().includes(searchTerm) || 
+                                         dev.url.toLowerCase().includes(searchTerm);
+                        card.style.display = matches ? 'block' : 'none';
+                    });
+                });
+            }
         });
     </script>
 </body>
