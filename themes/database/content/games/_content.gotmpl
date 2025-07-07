@@ -15,13 +15,7 @@
 
 {{ range $data }}
 
-{{ $developersid := slice }}
-{{ range .developers }}
-    {{ if .id }}
-        {{ $devID := .id }}
-        {{ $developersid = $developersid | append $devID }}
-    {{ end }}
-{{ end }}
+
 
 {{ $image := "" }}
 {{ if isset . "image" }} 
@@ -42,7 +36,7 @@
     {{ end }}
 {{ end }}
 
-  {{ $params := dict "image" $image "aliases" .aliases "developers" $developers "developersid" $developersid }}
+  {{ $params := dict "image" $image "aliases" .aliases "developers" $developers }}
 
   {{ $page := dict
     "content" $content
