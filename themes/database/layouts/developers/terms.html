@@ -18,6 +18,40 @@
             text-align: center;
             margin-bottom: 30px;
         }
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+        .search-container {
+            flex-grow: 1;
+        }
+        .sort-container {
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            padding: 8px 12px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #2980b9;
+        }
+        button.active {
+            background: #2c3e50;
+        }
+        #search {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
         .developers-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -52,23 +86,19 @@
         .error {
             color: #e74c3c;
         }
-        .search-container {
-            margin-bottom: 20px;
-        }
-        #search {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
-        }
     </style>
 </head>
 <body>
     <h1>VNovel Developers</h1>
     
-    <div class="search-container">
-        <input type="text" id="search" placeholder="Search developers...">
+    <div class="controls">
+        <div class="search-container">
+            <input type="text" id="search" placeholder="Search developers...">
+        </div>
+        <div class="sort-container">
+            <button id="sort-name">Sort A-Z</button>
+            <button id="sort-count">Sort by Count</button>
+        </div>
     </div>
     
     <div id="developers-container">
@@ -79,7 +109,10 @@
         document.addEventListener('DOMContentLoaded', function() {
             const container = document.getElementById('developers-container');
             const jsonUrl = 'https://yuushaexa.github.io/vnovel/developers/index.json';
+            let developersData = [];
+            let currentSort = 'name-asc';
             
+            // Fetch data
             fetch(jsonUrl)
                 .then(response => {
                     if (!response.ok) {
@@ -88,63 +121,115 @@
                     return response.json();
                 })
                 .then(data => {
-                    // Clear loading message
-                    container.innerHTML = '';
-                    
-                    if (!data || data.length === 0) {
-                        container.innerHTML = '<div class="error">No developers found</div>';
-                        return;
-                    }
-                    
-                    // Create grid container
-                    const grid = document.createElement('div');
-                    grid.className = 'developers-grid';
-                    container.appendChild(grid);
-                    
-                    // Create developer cards
-                    data.forEach(dev => {
-                        const card = document.createElement('div');
-                        card.className = 'developer-card';
-                        
-                        // Developer name with link
-                        const nameLink = document.createElement('a');
-                        nameLink.href = dev.url;
-                        nameLink.className = 'developer-name';
-                        nameLink.textContent = dev.title;
-                        
-                        // Post count
-                        const count = document.createElement('div');
-                        count.className = 'developer-posts';
-                        count.textContent = `${dev.count} post${dev.count !== 1 ? 's' : ''}`;
-                        
-                        // Append elements
-                        card.appendChild(nameLink);
-                        card.appendChild(count);
-                        grid.appendChild(card);
-                    });
-                    
-                    // Add search functionality
-                    setupSearch(data);
+                    developersData = data;
+                    renderDevelopers(data);
+                    setupSearch();
+                    setupSorting();
                 })
                 .catch(error => {
                     console.error('Error fetching data:', error);
                     container.innerHTML = '<div class="error">Failed to load developers. Please try again later.</div>';
                 });
                 
-            function setupSearch(data) {
+            function renderDevelopers(data) {
+                // Clear container
+                container.innerHTML = '';
+                
+                if (!data || data.length === 0) {
+                    container.innerHTML = '<div class="error">No developers found</div>';
+                    return;
+                }
+                
+                // Create grid container
+                const grid = document.createElement('div');
+                grid.className = 'developers-grid';
+                container.appendChild(grid);
+                
+                // Create developer cards
+                data.forEach(dev => {
+                    const card = document.createElement('div');
+                    card.className = 'developer-card';
+                    
+                    // Developer name with link
+                    const nameLink = document.createElement('a');
+                    nameLink.href = dev.url;
+                    nameLink.className = 'developer-name';
+                    nameLink.textContent = dev.title;
+                    
+                    // Post count
+                    const count = document.createElement('div');
+                    count.className = 'developer-posts';
+                    count.textContent = `${dev.count} post${dev.count !== 1 ? 's' : ''}`;
+                    
+                    // Append elements
+                    card.appendChild(nameLink);
+                    card.appendChild(count);
+                    grid.appendChild(card);
+                });
+            }
+            
+            function setupSearch() {
                 const searchInput = document.getElementById('search');
-                const cards = document.querySelectorAll('.developer-card');
                 
                 searchInput.addEventListener('input', function(e) {
                     const searchTerm = e.target.value.toLowerCase();
+                    const filtered = developersData.filter(dev => 
+                        dev.title.toLowerCase().includes(searchTerm) || 
+                        dev.url.toLowerCase().includes(searchTerm)
+                    );
                     
-                    cards.forEach((card, index) => {
-                        const dev = data[index];
-                        const matches = dev.title.toLowerCase().includes(searchTerm) || 
-                                         dev.url.toLowerCase().includes(searchTerm);
-                        card.style.display = matches ? 'block' : 'none';
-                    });
+                    renderDevelopers(filtered);
                 });
+            }
+            
+            function setupSorting() {
+                const sortNameBtn = document.getElementById('sort-name');
+                const sortCountBtn = document.getElementById('sort-count');
+                
+                sortNameBtn.addEventListener('click', function() {
+                    if (currentSort === 'name-asc') {
+                        developersData.sort((a, b) => b.title.localeCompare(a.title));
+                        currentSort = 'name-desc';
+                        sortNameBtn.textContent = 'Sort Z-A';
+                    } else {
+                        developersData.sort((a, b) => a.title.localeCompare(b.title));
+                        currentSort = 'name-asc';
+                        sortNameBtn.textContent = 'Sort A-Z';
+                    }
+                    renderDevelopers(developersData);
+                    updateActiveButton();
+                });
+                
+                sortCountBtn.addEventListener('click', function() {
+                    if (currentSort === 'count-desc') {
+                        developersData.sort((a, b) => a.count - b.count);
+                        currentSort = 'count-asc';
+                        sortCountBtn.textContent = 'Sort by Count (Low)';
+                    } else {
+                        developersData.sort((a, b) => b.count - a.count);
+                        currentSort = 'count-desc';
+                        sortCountBtn.textContent = 'Sort by Count (High)';
+                    }
+                    renderDevelopers(developersData);
+                    updateActiveButton();
+                });
+                
+                function updateActiveButton() {
+                    document.querySelectorAll('.sort-container button').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    
+                    if (currentSort.startsWith('name')) {
+                        sortNameBtn.classList.add('active');
+                    } else {
+                        sortCountBtn.classList.add('active');
+                    }
+                }
+                
+                // Set initial sort
+                developersData.sort((a, b) => a.title.localeCompare(b.title));
+                sortNameBtn.classList.add('active');
+                renderDevelopers(developersData);
             }
         });
     </script>
