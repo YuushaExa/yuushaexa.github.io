@@ -1,1 +1,12 @@
-с
+{{ define "main" }}
+  <h1>{{ .Title }}</h1>
+  {{ .Content }}
+    {{ range .Paginator.Pages }}
+    <h2><a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a></h2>
+             {{ $pageCount := len .Pages }}
+                  <p>{{ $pageCount }} post{{ if ne $pageCount 1 }}s{{ end }} </p>
+  {{ end }}
+  <div class="column is-narrow">
+    {{ partial "widgets/pagination.html" . }}
+  </div>
+{{ end }}
