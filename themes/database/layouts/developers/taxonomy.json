@@ -1,7 +1,7 @@
-{{- $index := slice -}}
+{{- $.Scratch.Add "index" slice -}}
 {{- range .Pages -}}
   {{- $pageCount := len .Pages -}}
-  {{- $entry := dict "t" .Title "u" (replace .RelPermalink "/" "") "c" $pageCount -}}
-  {{- $index = $index | append $entry -}}
+  {{- $url := .RelPermalink | replaceRE "^.*/([^/]+)/$" "$1" -}}
+  {{- $.Scratch.Add "index" (dict "c" $pageCount "t" .Title "u" $url) -}}
 {{- end -}}
-{{- $index | jsonify -}}
+{{- $.Scratch.Get "index" | jsonify -}}
