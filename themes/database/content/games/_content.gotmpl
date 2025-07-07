@@ -1,38 +1,60 @@
-{{ $data := dict }}
+{{/* Fetch remote JSON data */}}
 {{ $url := "https://raw.githubusercontent.com/YuushaExa/testapi/refs/heads/main/merged.json" }}
-{{ with try (resources.GetRemote $url) }}
-  {{ with .Err }}
-    {{ errorf "Unable to get remote resource %s: %s" $url . }}
-  {{ else with .Value }}
-    {{ $data = . | transform.Unmarshal }}
-  {{ else }}
-    {{ errorf "Unable to get remote resource %s" $url }}
-  {{ end }}
-{{ end }}
+{{ $remote := resources.GetRemote $url }}
+{{ if $remote.Err }}
+  {{ errorf "Failed to fetch %s: %v" $url $remote.Err }}
+{{ else }}
+  {{ $data := $remote.Content | transform.Unmarshal }}
 
-{{/* https://raw.githubusercontent.com/YuushaExa/testapi/refs/heads/main/result/vn/356-399.json test */}}
-{{/* https://raw.githubusercontent.com/YuushaExa/testapi/refs/heads/main/merged.json full */}}
+  {{ range $item := $data }}
+    {{/* Skip if missing required fields */}}
+    {{ if and $item.id $item.title }}
+      {{/* Process image */}}
+      {{ $image := "" }}
+      {{ with $item.image }}
+        {{ if and .url (hasPrefix .url "http") }}
+          {{ $image = .url }}
+        {{ end }}
+      {{ end }}
 
-{{ range $data }}
+      {{/* Process developers */}}
+      {{ $developers := slice }}
+      {{ with $item.developers }}
+        {{ range . }}
+          {{ if and .id .name }}
+            {{ $dev := dict "id" .id "name" .name }}
+            {{ $developers = $developers | append $dev }}
+          {{ end }}
+        {{ end }}
+      {{ end }}
 
-{{ $image := "" }}
-{{ if isset . "image" }} 
-    {{ if .image }} 
-        {{ $image = .image.url | default "" }}
+      {{/* Create page content */}}
+      {{ $content := dict 
+        "mediaType" "text/markdown"
+        "value" ($item.description | default "")
+      }}
+
+      {{/* Create page params */}}
+      {{ $params := dict 
+        "image" $image
+        "aliases" ($item.aliases | default slice)
+        "developers" $developers
+        "date" (now.Format "2006-01-02")
+      }}
+
+      {{/* Create page */}}
+      {{ $page := dict
+        "content" $content
+        "kind" "page"
+        "params" $params
+        "path" (printf "%s.md" $item.id)
+        "title" $item.title
+        "weight" ($item.weight | default 0)
+      }}
+
+      {{ $.AddPage $page }}
+    {{ else }}
+      {{ warnf "Skipping item missing required fields (id or title): %v" $item }}
     {{ end }}
-{{ end }} 
-
-  {{ $content := dict "mediaType" "text/markdown" "value" .description  }}
-
-  {{ $params := dict "image" $image "aliases" .aliases "developers" .developers }}
-
-  {{ $page := dict
-    "content" $content
-    "kind" "page"
-    "params" $params
-    "path" .id
-    "title" .title
-  }}
-  {{ $.AddPage $page }}
-
+  {{ end }}
 {{ end }}
