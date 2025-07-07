@@ -7,7 +7,7 @@
 			</div>
 {{ with .Params.developers }}
   {{ range . }}
-    <a href="{{ "developers/" | relLangURL }}{{ .id | urlize }}/">{{ .name }}</a>
+    <a href="{{ "developers/" | relLangURL }}{{ . }}/">{{ . }}</a>
   {{ end }}
 {{ end }}
 		</article>
