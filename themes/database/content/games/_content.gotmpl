@@ -29,7 +29,7 @@
     {{/* Skip if name is empty */}}
     {{ if .name }}
         {{/* Extract the name field and ensure it doesn't end with a slash */}}
-        {{ $devName := partial "slugify.html" .name }}
+        {{ $devName := .name }}
         {{ $devName = strings.TrimSuffix "/" $devName }}
         {{ $developers = $developers | append $devName }}
     {{ end }}
