@@ -14,27 +14,28 @@
 {{/* https://raw.githubusercontent.com/YuushaExa/testapi/refs/heads/main/merged.json full */}}
 
 {{ range $data }}
-  {{ $image := "" }}
-  {{ if isset . "image" }} 
+
+{{ $image := "" }}
+{{ if isset . "image" }} 
     {{ if .image }} 
-      {{ $image = .image.url | default "" }}
+        {{ $image = .image.url | default "" }}
     {{ end }}
-  {{ end }} 
+{{ end }} 
 
-  {{ $content := dict "mediaType" "text/markdown" "value" .description }}
+  {{ $content := dict "mediaType" "text/markdown" "value" .description  }}
 
-  {{/* Prepare developers taxonomy */}}
-  {{ $developerTerms := slice }}
-  {{ range .developers }}
-    {{ $developerTerms = $developerTerms | append .id }}
-  {{ end }}
+{{ $developers := slice }}
+{{ range .developers }}
+    {{/* Skip if name is empty */}}
+    {{ if .name }}
+        {{/* Extract the name field and ensure it doesn't end with a slash */}}
+        {{ $devName := urlize .name }}
+        {{ $devName = strings.TrimSuffix "/" $devName }}
+        {{ $developers = $developers | append $devName }}
+    {{ end }}
+{{ end }}
 
-  {{ $params := dict 
-    "image" $image 
-    "aliases" .aliases 
-    "developers" .developers  
-    "developer" $developerTerms  
-  }}
+  {{ $params := dict "image" $image "aliases" .aliases "developers" $developers }}
 
   {{ $page := dict
     "content" $content
@@ -44,4 +45,5 @@
     "title" .title
   }}
   {{ $.AddPage $page }}
+
 {{ end }}
