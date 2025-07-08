@@ -15,6 +15,11 @@
 
 {{ range $data }}
 
+ {{ $developerTerms := slice }}
+  {{ range .developers }}
+    {{ $developerTerms = $developerTerms | append .id }}
+  {{ end }}
+
 {{ $image := "" }}
 {{ if isset . "image" }} 
     {{ if .image }} 
@@ -24,7 +29,7 @@
 
   {{ $content := dict "mediaType" "text/markdown" "value" .description  }}
 
-  {{ $params := dict "image" $image "aliases" .aliases "developers" .developers  "developer" (slice .developers.id) }}
+  {{ $params := dict "image" $image "aliases" .aliases "developers" .developers  "developer" $developerTerms }}
 
   {{ $page := dict
     "content" $content
