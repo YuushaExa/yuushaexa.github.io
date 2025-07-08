@@ -6,7 +6,7 @@
 				{{ .Content }}
 			</div>
 {{ range .Params.developers }}
-        <a href="{{ "developers/" | relURL }}{{ .name }}">{{ .name }}</a>
+        <a href="{{ "developers/" | relURL }}{{ . }}">{{ . }}</a>
 {{ end }}
 		</article>
 	</main>
