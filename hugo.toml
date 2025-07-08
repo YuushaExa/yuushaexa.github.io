@@ -6,10 +6,6 @@ disableKinds = ['rss']
 [params]
     description = "Games Library"
     author = "Yuusha"
-[module]
-  [[module.mounts]]
-    source = "layouts/shortcodes/slugify.html"
-    target = "layouts/shortcodes/slugify.html"
     [security]
 [security.gotemplates]
 allowActionJSTmpl = true
