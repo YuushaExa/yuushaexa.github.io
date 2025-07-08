@@ -8,8 +8,8 @@ disableKinds = ['rss']
     author = "Yuusha"
 [module]
   [[module.mounts]]
-    source = "layouts/shortcodes/slugify.html"
-    target = "layouts/shortcodes/slugify.html"
+    source = "themes/database/layouts/shortcodes/slugify.html"
+    target = "themes/database/layouts/shortcodes/slugify.html"
     [security]
 [security.gotemplates]
 allowActionJSTmpl = true
