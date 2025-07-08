@@ -32,8 +32,8 @@
   {{ $params := dict 
     "image" $image 
     "aliases" .aliases 
-    "developers" .developers  // Keep the full developer data for display
-    "developer" $developerTerms  // This adds to the taxonomy
+    "developers" .developers  
+    "developer" $developerTerms  
   }}
 
   {{ $page := dict
