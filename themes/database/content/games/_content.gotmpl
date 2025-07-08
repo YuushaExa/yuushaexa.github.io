@@ -14,24 +14,27 @@
 {{/* https://raw.githubusercontent.com/YuushaExa/testapi/refs/heads/main/merged.json full */}}
 
 {{ range $data }}
+  {{ $image := "" }}
+  {{ if isset . "image" }} 
+    {{ if .image }} 
+      {{ $image = .image.url | default "" }}
+    {{ end }}
+  {{ end }} 
 
- {{ $developerTerms := slice }}
+  {{ $content := dict "mediaType" "text/markdown" "value" .description }}
+
+  {{/* Prepare developers taxonomy */}}
+  {{ $developerTerms := slice }}
   {{ range .developers }}
- {{ if .id }}
     {{ $developerTerms = $developerTerms | append .id }}
   {{ end }}
-  {{ end }}
 
-{{ $image := "" }}
-{{ if isset . "image" }} 
-    {{ if .image }} 
-        {{ $image = .image.url | default "" }}
-    {{ end }}
-{{ end }} 
-
-  {{ $content := dict "mediaType" "text/markdown" "value" .description  }}
-
-  {{ $params := dict "image" $image "aliases" .aliases "developers" .developers  "developer" $developerTerms }}
+  {{ $params := dict 
+    "image" $image 
+    "aliases" .aliases 
+    "developers" .developers  // Keep the full developer data for display
+    "developer" $developerTerms  // This adds to the taxonomy
+  }}
 
   {{ $page := dict
     "content" $content
@@ -41,5 +44,4 @@
     "title" .title
   }}
   {{ $.AddPage $page }}
-
 {{ end }}
