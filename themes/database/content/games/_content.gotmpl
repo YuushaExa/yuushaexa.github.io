@@ -17,7 +17,9 @@
 
  {{ $developerTerms := slice }}
   {{ range .developers }}
+ {{ if .id }}
     {{ $developerTerms = $developerTerms | append .id }}
+  {{ end }}
   {{ end }}
 
 {{ $image := "" }}
