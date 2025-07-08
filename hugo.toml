@@ -22,7 +22,7 @@ allowActionJSTmpl = true
 [taxonomies]
     tag = "tags"
     category = "categories"
-    develope = "develope"
+    developer = "developers"
 [outputs]
     page = [ 'html' ]
     taxonomy = [ "HTML" ]
