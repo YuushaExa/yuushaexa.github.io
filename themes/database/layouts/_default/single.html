@@ -8,7 +8,7 @@
  {{ range .Params.developers }}
   {{ $developerID := .id }}
   {{ $developerName := .name }}
-  <a href="{{ "/developers/" | relURL }}{{ $developerID | urlize }}">{{ $developerName }}</a>
+  <a href="{{ "/developers/" | relURL }}{{ $developerID }}">{{ $developerName }}</a>
 {{ end }}
 		</article>
 	</main>
