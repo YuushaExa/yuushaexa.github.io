@@ -26,5 +26,5 @@ allowActionJSTmpl = true
 [outputs]
     page = [ 'html' ]
     taxonomy = [ "HTML" ]
-    terms = [ "HTML" ]
+    term = [ "HTML" ]
 
