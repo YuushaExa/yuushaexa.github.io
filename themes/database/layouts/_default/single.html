@@ -6,7 +6,7 @@
 				{{ .Content }}
 			</div>
 {{ range .Params.developers }}
-        <a href="{{ "developers/" | relURL }}{{ . | urlize }}">{{ . }}</a>
+    <a href="{{ "developers/" | relURL }}{{ partial "slugify.html" . }}">{{ . }}</a>
 {{ end }}
 		</article>
 	</main>
