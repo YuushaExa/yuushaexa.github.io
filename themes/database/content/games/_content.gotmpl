@@ -24,7 +24,7 @@
 
   {{ $content := dict "mediaType" "text/markdown" "value" .description  }}
 
-  {{ $params := dict "image" $image "aliases" .aliases "developers" .developers }}
+  {{ $params := dict "image" $image "aliases" .aliases "developers" .developers  "developer" (slice .developers.id) }}
 
   {{ $page := dict
     "content" $content
