@@ -1,18 +1,17 @@
 {{/* 
-  Custom slugify function based on JavaScript version
-  Usage: {{ $slug := partial "slugify.html" (dict "input" "Your String" "existing" $existingSlugs) }}
+  Custom slugify function that accepts string input directly
+  Usage: {{ $slug := partial "slugify.html" "Your String" }}
 */}}
 
-{{ $input := .input | default "" | string }}
-{{ $existing := .existing | default (slice) }}
+{{ $input := . | default "" | string }}
 
 {{/* Basic cleanup */}}
 {{ $slug := $input | lower }}
-{{ $slug = $slug | replaceRE `\s+` "-" }} {{/* Replace spaces with - */}}
-{{ $slug = $slug | replaceRE `[^\w\-]+` "" }} {{/* Remove non-word chars */}}
-{{ $slug = $slug | replaceRE `\-\-+` "-" }} {{/* Replace multiple - with single */}}
-{{ $slug = $slug | replaceRE `^-+` "" }} {{/* Trim - from start */}}
-{{ $slug = $slug | replaceRE `-+$` "" }} {{/* Trim - from end */}}
+{{ $slug = $slug | replaceRE `\s+` "-" }}
+{{ $slug = $slug | replaceRE `[^\w\-]+` "" }}
+{{ $slug = $slug | replaceRE `\-\-+` "-" }}
+{{ $slug = $slug | replaceRE `^-+` "" }}
+{{ $slug = $slug | replaceRE `-+$` "" }}
 
 {{/* Handle empty result */}}
 {{ if not $slug }}
@@ -29,16 +28,6 @@
   {{ $slug = substr $slug 0 30 }}
   {{ if hasSuffix $slug "-" }}
     {{ $slug = substr $slug 0 29 }}
-  {{ end }}
-{{ end }}
-
-{{/* Make sure slug is unique */}}
-{{ $originalSlug := $slug }}
-{{ $counter := 1 }}
-{{ range $existing }}
-  {{ if eq . $slug }}
-    {{ $slug = printf "%s-%d" $originalSlug $counter }}
-    {{ $counter = add $counter 1 }}
   {{ end }}
 {{ end }}
 
