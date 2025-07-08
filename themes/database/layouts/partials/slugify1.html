@@ -1,0 +1,6 @@
+{{ $input := . | default "" | string }}
+{{ $slug := $input | lower }}
+{{ $slug = $slug | replaceRE `[^a-z0-9]` "-" }}
+{{ $slug = $slug | replaceRE `^-+|-+$` "" }}
+{{ $slug = $slug | replaceRE `-{2,}` "-" }}
+{{ return $slug }}
