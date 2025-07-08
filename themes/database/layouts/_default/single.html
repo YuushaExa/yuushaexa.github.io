@@ -5,9 +5,11 @@
 			<div>
 				{{ .Content }}
 			</div>
-{{ range .Params.developers.id }}
-    {{ if . }}
-        <a href="{{ "developers/" | relURL }}{{ . }}">{{ . }}</a>
+{{ if isset .Params "developers" }}
+    {{ range .Params.developers.id }}
+        {{ if . }}
+            <a href="{{ "developers/" | relURL }}{{ . }}">{{ . }}</a>
+        {{ end }}
     {{ end }}
 {{ end }}
 		</article>
