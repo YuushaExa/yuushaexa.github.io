@@ -6,10 +6,8 @@
 				{{ .Content }}
 			</div>
 {{ if isset .Params "developers" }}
-    {{ range .Params.developers.id }}
-        {{ if . }}
-            <a href="{{ "developers/" | relURL }}{{ . }}">{{ . }}</a>
-        {{ end }}
+    {{ range .Params.developers }}
+            <a href="{{ "developers/" | relURL }}{{ .id }}">{{ .name }}</a>
     {{ end }}
 {{ end }}
 		</article>
