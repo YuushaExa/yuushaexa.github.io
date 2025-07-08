@@ -27,7 +27,7 @@
 {{ $developers := slice }}
 {{ range .developers }}
     {{ if .name }}
-        {{ $devName := partial "slugify.html" (dict "input" .name) }}
+        {{ $devName := partial "utils/slugify.html" (dict "input" .name) }}
         {{ $developers = $developers | append $devName }}
     {{ end }}
 {{ end }}
