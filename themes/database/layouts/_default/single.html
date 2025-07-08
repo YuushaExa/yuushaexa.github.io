@@ -5,10 +5,8 @@
 			<div>
 				{{ .Content }}
 			</div>
- {{ range .Params.developers }}
-  {{ $developerID := .id }}
-  {{ $developerName := .name }}
-  <a href="{{ "developers/" | relURL }}{{ $developerID }}">{{ $developerID }}</a>
+{{ range .Params.developers }}
+        <a href="{{ "developers/" | relURL }}{{ .name }}">{{ .name }}</a>
 {{ end }}
 		</article>
 	</main>
