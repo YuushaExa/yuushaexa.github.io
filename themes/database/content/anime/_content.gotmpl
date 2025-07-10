@@ -17,13 +17,15 @@
 
   {{ $params := dict "image" .cover_img_large "format" .format "id_mal" .id_mal }}
 
+{{ if .id_anilist }}
   {{ $page := dict
     "content" $content
     "kind" "page"
     "params" $params
-    "path" .english_title
+    "path" .id_anilist
     "title" .english_title
   }}
   {{ $.AddPage $page }}
+{{ end }}
 
 {{ end }}
