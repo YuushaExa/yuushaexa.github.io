@@ -14,7 +14,7 @@
 
   {{ $content := dict "mediaType" "text/markdown" "value" .description  }}
   {{ $id_anilist := .id_anilist | default "Untitled" }}
-  {{ $english_title := .english_title | default "Untitled" }}
+  {{ $english_title := .fields.english_title | default "Untitled" }}
 
   {{ $params := dict "image" .cover_img_large "format" .format "id_mal" .id_mal }}
 
