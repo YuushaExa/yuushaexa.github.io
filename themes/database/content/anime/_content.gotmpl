@@ -13,7 +13,8 @@
 {{ range $data }}
 
   {{ $content := dict "mediaType" "text/markdown" "value" .description  }}
-
+  {{ $id_anilist := .id_anilist | default "Untitled" }}
+  {{ $english_title := .english_title | default "Untitled" }}
 
   {{ $params := dict "image" .cover_img_large "format" .format "id_mal" .id_mal }}
 
@@ -21,8 +22,8 @@
     "content" $content
     "kind" "page"
     "params" $params
-    "path" .id_anilist
-    "title" .english_title
+    "path" $id_anilist
+    "title" $english_title
   }}
   {{ $.AddPage $page }}
 
