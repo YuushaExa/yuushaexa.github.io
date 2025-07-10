@@ -17,7 +17,6 @@
 
   {{ $params := dict "image" .cover_img_large "format" .format "id_mal" .id_mal }}
 
-{{ if .id_anilist }}
   {{ $page := dict
     "content" $content
     "kind" "page"
@@ -26,6 +25,5 @@
     "title" .english_title
   }}
   {{ $.AddPage $page }}
-{{ end }}
 
 {{ end }}
