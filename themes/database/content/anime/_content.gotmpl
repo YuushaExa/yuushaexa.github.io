@@ -15,8 +15,9 @@
   {{ $content := dict "mediaType" "text/markdown" "value" .fields.description  }}
   {{ $id_anilist := .fields.id_anilist | default "Untitled" }}
   {{ $english_title := .fields.english_title | default "Untitled" }}
+  {{ $cover_img_large := .fields.cover_img_large | default "Untitled" }}
 
-  {{ $params := dict "image" .cover_img_large "format" .format "id_mal" .id_mal }}
+  {{ $params := dict "image" $cover_img_large "format" .format "id_mal" .id_mal }}
 
   {{ $page := dict
     "content" $content
