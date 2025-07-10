@@ -1,0 +1,17 @@
+{{ define "main" }}
+  <h1>{{ .Title }}</h1>
+  <div class="page-list">
+    {{ range .Paginator.Pages }}
+      <article class="page-card">
+          <div class="card-image">
+          <img src="{{ .Params.image }}" alt="{{ .LinkTitle }}"/>
+          </div>
+        <h2><a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a></h2>
+      </article>
+    {{ end }}
+  </div>
+
+  <div class="column is-narrow">
+    {{ partial "widgets/pagination.html" . }}
+  </div>
+{{ end }}
