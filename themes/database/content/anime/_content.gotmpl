@@ -11,6 +11,7 @@
     
     {{/* Find the matching studio entry (full object) */}}
     {{ $studioEntry := where (index $studioData 0).media "id" $id }}
+    {{ $studioInfo := index $studioEntry 0 }}
     
     {{/* Create page with all studio data */}}
     {{ $.AddPage (dict
