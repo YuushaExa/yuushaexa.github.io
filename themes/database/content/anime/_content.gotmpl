@@ -9,18 +9,16 @@
   {{ range $media := $item.media }}
     {{ $id := $media.id }}
     
-    {{/* Find matching studios */}}
-    {{ $studioMedia := where (index $studioData 0).media "id" $id }}
-    {{ $studioEdges := index (index $studioMedia 0).studios "edges" }}
+    {{/* Find the matching studio entry (full object) */}}
+    {{ $studioEntry := where (index $studioData 0).media "id" $id }}
     
-    {{/* Create page */}}
+    {{/* Create page with all studio data */}}
     {{ $.AddPage (dict
       "title" ($media.title.english | default $media.title.native)
       "path" (printf "%v" $id)
       "params" (dict
         "image" $media.coverImage.large
-        "studios" $studioEdges
-        "allData" $media 
+        "studio_info" (index $studioEntry 0)  /* Pass the full studio entry */
       )
       "content" (dict "mediaType" "text/markdown" "value" $media.description)
     ) }}
