@@ -12,7 +12,7 @@
 
 {{ range $data }}
 
-  {{ $content := dict "mediaType" "text/markdown" "value" .fields.description  }}
+  {{ $content := dict "mediaType" "text/markdown" "value" .description  }}
   {{ $id_anilist := .id | default "Untitled" }}
   {{ $english_title := .title.english | default "Untitled" }}
   {{ $cover_img := .coverImage.medium | default "Untitled" }}
