@@ -8,18 +8,7 @@
 			       <div class="card-image">
           <img src="{{ .Params.image }}" alt="{{ .LinkTitle }}"/>
           </div>
-{{ with .Params.studios }}
-  <div class="studios">
-    <h2>Production</h2>
-    <p>
-      {{ range $index, $studio := .edges }}
-        {{ if $index }}, {{ end }}
-        {{ $studio.node.name }}{{ if $studio.isMain }}*{{ end }}
-      {{ end }}
-    </p>
-    <small>* indicates main production studio</small>
-  </div>
-{{ end }}
+<pre>{{ printf "%#v" .Params.studios }}</pre>
 		</article>
 	</main>
 {{ end }}
