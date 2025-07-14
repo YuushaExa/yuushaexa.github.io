@@ -10,21 +10,14 @@
           </div>
 {{ with .Params.studios }}
   <div class="studios">
-    <h2>Studios</h2>
-    
-    <h3>Main Studios</h3>
-    <ul>
-      {{ range where .edges "isMain" true }}
-        <li>{{ .node.name }}</li>
+    <h2>Production</h2>
+    <p>
+      {{ range $index, $studio := .edges }}
+        {{ if $index }}, {{ end }}
+        {{ $studio.node.name }}{{ if $studio.isMain }}*{{ end }}
       {{ end }}
-    </ul>
-
-    <h3>Other Studios</h3>
-    <ul>
-      {{ range where .edges "isMain" false }}
-        <li>{{ .node.name }}</li>
-      {{ end }}
-    </ul>
+    </p>
+    <small>* indicates main production studio</small>
   </div>
 {{ end }}
 		</article>
