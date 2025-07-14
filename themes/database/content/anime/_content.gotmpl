@@ -12,7 +12,7 @@
 
 {{ range $item := $data }}
   {{ range $media := $item.media }}
-    {{ $content := dict "mediaType" "text/markdown" "value" $media.title.english | default "Untitled" }}
+    {{ $content := dict "mediaType" "text/markdown" "value" $media.description | default "Untitled" }}
     {{ $id_anilist := $media.id | default "Untitled" }}
     {{ $english_title := $media.title.english | default "Untitled" }}
     {{ $cover_img := $media.coverImage.medium | default "Untitled" }}
@@ -23,7 +23,7 @@
       "content" $content
       "kind" "page"
       "params" $params
-      "path" (printf "%d" $id_anilist)
+      "path"  $id_anilist
       "title" $english_title
     }}
     {{ $.AddPage $page }}
