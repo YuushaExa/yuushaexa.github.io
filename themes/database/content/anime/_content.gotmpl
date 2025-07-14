@@ -2,15 +2,16 @@
 {{ $animeData := resources.GetRemote "https://raw.githubusercontent.com/YuushaExa/merge/refs/heads/main/animer/merged.json" | transform.Unmarshal }}
 
 {{/* Get studio data */}}
-{{ $studioData := resources.GetRemote "https://raw.githubusercontent.com/YuushaExa/v/refs/heads/main/data/anime/test.json" | transform.Unmarshal }}
+{{ $studioData := resources.GetRemote "https://raw.githubusercontent.com/YuushaExa/v/refs/heads/main/data/anime/stud.json" | transform.Unmarshal }}
 
-{{/* Create pages */}} 
+{{/* Create pages */}}
 {{ range $item := $animeData }}
   {{ range $media := $item.media }}
     {{ $id := $media.id }}
     
     {{/* Find matching studios */}}
-    {{ $studios := where (index $studioData 0).media "id" $id }}
+    {{ $studioMedia := where (index $studioData 0).media "id" $id }}
+    {{ $studioEdges := index (index $studioMedia 0).studios "edges" }}
     
     {{/* Create page */}}
     {{ $.AddPage (dict
@@ -18,7 +19,8 @@
       "path" (printf "%v" $id)
       "params" (dict
         "image" $media.coverImage.large
-        "studios" (index $studios 0).studios.edges
+        "studios" $studioEdges
+        "allData" $media  /* Include all media data if needed */
       )
       "content" (dict "mediaType" "text/markdown" "value" $media.description)
     ) }}
