@@ -4,7 +4,7 @@
 {{/* Get studio data */}}
 {{ $studioData := resources.GetRemote "https://raw.githubusercontent.com/YuushaExa/v/refs/heads/main/data/anime/test.json" | transform.Unmarshal }}
 
-{{/* Create pages */}}
+{{/* Create pages */}} 
 {{ range $item := $animeData }}
   {{ range $media := $item.media }}
     {{ $id := $media.id }}
