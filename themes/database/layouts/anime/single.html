@@ -8,19 +8,25 @@
 			       <div class="card-image">
           <img src="{{ .Params.image }}" alt="{{ .LinkTitle }}"/>
           </div>
-  {{ with .Params.studios }}
-    <div class="studios">
-      <h2>Studios</h2>
-      <ul>
-        {{ range .edges }}
-          <li>
-            {{ .node.name }}
-            {{ if .isMain }}<span class="badge">Main</span>{{ end }}
-          </li>
-        {{ end }}
-      </ul>
-    </div>
-  {{ end }}
+{{ with .Params.studios }}
+  <div class="studios">
+    <h2>Studios</h2>
+    
+    <h3>Main Studios</h3>
+    <ul>
+      {{ range where .edges "isMain" true }}
+        <li>{{ .node.name }}</li>
+      {{ end }}
+    </ul>
+
+    <h3>Other Studios</h3>
+    <ul>
+      {{ range where .edges "isMain" false }}
+        <li>{{ .node.name }}</li>
+      {{ end }}
+    </ul>
+  </div>
+{{ end }}
 		</article>
 	</main>
 {{ end }}
