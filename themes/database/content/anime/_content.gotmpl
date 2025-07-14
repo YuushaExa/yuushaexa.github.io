@@ -15,7 +15,7 @@
     {{ $content := dict "mediaType" "text/markdown" "value" $media.description | default "Untitled" }}
     {{ $id_anilist := $media.id | default "Untitled" }}
     {{ $english_title := $media.title.english | default $media.title.native }}
-    {{ $cover_img := $media.coverImage.medium | default "Untitled" }}
+    {{ $cover_img := $media.coverImage.large | default "Untitled" }}
 
     {{ $params := dict "image" $cover_img }}
 
