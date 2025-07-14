@@ -8,7 +8,7 @@
 			       <div class="card-image">
           <img src="{{ .Params.image }}" alt="{{ .LinkTitle }}"/>
           </div>
-<pre>{{ printf "%#v" .Params.studios }}</pre>
+<pre>All Params: {{ .Params | jsonify (dict "indent" "  ") }}</pre>
 		</article>
 	</main>
 {{ end }}
