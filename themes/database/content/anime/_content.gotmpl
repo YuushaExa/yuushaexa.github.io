@@ -29,31 +29,12 @@
     {{ $english_title := $media.title.english | default $media.title.native }}
     {{ $cover_img := $media.coverImage.large | default "Untitled" }}
 
-    {{/* Initialize studios params */}}
-    {{ $mainStudios := slice }}
-    {{ $otherStudios := slice }}
-
-    {{/* Find matching studio data */}}
-    {{ range $studioItem := $studioData }}
-      {{ range $studioMedia := $studioItem.media }}
-        {{ if eq $studioMedia.id $id_anilist }}
-          {{ range $edge := $studioMedia.studios.edges }}
-            {{ if $edge.isMain }}
-              {{ $mainStudios = $mainStudios | append $edge.node.name }}
-            {{ else }}
-              {{ $otherStudios = $otherStudios | append $edge.node.name }}
-            {{ end }}
-          {{ end }}
-        {{ end }}
-      {{ end }}
-    {{ end }}
+    {{/* Get studio data for this media */}}
+    {{ $studioInfo := index (where $studioData "id" $id_anilist) 0 | default dict }}
 
     {{ $params := dict 
       "image" $cover_img
-      "studios" (dict
-        "main" $mainStudios
-        "other" $otherStudios
-      )
+      "studios" $studioInfo.studios
     }}
 
     {{ $page := dict
