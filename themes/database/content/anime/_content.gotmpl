@@ -18,7 +18,7 @@
       "path" (printf "%v" $id)
       "params" (dict
         "image" $media.coverImage.large
-        "studio_info" (index $studioEntry 0)  
+        "synonyms" $studioInfo.synonyms 
       )
       "content" (dict "mediaType" "text/markdown" "value" $media.description)
     ) }}
