@@ -8,7 +8,16 @@
 			       <div class="card-image">
           <img src="{{ .Params.image }}" alt="{{ .LinkTitle }}"/>
           </div>
-
+ {{ with .Params.studios.main }}
+    <div class="studios">
+      <h3>Main Studios:</h3>
+      <ul>
+        {{ range . }}
+          <li>{{ . }}</li>
+        {{ end }}
+      </ul>
+    </div>
+  {{ end }}
 		</article>
 	</main>
 {{ end }}
