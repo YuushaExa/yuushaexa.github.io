@@ -2,7 +2,7 @@
 {{ $animeData := resources.GetRemote "https://raw.githubusercontent.com/YuushaExa/merge/refs/heads/main/animer/merged.json" | transform.Unmarshal }}
 
 {{/* Get studio data */}}
-{{ $studioData := resources.GetRemote "https://raw.githubusercontent.com/YuushaExa/v/refs/heads/main/data/anime/stud.json" | transform.Unmarshal }}
+{{ $studioData := resources.GetRemote "https://raw.githubusercontent.com/YuushaExa/v/refs/heads/main/data/anime/test.json" | transform.Unmarshal }}
 
 {{/* Create pages */}}
 {{ range $item := $animeData }}
