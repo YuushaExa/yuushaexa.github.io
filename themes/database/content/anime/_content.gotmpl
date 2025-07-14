@@ -4,50 +4,28 @@
   {{ with .Err }}
     {{ errorf "Unable to get remote resource %s: %s" $url . }}
   {{ else with .Value }}
-    {{ $data = . | transform.Unmarshal }} 
-    
-    {{/* Load additional JSON data - replace with your actual URL */}}
-    {{ $additionalData := dict }}
-    {{ $additionalUrl := "https://raw.githubusercontent.com/YuushaExa/v/refs/heads/main/data/anime/add.json" }}
-    {{ with try (resources.GetRemote $additionalUrl) }}
-      {{ with .Err }}
-        {{ warnf "Unable to get additional remote resource %s: %s" $additionalUrl . }}
-      {{ else with .Value }}
-        {{ $additionalData = . | transform.Unmarshal }}
-      {{ end }}
-    {{ end }} 
-
-    {{ range $item := $data }}
-      {{ range $media := $item.media }}
-        {{ $id_anilist := $media.id | default "Untitled" }}
-        {{ $english_title := $media.title.english | default $media.title.native }}
-        {{ $cover_img := $media.coverImage.large | default "Untitled" }}
-        
-        {{/* Look up additional data by ID */}}
-        {{ $extraData := index $additionalData $id_anilist | default dict }}
-        
-        {{ $content := dict 
-          "mediaType" "text/markdown" 
-          "value" (print $media.description "\n\n" $extraData.details | default "No additional details") 
-        }}
-        
-        {{ $params := merge (dict 
-          "image" $cover_img
-          "id" $id_anilist
-          "title" $english_title
-        ) $extraData }}
-        
-        {{ $page := dict
-          "content" $content
-          "kind" "page"
-          "params" $params
-          "path"  $id_anilist
-          "title" $english_title
-        }}
-        {{ $.AddPage $page }}
-      {{ end }}
-    {{ end }}
+    {{ $data = . | transform.Unmarshal }}
   {{ else }}
     {{ errorf "Unable to get remote resource %s" $url }}
+  {{ end }}
+{{ end }}
+
+{{ range $item := $data }}
+  {{ range $media := $item.media }}
+    {{ $content := dict "mediaType" "text/markdown" "value" $media.description | default "Untitled" }}
+    {{ $id_anilist := $media.id | default "Untitled" }}
+    {{ $english_title := $media.title.english | default $media.title.native }}
+    {{ $cover_img := $media.coverImage.large | default "Untitled" }}
+
+    {{ $params := dict "image" $cover_img }}
+
+    {{ $page := dict
+      "content" $content
+      "kind" "page"
+      "params" $params
+      "path"  $id_anilist
+      "title" $english_title
+    }}
+    {{ $.AddPage $page }}
   {{ end }}
 {{ end }}
