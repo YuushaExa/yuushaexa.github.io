@@ -15,7 +15,7 @@
       {{ else with .Value }}
         {{ $additionalData = . | transform.Unmarshal }}
       {{ end }}
-    {{ end }}
+    {{ end }} 
 
     {{ range $item := $data }}
       {{ range $media := $item.media }}
