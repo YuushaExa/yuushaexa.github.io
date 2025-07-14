@@ -8,6 +8,9 @@
 			       <div class="card-image">
           <img src="{{ .Params.image }}" alt="{{ .LinkTitle }}"/>
           </div>
+			         <div class="regions1">
+     {{ partial "widgets/testjson.html" . }} 
+                </div>
 		</article>
 	</main>
 {{ end }}
