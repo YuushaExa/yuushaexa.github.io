@@ -1,68 +1,26 @@
-{{ $data := dict }}
-{{ $url := "https://raw.githubusercontent.com/YuushaExa/merge/refs/heads/main/animer/merged.json" }}
-{{ with try (resources.GetRemote $url) }}
-  {{ with .Err }}
-    {{ errorf "Unable to get remote resource %s: %s" $url . }}
-  {{ else with .Value }}
-    {{ $data = . | transform.Unmarshal }}
-  {{ else }}
-    {{ errorf "Unable to get remote resource %s" $url }}
-  {{ end }}
-{{ end }}
+{{/* Get anime data */}}
+{{ $animeData := resources.GetRemote "https://raw.githubusercontent.com/YuushaExa/merge/refs/heads/main/animer/merged.json" | transform.Unmarshal }}
 
-{{ $studioData := dict }}
-{{ $studioUrl := "https://raw.githubusercontent.com/YuushaExa/v/refs/heads/main/data/anime/stud.json" }}
-{{ with try (resources.GetRemote $studioUrl) }}
-  {{ with .Err }}
-    {{ errorf "Unable to get studio data from %s: %s" $studioUrl . }}
-  {{ else with .Value }}
-    {{ $studioData = . | transform.Unmarshal }}
-  {{ else }}
-    {{ errorf "Unable to get studio data from %s" $studioUrl }}
-  {{ end }}
-{{ end }}
+{{/* Get studio data */}}
+{{ $studioData := resources.GetRemote "https://raw.githubusercontent.com/YuushaExa/v/refs/heads/main/data/anime/stud.json" | transform.Unmarshal }}
 
-{{ range $item := $data }}
+{{/* Create pages */}}
+{{ range $item := $animeData }}
   {{ range $media := $item.media }}
-    {{ $content := dict "mediaType" "text/markdown" "value" $media.description | default "Untitled" }}
-    {{ $id_anilist := $media.id | default "Untitled" }}
-    {{ $english_title := $media.title.english | default $media.title.native }}
-    {{ $cover_img := $media.coverImage.large | default "Untitled" }}
-
-    {{/* Initialize studios params */}}
-    {{ $mainStudios := slice }}
-    {{ $otherStudios := slice }}
-
-    {{/* Find matching studio data */}}
-    {{ range $studioItem := $studioData }}
-      {{ range $studioMedia := $studioItem.media }}
-        {{ if eq $studioMedia.id $id_anilist }}
-          {{ range $edge := $studioMedia.studios.edges }}
-            {{ if $edge.isMain }}
-              {{ $mainStudios = $mainStudios | append $edge.node.name }}
-            {{ else }}
-              {{ $otherStudios = $otherStudios | append $edge.node.name }}
-            {{ end }}
-          {{ end }}
-        {{ end }}
-      {{ end }}
-    {{ end }}
-
-    {{ $params := dict 
-      "image" $cover_img
-      "studios" (dict
-        "main" $mainStudios
-        "other" $otherStudios
+    {{ $id := $media.id }}
+    
+    {{/* Find matching studios */}}
+    {{ $studios := where (index $studioData 0).media "id" $id }}
+    
+    {{/* Create page */}}
+    {{ $.AddPage (dict
+      "title" ($media.title.english | default $media.title.native)
+      "path" (printf "%v" $id)
+      "params" (dict
+        "image" $media.coverImage.large
+        "studios" (index $studios 0).studios.edges
       )
-    }}
-
-    {{ $page := dict
-      "content" $content
-      "kind" "page"
-      "params" $params
-      "path"  $id_anilist
-      "title" $english_title
-    }}
-    {{ $.AddPage $page }}
+      "content" (dict "mediaType" "text/markdown" "value" $media.description)
+    ) }}
   {{ end }}
 {{ end }}
