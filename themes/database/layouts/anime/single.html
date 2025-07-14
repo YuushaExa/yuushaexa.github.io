@@ -8,12 +8,15 @@
 			       <div class="card-image">
           <img src="{{ .Params.image }}" alt="{{ .LinkTitle }}"/>
           </div>
- {{ with .Params.studios.main }}
+  {{ with .Params.studios }}
     <div class="studios">
-      <h3>Main Studios:</h3>
+      <h2>Studios</h2>
       <ul>
-        {{ range . }}
-          <li>{{ . }}</li>
+        {{ range .edges }}
+          <li>
+            {{ .node.name }}
+            {{ if .isMain }}<span class="badge">Main</span>{{ end }}
+          </li>
         {{ end }}
       </ul>
     </div>
