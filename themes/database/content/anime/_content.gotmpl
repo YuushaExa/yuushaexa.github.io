@@ -10,6 +10,18 @@
   {{ end }}
 {{ end }}
 
+{{ $studioData := dict }}
+{{ $studioUrl := "https://raw.githubusercontent.com/YuushaExa/v/refs/heads/main/data/anime/stud.json" }}
+{{ with try (resources.GetRemote $studioUrl) }}
+  {{ with .Err }}
+    {{ errorf "Unable to get studio data from %s: %s" $studioUrl . }}
+  {{ else with .Value }}
+    {{ $studioData = . | transform.Unmarshal }}
+  {{ else }}
+    {{ errorf "Unable to get studio data from %s" $studioUrl }}
+  {{ end }}
+{{ end }}
+
 {{ range $item := $data }}
   {{ range $media := $item.media }}
     {{ $content := dict "mediaType" "text/markdown" "value" $media.description | default "Untitled" }}
@@ -17,7 +29,32 @@
     {{ $english_title := $media.title.english | default $media.title.native }}
     {{ $cover_img := $media.coverImage.large | default "Untitled" }}
 
-    {{ $params := dict "image" $cover_img }}
+    {{/* Initialize studios params */}}
+    {{ $mainStudios := slice }}
+    {{ $otherStudios := slice }}
+
+    {{/* Find matching studio data */}}
+    {{ range $studioItem := $studioData }}
+      {{ range $studioMedia := $studioItem.media }}
+        {{ if eq $studioMedia.id $id_anilist }}
+          {{ range $edge := $studioMedia.studios.edges }}
+            {{ if $edge.isMain }}
+              {{ $mainStudios = $mainStudios | append $edge.node.name }}
+            {{ else }}
+              {{ $otherStudios = $otherStudios | append $edge.node.name }}
+            {{ end }}
+          {{ end }}
+        {{ end }}
+      {{ end }}
+    {{ end }}
+
+    {{ $params := dict 
+      "image" $cover_img
+      "studios" (dict
+        "main" $mainStudios
+        "other" $otherStudios
+      )
+    }}
 
     {{ $page := dict
       "content" $content
