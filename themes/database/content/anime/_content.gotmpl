@@ -1,51 +1,68 @@
 {{ $data := dict }}
-{{ $studioData := dict }}
-
-{{/* Load main data */}}
-{{ with resources.GetRemote "https://raw.githubusercontent.com/YuushaExa/merge/refs/heads/main/animer/merged.json" }}
-  {{ if .Err }}
-    {{ errorf "Error loading main data: %s" .Err }}
+{{ $url := "https://raw.githubusercontent.com/YuushaExa/merge/refs/heads/main/animer/merged.json" }}
+{{ with try (resources.GetRemote $url) }}
+  {{ with .Err }}
+    {{ errorf "Unable to get remote resource %s: %s" $url . }}
+  {{ else with .Value }}
+    {{ $data = . | transform.Unmarshal }}
   {{ else }}
-    {{ $data = .Content | transform.Unmarshal }}
+    {{ errorf "Unable to get remote resource %s" $url }}
   {{ end }}
 {{ end }}
 
-{{/* Load studio data */}}
-{{ with resources.GetRemote "https://raw.githubusercontent.com/YuushaExa/v/refs/heads/main/data/anime/stud.json" }}
-  {{ if .Err }}
-    {{ errorf "Error loading studio data: %s" .Err }}
+{{ $studioData := dict }}
+{{ $studioUrl := "https://raw.githubusercontent.com/YuushaExa/v/refs/heads/main/data/anime/stud.json" }}
+{{ with try (resources.GetRemote $studioUrl) }}
+  {{ with .Err }}
+    {{ errorf "Unable to get studio data from %s: %s" $studioUrl . }}
+  {{ else with .Value }}
+    {{ $studioData = . | transform.Unmarshal }}
   {{ else }}
-    {{ $studioData = .Content | transform.Unmarshal }}
+    {{ errorf "Unable to get studio data from %s" $studioUrl }}
   {{ end }}
 {{ end }}
 
 {{ range $item := $data }}
   {{ range $media := $item.media }}
-    {{ $id_anilist := $media.id | default "unknown" }}
-    
+    {{ $content := dict "mediaType" "text/markdown" "value" $media.description | default "Untitled" }}
+    {{ $id_anilist := $media.id | default "Untitled" }}
+    {{ $english_title := $media.title.english | default $media.title.native }}
+    {{ $cover_img := $media.coverImage.large | default "Untitled" }}
+
+    {{/* Initialize studios params */}}
+    {{ $mainStudios := slice }}
+    {{ $otherStudios := slice }}
+
     {{/* Find matching studio data */}}
-    {{ $studios := dict "edges" slice }}
     {{ range $studioItem := $studioData }}
       {{ range $studioMedia := $studioItem.media }}
-        {{ if eq (string $studioMedia.id) (string $id_anilist) }}
-          {{ $studios = $studioMedia.studios }}
+        {{ if eq $studioMedia.id $id_anilist }}
+          {{ range $edge := $studioMedia.studios.edges }}
+            {{ if $edge.isMain }}
+              {{ $mainStudios = $mainStudios | append $edge.node.name }}
+            {{ else }}
+              {{ $otherStudios = $otherStudios | append $edge.node.name }}
+            {{ end }}
+          {{ end }}
         {{ end }}
       {{ end }}
     {{ end }}
 
     {{ $params := dict 
-      "image" ($media.coverImage.large | default "")
-      "studios" $studios
+      "image" $cover_img
+      "studios" (dict
+        "main" $mainStudios
+        "other" $otherStudios
+      )
     }}
 
     {{ $page := dict
-      "content" (dict "mediaType" "text/markdown" "value" ($media.description | default ""))
+      "content" $content
       "kind" "page"
       "params" $params
-      "path" (printf "%s" $id_anilist)
-      "title" ($media.title.english | default $media.title.native | default "Untitled")
+      "path"  $id_anilist
+      "title" $english_title
     }}
-    
     {{ $.AddPage $page }}
   {{ end }}
 {{ end }}
