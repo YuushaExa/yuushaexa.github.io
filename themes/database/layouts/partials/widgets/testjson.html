@@ -1,0 +1,10 @@
+{{ $t := .Title }}
+
+{{ $url := "https://github.com/YuushaExa/v/blob/main/data/anime/add.json" }}
+{{ $snraw := resources.GetRemote $url | transform.Unmarshal }}
+
+{{ range $snraw | uniq }}
+  {{ if eq .Name $t }}
+    <div class="Platforms">Platforms: {{ .coverImage.large }}</div>
+  {{ end }}
+{{ end }}
