@@ -15,9 +15,9 @@
   {{ $content := dict "mediaType" "text/markdown" "value" .description  }}
   {{ $id := .id | default "Untitled" }}
   {{ $english_title := .title.english | default "Untitled" }}
-  {{ $cover-large := .coverImage.large | default "Untitled" }}
+  {{ $cover_large := .coverImage.large | default "Untitled" }}
 
-  {{ $params := dict "image" $cover-large "mal" .idMal }}
+  {{ $params := dict "image" $cover_large "mal" .idMal }}
 
   {{ $page := dict
     "content" $content
