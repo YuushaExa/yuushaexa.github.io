@@ -1,5 +1,5 @@
 {{ $data := dict }}
-{{ $url := "https://raw.githubusercontent.com/YuushaExa/v/refs/heads/main/data/anime/anime.json" }}
+{{ $url := "https://raw.githubusercontent.com/YuushaExa/ani/refs/heads/main/data/anime-1-400.json" }}
 {{ with try (resources.GetRemote $url) }}
   {{ with .Err }}
     {{ errorf "Unable to get remote resource %s: %s" $url . }}
@@ -12,18 +12,18 @@
 
 {{ range $data }}
 
-  {{ $content := dict "mediaType" "text/markdown" "value" .fields.description  }}
-  {{ $id_anilist := .fields.id_anilist | default "Untitled" }}
-  {{ $english_title := .fields.english_title | default "Untitled" }}
-  {{ $cover_img_large := .fields.cover_img_large | default "Untitled" }}
+  {{ $content := dict "mediaType" "text/markdown" "value" .description  }}
+  {{ $id := .id | default "Untitled" }}
+  {{ $english_title := .title.english | default "Untitled" }}
+  {{ $cover-large := .coverImage.large | default "Untitled" }}
 
-  {{ $params := dict "image" $cover_img_large "format" .format "id_mal" .id_mal }}
+  {{ $params := dict "image" $cover-large "mal" .idMal }}
 
   {{ $page := dict
     "content" $content
     "kind" "page"
     "params" $params
-    "path" $id_anilist
+    "path" $id
     "title" $english_title
   }}
   {{ $.AddPage $page }}
