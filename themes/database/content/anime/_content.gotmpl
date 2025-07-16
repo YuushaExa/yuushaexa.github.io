@@ -1,17 +1,23 @@
-{{ $data := dict }}
-{{ $url := "https://raw.githubusercontent.com/YuushaExa/ani/refs/heads/main/data/anime-1-400.json" }}
-{{ with try (resources.GetRemote $url) }}
-  {{ with .Err }}
-    {{ errorf "Unable to get remote resource %s: %s" $url . }}
-  {{ else with .Value }}
-    {{ $data = . | transform.Unmarshal }}
-  {{ else }}
-    {{ errorf "Unable to get remote resource %s" $url }}
+{{ $data := slice }}
+{{ $urls := slice 
+  "https://raw.githubusercontent.com/YuushaExa/ani/refs/heads/main/data/anime-1-400.json"
+  "https://raw.githubusercontent.com/YuushaExa/ani/refs/heads/main/data/anime-401-600.json"
+}}
+
+{{ range $url := $urls }}
+  {{ with try (resources.GetRemote $url) }}
+    {{ with .Err }}
+      {{ errorf "Unable to get remote resource %s: %s" $url . }}
+    {{ else with .Value }}
+      {{ $jsonData := . | transform.Unmarshal }}
+      {{ $data = $data | append $jsonData }}
+    {{ else }}
+      {{ errorf "Unable to get remote resource %s" $url }}
+    {{ end }}
   {{ end }}
 {{ end }}
 
 {{ range $data }}
-
   {{ $content := dict "mediaType" "text/markdown" "value" .description  }}
   {{ $id := .id | default "Untitled" }}
   {{ $english_title := .title.english | default "Untitled" }}
@@ -27,5 +33,4 @@
     "title" $english_title
   }}
   {{ $.AddPage $page }}
-
 {{ end }}
