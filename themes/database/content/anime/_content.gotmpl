@@ -22,10 +22,8 @@
   {{ $id := .id | default "Untitled" }}
   {{ $english_title := .title.english | default "Untitled" }}
   {{ $cover_large := .coverImage.large | default "Untitled" }}
-  {{ $genres := .genres | default "Untitled" }}
 
-
-  {{ $params := dict "image" $cover_large "genres" $genres }}
+  {{ $params := dict "image" $cover_large "genres" .genres }}
 
   {{ $page := dict
     "content" $content
