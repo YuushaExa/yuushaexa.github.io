@@ -18,7 +18,7 @@
 {{ end }}
 
 {{ range $data }}
-  {{ $content := dict "mediaType" "text/markdown" "value" .description  }}
+{{ $content := dict "mediaType" "text/markdown" "value" (replaceRE "<[^>]+>" "" .description) }}
   {{ $id := .id | default "Untitled" }}
   {{ $english_title := .title.english | default "Untitled" }}
   {{ $cover_large := .coverImage.large | default "Untitled" }}
