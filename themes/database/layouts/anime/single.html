@@ -8,6 +8,18 @@
 			       <div class="card-image">
           <img src="{{ .Params.image }}" alt="{{ .LinkTitle }}"/>
           </div>
+			
+{{ if .Params.genres }}
+			<div class="genres-section">
+				<h2>Genres</h2>
+				<div class="genre-tags">
+					{{ range .Params.genres }}
+						<span class="genre-tag">{{ . }}</span>
+					{{ end }}
+				</div>
+			</div>
+			{{ end }}
+			
 <pre>All Params: {{ .Params | jsonify (dict "indent" "  ") }}</pre>
 		</article>
 	</main>
