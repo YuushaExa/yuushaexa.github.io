@@ -26,7 +26,7 @@
 
   {{ $params := dict "image" $cover_large "genres" .genres "idMal" .idMal "title" .title "synonyms" .synonyms
   "id" .id "type" .type "format" .format "status" .status "bannerImage" .bannerImage "isAdult" .isAdult
-  "episodes" .episodes "duration" .duration "coo" .countryOfOrigin }}
+  "episodes" .episodes "duration" .duration "coo" .countryOfOrigin "relations" .relations }}
 
   {{ $page := dict
     "content" $content
