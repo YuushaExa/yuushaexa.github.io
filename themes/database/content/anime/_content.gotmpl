@@ -23,7 +23,7 @@
   {{ $english_title := .title.english | default "Untitled" }}
   {{ $cover_large := .coverImage.large | default "Untitled" }}
 
-  {{ $params := dict "image" $cover_large "genres" .genres "idMal" .idMal "title" .title "id" .id}}
+  {{ $params := dict "image" $cover_large "genres" .genres "idMal" .idMal "title" .title "id" .id "type" .type "episodes" .episodes "duratation" .duratation "coo" .countryOfOrigin }}
 
   {{ $page := dict
     "content" $content
