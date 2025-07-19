@@ -18,7 +18,7 @@
 				</div>
 			</div>
 <div class="studios">
-  {{ range .Params.studios }}
+  {{ range .Params.studio_details }}
     <a href="{{ "studios/" | relURL }}{{ .id }}/" class="tag">{{ .name }}</a>
   {{ end }}
 </div>
