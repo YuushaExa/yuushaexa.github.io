@@ -25,7 +25,7 @@
   {{ $bannerImage := .bannerImage | default "Untitled" }}
 
   {{ $params := dict "image" $cover_large "genres" .genres "idMal" .idMal "title" .title "synonyms" .synonyms
-  "id" .id "type" .type "format" .format "status" .status "bannerImage" $bannerImage "isAdult" .isAdult
+  "id" .id "type" .type "format" .format "status" .status "bannerImage" .bannerImage "isAdult" .isAdult
   "episodes" .episodes "duration" .duration "coo" .countryOfOrigin }}
 
   {{ $page := dict
