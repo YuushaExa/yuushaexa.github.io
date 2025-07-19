@@ -22,7 +22,7 @@
   {{ $studioNames := slice }}
   {{ range .studios.edges }}
     {{ if .node }}
-      {{ $studioNames = $studioNames | append .node.name }}
+      {{ $studios = $studios | append (dict "id" .node.id "name" .node.name) }}
     {{ end }}
   {{ end }}
 
