@@ -24,7 +24,7 @@
   {{ $cover_large := .coverImage.large | default "Untitled" }}
 
   {{ $params := dict "image" $cover_large "genres" .genres "idMal" .idMal "title" .title 
-  "id" .id "type" .type "format" .format "status" .status
+  "id" .id "type" .type "format" .format "status" .status "bannerImage" .bannerImage
   "episodes" .episodes "duration" .duration "coo" .countryOfOrigin }}
 
   {{ $page := dict
