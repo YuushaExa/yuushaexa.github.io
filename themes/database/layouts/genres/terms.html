@@ -1,9 +1,25 @@
-<div class="columns is-mobile is-multiline">
+<div class="columns">
     {{ range .Data.Terms.ByCount }}
-    <div class="column is-half-mobile is-one-third-tablet is-one-quarter-desktop is-one-fifth-widescreen">
+    <div class="column">
         <div class="card">
-
-            <div class="card-content has-text-centered">
+            <div class="card-content">
+                {{ $firstPage := index .Pages 0 }}
+                {{ if $firstPage }}
+                    {{ $image := "" }}
+                    {{ if $firstPage.Content }}
+                        {{ $images := findRE `<img[^>]+src="([^"]+)"` $firstPage.Content 1 }}
+                        {{ if $images }}
+                            {{ $image = replaceRE `.*src="([^"]+)".*` "$1" (index $images 0) }}
+                        {{ end }}
+                    {{ end }}
+                    
+                    {{ if $image }}
+                        <div class="card-image">
+                            <img src="{{ $image }}" alt="{{ $firstPage.Title }}">
+                        </div>
+                    {{ end }}
+                {{ end }}
+                
                 <div>
                     <a class="title is-5 is-size-6-mobile" href="{{ .Page.Permalink }}">{{ .Page.Title }}</a>
                     {{ $pageCount := len .Pages }}
