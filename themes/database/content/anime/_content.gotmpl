@@ -19,7 +19,7 @@
 
 {{ range $data }}
 
-  {{ $studioNames := slice }}
+  {{ $studios := slice }}
   {{ range .studios.edges }}
     {{ if .node }}
       {{ $studios = $studios | append (dict "id" .node.id "name" .node.name) }}
@@ -34,7 +34,7 @@
 
   {{ $params := dict "image" $cover_large "genres" .genres "idMal" .idMal "title" .title "synonyms" .synonyms
   "id" .id "type" .type "format" .format "status" .status "bannerImage" .bannerImage "isAdult" .isAdult
-  "episodes" .episodes "duration" .duration "coo" .countryOfOrigin "relations" .relations "studios" $studioNames }}
+  "episodes" .episodes "duration" .duration "coo" .countryOfOrigin "relations" .relations "studios" $studios }}
 
   {{ $page := dict
     "content" $content
