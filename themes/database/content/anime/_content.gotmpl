@@ -19,10 +19,12 @@
 
 {{ range $data }}
 
-  {{ $studios := slice }}
+ {{ $studioIDs := slice }}
+  {{ $studioDetails := slice }}
   {{ range .studios.edges }}
     {{ if .node }}
-      {{ $studios = $studios | append (dict "id" .node.id "name" .node.name) }}
+      {{ $studioIDs = $studioIDs | append (string .node.id) }}  <!-- Convert ID to string for taxonomy -->
+      {{ $studioDetails = $studioDetails | append (dict "id" .node.id "name" .node.name) }}
     {{ end }}
   {{ end }}
 
@@ -34,7 +36,7 @@
 
   {{ $params := dict "image" $cover_large "genres" .genres "idMal" .idMal "title" .title "synonyms" .synonyms
   "id" .id "type" .type "format" .format "status" .status "bannerImage" .bannerImage "isAdult" .isAdult
-  "episodes" .episodes "duration" .duration "coo" .countryOfOrigin "relations" .relations "studios" $studios }}
+  "episodes" .episodes "duration" .duration "coo" .countryOfOrigin "relations" .relations "studios" $studioIDs "studio_details" $studioDetails }}
 
   {{ $page := dict
     "content" $content
