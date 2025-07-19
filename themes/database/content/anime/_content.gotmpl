@@ -18,6 +18,14 @@
 {{ end }}
 
 {{ range $data }}
+
+  {{ $studioNames := slice }}
+  {{ range .studios.edges }}
+    {{ if .node }}
+      {{ $studioNames = $studioNames | append .node.name }}
+    {{ end }}
+  {{ end }}
+
   {{ $content := dict "mediaType" "text/markdown" "value" .description  }}
   {{ $id := .id | default "Untitled" }}
   {{ $english_title := .title.english | default "Untitled" }}
@@ -26,7 +34,7 @@
 
   {{ $params := dict "image" $cover_large "genres" .genres "idMal" .idMal "title" .title "synonyms" .synonyms
   "id" .id "type" .type "format" .format "status" .status "bannerImage" .bannerImage "isAdult" .isAdult
-  "episodes" .episodes "duration" .duration "coo" .countryOfOrigin "relations" .relations "studios" .studios }}
+  "episodes" .episodes "duration" .duration "coo" .countryOfOrigin "relations" .relations "studios" $studioNames }}
 
   {{ $page := dict
     "content" $content
