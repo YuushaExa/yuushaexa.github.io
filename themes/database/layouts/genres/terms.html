@@ -2,29 +2,17 @@
     {{ range .Data.Terms.ByCount }}
     <div class="column">
         <div class="card">
+            {{ $firstPage := index .Pages 0 }}
+            {{ if and $firstPage $firstPage.Params.image }}
+            <div class="card-image">
+                <img src="{{ $firstPage.Params.image }}" alt="{{ $firstPage.LinkTitle }}">
+            </div>
+            {{ end }}
+            
             <div class="card-content">
-                {{ $firstPage := index .Pages 0 }}
-                {{ if $firstPage }}
-                    {{ $image := "" }}
-                    {{ if $firstPage.Content }}
-                        {{ $images := findRE `<img[^>]+src="([^"]+)"` $firstPage.Content 1 }}
-                        {{ if $images }}
-                            {{ $image = replaceRE `.*src="([^"]+)".*` "$1" (index $images 0) }}
-                        {{ end }}
-                    {{ end }}
-                    
-                    {{ if $image }}
-                        <div class="card-image">
-                            <img src="{{ $image }}" alt="{{ $firstPage.Title }}">
-                        </div>
-                    {{ end }}
-                {{ end }}
-                
-                <div>
-                    <a class="title is-5 is-size-6-mobile" href="{{ .Page.Permalink }}">{{ .Page.Title }}</a>
-                    {{ $pageCount := len .Pages }}
-                    <p>{{ $pageCount }} post{{ if ne $pageCount 1 }}s{{ end }}</p>
-                </div>
+                <a class="title is-5 is-size-6-mobile" href="{{ .Page.Permalink }}">{{ .Page.Title }}</a>
+                {{ $pageCount := len .Pages }}
+                <p>{{ $pageCount }} post{{ if ne $pageCount 1 }}s{{ end }}</p>
             </div>
         </div>
     </div>
