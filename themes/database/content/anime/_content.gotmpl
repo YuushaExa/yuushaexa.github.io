@@ -22,7 +22,6 @@
   {{ $id := .id | default "Untitled" }}
   {{ $english_title := .title.english | default "Untitled" }}
   {{ $cover_large := .coverImage.large | default "Untitled" }}
-  {{ $bannerImage := .bannerImage | default "Untitled" }}
 
   {{ $params := dict "image" $cover_large "genres" .genres "idMal" .idMal "title" .title "synonyms" .synonyms
   "id" .id "type" .type "format" .format "status" .status "bannerImage" .bannerImage "isAdult" .isAdult
@@ -32,7 +31,7 @@
     "content" $content
     "kind" "page"
     "params" $params
-    "path" $id
+    "path" .id
     "title" $english_title
   }}
   {{ $.AddPage $page }}
