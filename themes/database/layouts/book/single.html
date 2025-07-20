@@ -5,6 +5,33 @@
 			<div>
 				{{ .Content }}
 			</div>
+			
+			{{/* Get the current page's ID */}}
+			{{ $currentID := .Params.id }}
+			
+			{{/* Only show related posts if an ID exists */}}
+			{{ if $currentID }}
+				{{/* Get all pages in the /read/ section */}}
+				{{ $readPages := where .Site.Pages "Section" "read" }}
+				
+				{{/* Find pages with matching ID (excluding current page) */}}
+				{{ $related := where $readPages "Params.id" "==" $currentID }}
+				{{ $related = $related | intersect (where $readPages "Title" "!=" .Title) }}
+				
+				{{/* Display related posts if any exist */}}
+				{{ if gt (len $related) 0 }}
+					<div class="related-posts">
+						<h2>Related Posts</h2>
+						<ul>
+							{{ range $related }}
+								<li>
+									<a href="{{ .RelPermalink }}">{{ .Title }}</a>
+								</li>
+							{{ end }}
+						</ul>
+					</div>
+				{{ end }}
+			{{ end }}
 		</article>
 	</main>
 {{ end }}
