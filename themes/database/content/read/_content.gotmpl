@@ -1,41 +1,47 @@
 {{/* Initialize variables */}}
 {{ $baseURL := "https://raw.githubusercontent.com/YuushaExa/novels-all/refs/heads/main/result/" }}
 {{ $maxFiles := 100 }}
+{{ $errorOccurred := false }}
 
 {{/* Loop through all files */}}
 {{ range $fileNum := seq 1 $maxFiles }}
-  {{ $url := printf "%s%d.json" $baseURL $fileNum }}
-  {{ $dataName := string $fileNum }}
+  {{ if not $errorOccurred }}
+    {{ $url := printf "%s%d.json" $baseURL $fileNum }}
+    {{ $dataName := string $fileNum }}
 
-  {{ with try (resources.GetRemote $url) }}
-    {{ with .Err }}
-      {{/* Skip if file doesn't exist */}}
-      {{ warnf "Skipping %s: %s" $url . }}
-    {{ else with .Value }}
-      {{ $data := . | transform.Unmarshal }}
-      
-      {{/* Process each section */}}
-      {{ range $index, $section := $data.sections }}
-        {{ $content := dict "mediaType" "text/markdown" "value" $section.content }}
+    {{ with try (resources.GetRemote $url) }}
+      {{ with .Err }}
+        {{ errorf "Failed to fetch %s: %s - stopping processing" $url . }}
+        {{ $errorOccurred = true }}
+        {{ return }}
+      {{ else with .Value }}
+        {{ $data := . | transform.Unmarshal }}
+        
+        {{/* Process each section */}}
+        {{ range $index, $section := $data.sections }}
+          {{ $content := dict "mediaType" "text/markdown" "value" $section.content }}
 
-        {{ $params := dict 
-          "title" $section.title
-          "chapter" (add $index 1)
-          "id" $dataName
-          "novel_id" $dataName
-        }}
+          {{ $params := dict 
+            "title" $section.title
+            "chapter" (add $index 1)
+            "id" $dataName
+            "novel_id" $dataName
+          }}
 
-        {{ $page := dict
-          "content" $content
-          "kind" "page"
-          "params" $params
-          "path" (printf "%s/%d" $dataName (add $index 1)) 
-          "title" $section.title
-        }}
-        {{ $.AddPage $page }}
+          {{ $page := dict
+            "content" $content
+            "kind" "page"
+            "params" $params
+            "path" (printf "%s/%d" $dataName (add $index 1)) 
+            "title" $section.title
+          }}
+          {{ $.AddPage $page }}
+        {{ end }}
+      {{ else }}
+        {{ errorf "Unable to process remote resource %s - stopping processing" $url }}
+        {{ $errorOccurred = true }}
+        {{ return }}
       {{ end }}
-    {{ else }}
-      {{ warnf "Unable to process remote resource %s" $url }}
     {{ end }}
   {{ end }}
 {{ end }}
