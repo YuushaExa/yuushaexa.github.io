@@ -1,3 +1,4 @@
+{{/* database/content/book/_content.gotmpl */}}
 {{ $data := dict }}
 {{ $url := "https://raw.githubusercontent.com/YuushaExa/novels-all/refs/heads/main/result/tad1-data.json" }}
 {{ with try (resources.GetRemote $url) }}
@@ -10,10 +11,12 @@
   {{ end }}
 {{ end }}
 
-{{ range $data }}
+{{/* Create a slice to store all book IDs */}}
+{{ $bookIDs := slice }}
 
-  {{ $content := dict "mediaType" "text/markdown" "value" .content  }}
-     {{ $title := partial "slugify1.html" .title }}
+{{ range $data }}
+  {{ $content := dict "mediaType" "text/markdown" "value" .content }}
+  {{ $title := partial "slugify1.html" .title }}
 
   {{ $params := dict "image" .image "tag" .tag "genre" .genre "id" .id }}
 
@@ -26,4 +29,41 @@
   }}
   {{ $.AddPage $page }}
 
+  {{/* Add the ID to our slice */}}
+  {{ $bookIDs = $bookIDs | append .id }}
+{{ end }}
+
+{{/* Now generate chapter pages for each book */}}
+{{ range $bookIDs }}
+  {{ $chapterData := dict }}
+  {{ $chapterURL := printf "https://raw.githubusercontent.com/YuushaExa/novels-all/refs/heads/main/result/%d.json" . }}
+  
+  {{ with try (resources.GetRemote $chapterURL) }}
+    {{ with .Err }}
+      {{ warnf "Unable to get remote resource %s: %s" $chapterURL . }}
+    {{ else with .Value }}
+      {{ $chapterData = . | transform.Unmarshal }}
+      
+      {{ range $index, $section := $chapterData.sections }}
+        {{ $content := dict "mediaType" "text/markdown" "value" $section.content }}
+
+        {{ $params := dict 
+          "title" $section.title
+          "chapter" (add $index 1)
+          "id" .
+        }}
+
+        {{ $page := dict
+          "content" $content
+          "kind" "page"
+          "params" $params
+          "path" (printf "read/%d/%d" . (add $index 1))
+          "title" $section.title
+        }}
+        {{ $.AddPage $page }}
+      {{ end }}
+    {{ else }}
+      {{ warnf "Unable to get remote resource %s" $chapterURL }}
+    {{ end }}
+  {{ end }}
 {{ end }}
