@@ -1,60 +1,29 @@
-{{/* Fetch novel metadata */}}
-{{ $metadata := dict }}
-{{ $metadataUrl := "https://raw.githubusercontent.com/YuushaExa/novels-all/refs/heads/main/result/tad1-data.json" }}
-{{ with try (resources.GetRemote $metadataUrl) }}
+{{ $data := dict }}
+{{ $url := "https://raw.githubusercontent.com/YuushaExa/novels-all/refs/heads/main/result/tad1-data.json" }}
+{{ with try (resources.GetRemote $url) }}
   {{ with .Err }}
-    {{ errorf "Unable to get metadata: %s" . }}
+    {{ errorf "Unable to get remote resource %s: %s" $url . }}
   {{ else with .Value }}
-    {{ $metadata = . | transform.Unmarshal }}
+    {{ $data = . | transform.Unmarshal }}
   {{ else }}
-    {{ errorf "Failed to fetch metadata" }}
+    {{ errorf "Unable to get remote resource %s" $url }}
   {{ end }}
 {{ end }}
 
-{{/* Fetch chapter content */}}
-{{ $chapters := dict }}
-{{ $chaptersUrl := "https://raw.githubusercontent.com/YuushaExa/novels-all/refs/heads/main/result/tad1.json" }}
-{{ with try (resources.GetRemote $chaptersUrl) }}
-  {{ with .Err }}
-    {{ errorf "Unable to get chapters: %s" . }}
-  {{ else with .Value }}
-    {{ $chapters = . | transform.Unmarshal }}
-  {{ else }}
-    {{ errorf "Failed to fetch chapters" }}
-  {{ end }}
-{{ end }}
+{{ range $data }}
 
-{{/* Generate pages */}}
-{{ range $novel := $chapters }}
-  {{ $slug := partial "slugify1.html" $novel.title }}
-  {{ $novelMeta := index (where $metadata "title" $novel.title) 0 }}
+  {{ $content := dict "mediaType" "text/markdown" "value" .content  }}
+     {{ $title := partial "slugify1.html" .title }}
 
-  {{ if $novel.sections }}
-    {{ range $index, $section := $novel.sections }}
-      {{ if eq $section.type "section" }}
-        {{ $content := dict "mediaType" "text/markdown" "value" $section.content }}
+  {{ $params := dict "image" .image "tag" .tag "genre" .genre }}
 
-        {{ $params := dict 
-          "title" $novel.title
-          "chapter" (add $index 1)
-          "chapter_title" $section.title
-          "image" $novelMeta.image
-          "tag" $novelMeta.tag
-          "genre" $novelMeta.genre
-        }}
+  {{ $page := dict
+    "content" $content
+    "kind" "page"
+    "params" $params
+    "path" $title
+    "title" .title
+  }}
+  {{ $.AddPage $page }}
 
-        {{ $page := dict
-          "content" $content
-          "kind" "page"
-          "params" $params
-          "path" (printf "book/%s/%d" $slug (add $index 1))
-          "title" (printf "%s - %s" $novel.title $section.title)
-        }}
-
-        {{ $.AddPage $page }}
-      {{ end }}
-    {{ end }}
-  {{ else }}
-    {{ warnf "No sections found for novel: %s" $novel.title }}
-  {{ end }}
 {{ end }}
