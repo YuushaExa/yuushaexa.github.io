@@ -18,12 +18,10 @@
     "chapter" (add $index 1)
   }}
 
-  {{ $page := dict
-    "content" $content
-    "kind" "page"
-    "params" $params
-    "path" (printf "%d" (add $index 1))
-    "title" $section.title
-  }}
-  {{ $.AddPage $page }}
+{{ $section := dict
+  "kind" "section"
+  "path" "books/novel1"
+  "params" (dict "title" "Novel 1")
+}}
+{{ $.AddPage $section }}
 {{ end }}
