@@ -19,11 +19,9 @@
 
 {{ range $data }}
 
-  {{ $studiosID := slice }}
   {{ $studios := slice }}
   {{ range .studios.edges }}
     {{ $studios = $studios | append .node.name }} 
-    {{ $studiosID = $studiosID | append .node.id }} 
   {{ end }}
   {{ end }}
 
@@ -36,7 +34,7 @@
 
   {{ $params := dict "image" $cover_large "genres" .genres "idMal" .idMal "title" .title "synonyms" .synonyms
   "id" .id "type" .type "format" .format "status" .status "bannerImage" .bannerImage "isAdult" .isAdult
-  "episodes" .episodes "duration" .duration "coo" .countryOfOrigin "relations" .relations "studiosID" $studiosID "studios" $studios }}
+  "episodes" .episodes "duration" .duration "coo" .countryOfOrigin "relations" .relations "studios" $studios }}
 
   {{ $page := dict
     "content" $content
