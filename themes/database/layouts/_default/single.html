@@ -2,15 +2,9 @@
 	<main>
 		<article>
 			<h1>{{ .Title }}</h1>
-			       <div class="card-image">
-          <img src="{{ .Params.image }}" alt="{{ .LinkTitle }}"/>
-          </div>
 			<div>
 				{{ .Content }}
 			</div>
-{{ range .Params.developers }}
-    <a href="{{ "developers/" | relURL }}{{ . }}">{{ . }}</a>
-{{ end }}
 		</article>
 	</main>
 {{ end }}
