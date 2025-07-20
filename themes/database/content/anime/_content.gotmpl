@@ -23,7 +23,6 @@
   {{ range .studios.edges }}
     {{ $studios = $studios | append .node.name }} 
   {{ end }}
-  {{ end }}
 
 
   {{ $content := dict "mediaType" "text/markdown" "value" .description  }}
