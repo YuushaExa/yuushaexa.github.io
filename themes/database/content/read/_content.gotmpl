@@ -5,32 +5,33 @@
 
   {{ with try (resources.GetRemote $url) }}
     {{ if .Err }}
-      {{ errorf "Failed to fetch %s: %s - stopping processing" $url .Err }}
-      {{ break }}
+      {{ warnf "Skipping %s: %s" $url .Err }}
     {{ else if not .Value }}
-      {{ errorf "Empty response from %s - stopping processing" $url }}
-      {{ break }}
+      {{ warnf "Empty response from %s - skipping" $url }}
     {{ else }}
       {{ $data := .Value | transform.Unmarshal }}
       
-      {{ range $index, $section := $data.sections }}
-        {{ $page := dict
-          "content" (dict "mediaType" "text/markdown" "value" $section.content)
-          "kind" "page"
-          "params" (dict 
+      {{ if $data.sections }}
+        {{ range $index, $section := $data.sections }}
+          {{ $page := dict
+            "content" (dict "mediaType" "text/markdown" "value" $section.content)
+            "kind" "page"
+            "params" (dict 
+              "title" $section.title
+              "chapter" (add $index 1)
+              "id" $dataName
+              "novel_id" $dataName
+            )
+            "path" (printf "%s/%d" $dataName (add $index 1))
             "title" $section.title
-            "chapter" (add $index 1)
-            "id" $dataName
-            "novel_id" $dataName
-          )
-          "path" (printf "%s/%d" $dataName (add $index 1))
-          "title" $section.title
-        }}
-        {{ $.AddPage $page }}
+          }}
+          {{ $.AddPage $page }}
+        {{ end }}
+      {{ else }}
+        {{ warnf "No sections found in %s - skipping" $url }}
       {{ end }}
     {{ end }}
   {{ else }}
-    {{ errorf "Failed to fetch %s - stopping processing" $url }}
-    {{ break }}
+    {{ warnf "Failed to fetch %s - skipping" $url }}
   {{ end }}
 {{ end }}
