@@ -10,16 +10,16 @@
   {{ end }}
 {{ end }}
 
-{{ range $data }}
-  {{ $content := dict "mediaType" "text/markdown" "value" .content }}
-  {{ $title := partial "slugify1.html" .title }}
+{{ range $book := $data }}
+  {{ $content := dict "mediaType" "text/markdown" "value" $book.content }}
+  {{ $title := partial "slugify1.html" $book.title }}
 
   {{ $params := dict 
-    "image" .image 
-    "tag" .tag 
-    "genre" .genre 
-    "id" .id 
-    "description" .content
+    "image" $book.image 
+    "tag" $book.tag 
+    "genre" $book.genre 
+    "id" $book.id 
+    "description" $book.content
   }}
 
   {{ $page := dict
@@ -27,13 +27,13 @@
     "kind" "page"
     "params" $params
     "path" $title
-    "title" .title
+    "title" $book.title
   }}
   {{ $.AddPage $page }}
 
   {{/* Now generate the read pages for this book */}}
   {{ $readData := dict }}
-  {{ $readUrl := printf "https://raw.githubusercontent.com/YuushaExa/novels-all/refs/heads/main/result/%s.json" .id }}
+  {{ $readUrl := printf "https://raw.githubusercontent.com/YuushaExa/novels-all/refs/heads/main/result/%s.json" $book.id }}
   {{ with try (resources.GetRemote $readUrl) }}
     {{ with .Err }}
       {{ errorf "Unable to get remote resource %s: %s" $readUrl . }}
@@ -50,8 +50,8 @@
     {{ $chapterParams := dict 
       "title" $section.title
       "chapter" (add $index 1)
-      "id" .id
-      "bookTitle" $.title
+      "id" $book.id
+      "bookTitle" $book.title
       "bookSlug" $title
     }}
 
