@@ -10,19 +10,49 @@
   {{ end }}
 {{ end }}
 
-{{ range $index, $section := $data.sections }}
+{{/* Hardcoded book metadata */}}
+{{ $bookMeta := dict 
+  "filename" "tad1"
+  "title" "Book Title"
+  "description" "This is a detailed book description that appears on the book overview page."
+  "cover" "images/covers/tad1.jpg"
+}}
+
+{{/* Create book overview page */}}
+{{ $bookContent := dict "mediaType" "text/markdown" "value" (printf "# %s\n\n%s" $bookMeta.title $bookMeta.description) }}
+
+{{ $bookParams := dict
+  "title" $bookMeta.title
+  "description" $bookMeta.description
+  "cover" $bookMeta.cover
+  "chapters" (len $data.sections)
+}}
+
+{{ $bookPage := dict
+  "content" $bookContent
+  "kind" "page"
+  "params" $bookParams
+  "path" $bookMeta.filename
+  "title" $bookMeta.title
+}}
+{{ $.AddPage $bookPage }}
+
+{{/* Create chapter pages */}}
+{{ range $section := $data.sections }}
   {{ $content := dict "mediaType" "text/markdown" "value" $section.content }}
 
   {{ $params := dict 
     "title" $section.title
-    "chapter" (add $index 1)
+    "chapter" $section.number
+    "book" $bookMeta.filename
+    "book_title" $bookMeta.title
   }}
 
   {{ $page := dict
     "content" $content
     "kind" "page"
     "params" $params
-    "path" (printf "%s/%d" $data.filename (add $index 1))
+    "path" (printf "%s/%d" $bookMeta.filename $section.number)
     "title" $section.title
   }}
   {{ $.AddPage $page }}
