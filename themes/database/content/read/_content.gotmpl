@@ -1,5 +1,7 @@
 {{ $data := dict }}
 {{ $url := "https://raw.githubusercontent.com/YuushaExa/novels-all/refs/heads/main/result/1.json" }}
+{{ $dataName := replaceRE `.*/(\d+)\.json` "$1" $url }}
+
 {{ with try (resources.GetRemote $url) }}
   {{ with .Err }}
     {{ errorf "Unable to get remote resource %s: %s" $url . }}
@@ -22,7 +24,7 @@
     "content" $content
     "kind" "page"
     "params" $params
-    "path" (printf "%d" $data.filename (add $index 1))
+    "path" (printf "%s/%d" $dataName (add $index 1)) 
     "title" $section.title
   }}
   {{ $.AddPage $page }}
