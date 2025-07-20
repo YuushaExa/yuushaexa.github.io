@@ -11,7 +11,6 @@
   {{ end }}
 {{ end }}
 
-{{/* Create a slice to store all book IDs */}}
 {{ $bookIDs := slice }}
 
 {{ range $data }}
@@ -29,14 +28,12 @@
   }}
   {{ $.AddPage $page }}
 
-  {{/* Add the ID to our slice */}}
   {{ $bookIDs = $bookIDs | append .id }}
 {{ end }}
 
-{{/* Now generate chapter pages for each book */}}
 {{ range $bookIDs }}
   {{ $chapterData := dict }}
-  {{ $chapterURL := printf "https://raw.githubusercontent.com/YuushaExa/novels-all/refs/heads/main/result/%d.json" . }}
+  {{ $chapterURL := printf "https://raw.githubusercontent.com/YuushaExa/novels-all/refs/heads/main/result/%v.json" . }}
   
   {{ with try (resources.GetRemote $chapterURL) }}
     {{ with .Err }}
@@ -57,7 +54,7 @@
           "content" $content
           "kind" "page"
           "params" $params
-          "path" (printf "read/%d/%d" . (add $index 1))
+          "path" (printf "read/%v/%v" . (add $index 1))
           "title" $section.title
         }}
         {{ $.AddPage $page }}
