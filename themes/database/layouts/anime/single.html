@@ -19,7 +19,7 @@
 			</div>
 <div class="studios">
   {{ range .Params.studios }}
-    <a href="{{ "studios/" | relURL }}{{ .id }}/" class="tag">{{ .name }}</a>
+    <a href="{{ "studios/" | relURL }}{{ . | urlize }}">{{ . }}</a>
   {{ end }}
 </div>
 <pre>All Params: {{ .Params | jsonify (dict "indent" "  ") }}</pre>
