@@ -1,10 +1,8 @@
 {{ define "main" }}
-	<main>
-		<article>
-			<h1>{{ .Title }}</h1>
-			<div>
-				{{ .Content }}
-			</div>
-		</article>
-	</main>
+<article class="chapter">
+  <h1>{{ .Title }} (Chapter {{ .Params.chapter }})</h1>
+  <div class="content">
+    {{ .Content }}
+  </div>
+</article>
 {{ end }}
