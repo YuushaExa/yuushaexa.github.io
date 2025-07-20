@@ -10,29 +10,13 @@
   {{ end }}
 {{ end }}
 
-{{/* Create a main book page */}}
-{{ $content := dict "mediaType" "text/markdown" "value" (printf "# %s\n\nThis is the main page for %s." $data.title $data.title) }}
-
-{{ $params := dict 
-  "title" $data.title
-}}
-
-{{ $page := dict
-  "content" $content
-  "kind" "page"
-  "params" $params
-  "path" "_index"  {{/* This creates the main /book/name/ page */}}
-  "title" $data.title
-}}
-{{ $.AddPage $page }}
-
-{{/* Create chapter pages */}}
 {{ range $index, $section := $data.sections }}
   {{ $content := dict "mediaType" "text/markdown" "value" $section.content }}
 
   {{ $params := dict 
     "title" $section.title
     "chapter" (add $index 1)
+    "list" "never"
   }}
 
   {{ $page := dict
