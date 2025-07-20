@@ -1,0 +1,29 @@
+{{ $data := dict }}
+{{ $url := "https://raw.githubusercontent.com/YuushaExa/novels-all/refs/heads/main/result/tad1.json" }}
+{{ with try (resources.GetRemote $url) }}
+  {{ with .Err }}
+    {{ errorf "Unable to get remote resource %s: %s" $url . }}
+  {{ else with .Value }}
+    {{ $data = . | transform.Unmarshal }}
+  {{ else }}
+    {{ errorf "Unable to get remote resource %s" $url }}
+  {{ end }}
+{{ end }}
+
+{{ range $index, $section := $data.sections }}
+  {{ $content := dict "mediaType" "text/markdown" "value" $section.content }}
+
+  {{ $params := dict 
+    "title" $section.title
+    "chapter" (add $index 1)
+  }}
+
+  {{ $page := dict
+    "content" $content
+    "kind" "page"
+    "params" $params
+    "path" (printf "%d" (add $index 1))
+    "title" $section.title
+  }}
+  {{ $.AddPage $page }}
+{{ end }}
