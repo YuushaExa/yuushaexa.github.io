@@ -16,7 +16,7 @@
   {{ $params := dict 
     "title" $section.title
     "chapter" (add $index 1)
-    "draft" true
+    "outputs" (slice "json")
   }}
 
   {{ $page := dict
