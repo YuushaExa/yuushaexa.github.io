@@ -2,10 +2,20 @@
   <h1>{{ .Title }}</h1>
   {{ .Content }}
     {{ range .Paginator.Pages }}
+      <div class="card">
+            {{ $firstPage := index .Pages 0 }}
+            {{ if and $firstPage $firstPage.Params.image }}
+            <div class="card-image">
+                <img src="{{ $firstPage.Params.image }}" alt="{{ $firstPage.LinkTitle }}">
+            </div>
+            {{ end }}
+                    <div class="card-content">
 <h2><a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a></h2>
              {{ $pageCount := len .Pages }}
                   <p>{{ $pageCount }} post{{ if ne $pageCount 1 }}s{{ end }} </p>
   {{ end }}
+                                      </div>
+                </div>
   <div class="column is-narrow">
     {{ partial "widgets/pagination.html" . }}
   </div>
