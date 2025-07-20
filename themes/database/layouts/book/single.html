@@ -38,8 +38,6 @@
 							{{ range $sortedRelated }}
 								<li>
 									<a href="{{ .Page.RelPermalink }}">{{ .Page.Title }}</a>
-									{{/* Optional: Show the URL number */}}
-									<small>(URL: {{ .Page.RelPermalink }}, Num: {{ .Num }})</small>
 								</li>
 							{{ end }}
 						</ul>
