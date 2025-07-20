@@ -15,7 +15,7 @@
   {{ $content := dict "mediaType" "text/markdown" "value" .content  }}
      {{ $title := partial "slugify1.html" .title }}
 
-  {{ $params := dict "image" .image "tag" .tag "genre" .genre }}
+  {{ $params := dict "image" .image "tag" .tag "genre" .genre "id" .id }}
 
   {{ $page := dict
     "content" $content
