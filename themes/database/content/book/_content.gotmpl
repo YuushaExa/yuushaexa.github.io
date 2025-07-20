@@ -1,4 +1,3 @@
-{{/* database/content/book/_content.gotmpl */}}
 {{ $data := dict }}
 {{ $url := "https://raw.githubusercontent.com/YuushaExa/novels-all/refs/heads/main/result/tad1-data.json" }}
 {{ with try (resources.GetRemote $url) }}
@@ -11,13 +10,17 @@
   {{ end }}
 {{ end }}
 
-{{ $bookIDs := slice }}
-
 {{ range $data }}
   {{ $content := dict "mediaType" "text/markdown" "value" .content }}
   {{ $title := partial "slugify1.html" .title }}
 
-  {{ $params := dict "image" .image "tag" .tag "genre" .genre "id" .id }}
+  {{ $params := dict 
+    "image" .image 
+    "tag" .tag 
+    "genre" .genre 
+    "id" .id 
+    "description" .content
+  }}
 
   {{ $page := dict
     "content" $content
@@ -28,39 +31,37 @@
   }}
   {{ $.AddPage $page }}
 
-  {{ $bookIDs = $bookIDs | append .id }}
-{{ end }}
-
-{{ range $bookIDs }}
-  {{ $chapterData := dict }}
-  {{ $chapterURL := printf "https://raw.githubusercontent.com/YuushaExa/novels-all/refs/heads/main/result/%s.json" (string .) }}
-  
-  {{ with try (resources.GetRemote $chapterURL) }}
+  {{/* Now generate the read pages for this book */}}
+  {{ $readData := dict }}
+  {{ $readUrl := printf "https://raw.githubusercontent.com/YuushaExa/novels-all/refs/heads/main/result/%s.json" .id }}
+  {{ with try (resources.GetRemote $readUrl) }}
     {{ with .Err }}
-      {{ warnf "Unable to get remote resource %s: %s" $chapterURL . }}
+      {{ errorf "Unable to get remote resource %s: %s" $readUrl . }}
     {{ else with .Value }}
-      {{ $chapterData = . | transform.Unmarshal }}
-      
-      {{ range $index, $section := $chapterData.sections }}
-        {{ $content := dict "mediaType" "text/markdown" "value" $section.content }}
-
-        {{ $params := dict 
-          "title" $section.title
-          "chapter" (add $index 1)
-          "id" .
-        }}
-
-        {{ $page := dict
-          "content" $content
-          "kind" "page"
-          "params" $params
-          "path" (printf "%s/%d" (string .) (add $index 1))
-          "title" $section.title
-        }}
-        {{ $.AddPage $page }}
-      {{ end }}
+      {{ $readData = . | transform.Unmarshal }}
     {{ else }}
-      {{ warnf "Unable to get remote resource %s" $chapterURL }}
+      {{ errorf "Unable to get remote resource %s" $readUrl }}
     {{ end }}
+  {{ end }}
+
+  {{ range $index, $section := $readData.sections }}
+    {{ $chapterContent := dict "mediaType" "text/markdown" "value" $section.content }}
+
+    {{ $chapterParams := dict 
+      "title" $section.title
+      "chapter" (add $index 1)
+      "id" .id
+      "bookTitle" $.title
+      "bookSlug" $title
+    }}
+
+    {{ $chapterPage := dict
+      "content" $chapterContent
+      "kind" "page"
+      "params" $chapterParams
+      "path" (printf "read/%s/%d" $title (add $index 1))
+      "title" $section.title
+    }}
+    {{ $.AddPage $chapterPage }}
   {{ end }}
 {{ end }}
