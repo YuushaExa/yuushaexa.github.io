@@ -1,47 +1,36 @@
-{{/* Initialize variables */}}
 {{ $baseURL := "https://raw.githubusercontent.com/YuushaExa/novels-all/refs/heads/main/result/" }}
-{{ $maxFiles := 100 }}
-{{ $errorOccurred := false }}
+{{ range $fileNum := seq 1 100 }}
+  {{ $url := printf "%s%d.json" $baseURL $fileNum }}
+  {{ $dataName := string $fileNum }}
 
-{{/* Loop through all files */}}
-{{ range $fileNum := seq 1 $maxFiles }}
-  {{ if not $errorOccurred }}
-    {{ $url := printf "%s%d.json" $baseURL $fileNum }}
-    {{ $dataName := string $fileNum }}
-
-    {{ with try (resources.GetRemote $url) }}
-      {{ with .Err }}
-        {{ errorf "Failed to fetch %s: %s - stopping processing" $url . }}
-        {{ $errorOccurred = true }}
-        {{ return }}
-      {{ else with .Value }}
-        {{ $data := . | transform.Unmarshal }}
-        
-        {{/* Process each section */}}
-        {{ range $index, $section := $data.sections }}
-          {{ $content := dict "mediaType" "text/markdown" "value" $section.content }}
-
-          {{ $params := dict 
+  {{ with try (resources.GetRemote $url) }}
+    {{ if .Err }}
+      {{ errorf "Failed to fetch %s: %s - stopping processing" $url .Err }}
+      {{ break }}
+    {{ else if not .Value }}
+      {{ errorf "Empty response from %s - stopping processing" $url }}
+      {{ break }}
+    {{ else }}
+      {{ $data := .Value | transform.Unmarshal }}
+      
+      {{ range $index, $section := $data.sections }}
+        {{ $page := dict
+          "content" (dict "mediaType" "text/markdown" "value" $section.content)
+          "kind" "page"
+          "params" (dict 
             "title" $section.title
             "chapter" (add $index 1)
             "id" $dataName
             "novel_id" $dataName
-          }}
-
-          {{ $page := dict
-            "content" $content
-            "kind" "page"
-            "params" $params
-            "path" (printf "%s/%d" $dataName (add $index 1)) 
-            "title" $section.title
-          }}
-          {{ $.AddPage $page }}
-        {{ end }}
-      {{ else }}
-        {{ errorf "Unable to process remote resource %s - stopping processing" $url }}
-        {{ $errorOccurred = true }}
-        {{ return }}
+          )
+          "path" (printf "%s/%d" $dataName (add $index 1))
+          "title" $section.title
+        }}
+        {{ $.AddPage $page }}
       {{ end }}
     {{ end }}
+  {{ else }}
+    {{ errorf "Failed to fetch %s - stopping processing" $url }}
+    {{ break }}
   {{ end }}
 {{ end }}
