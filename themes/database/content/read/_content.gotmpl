@@ -1,32 +1,41 @@
-{{ $data := dict }}
-{{ $url := "https://raw.githubusercontent.com/YuushaExa/novels-all/refs/heads/main/result/1.json" }}
-{{ $dataName := replaceRE `.*/(\d+)\.json` "$1" $url }}
+{{/* Initialize variables */}}
+{{ $baseURL := "https://raw.githubusercontent.com/YuushaExa/novels-all/refs/heads/main/result/" }}
+{{ $maxFiles := 100 }}
 
-{{ with try (resources.GetRemote $url) }}
-  {{ with .Err }}
-    {{ errorf "Unable to get remote resource %s: %s" $url . }}
-  {{ else with .Value }}
-    {{ $data = . | transform.Unmarshal }}
-  {{ else }}
-    {{ errorf "Unable to get remote resource %s" $url }}
+{{/* Loop through all files */}}
+{{ range $fileNum := seq 1 $maxFiles }}
+  {{ $url := printf "%s%d.json" $baseURL $fileNum }}
+  {{ $dataName := string $fileNum }}
+
+  {{ with try (resources.GetRemote $url) }}
+    {{ with .Err }}
+      {{/* Skip if file doesn't exist */}}
+      {{ warnf "Skipping %s: %s" $url . }}
+    {{ else with .Value }}
+      {{ $data := . | transform.Unmarshal }}
+      
+      {{/* Process each section */}}
+      {{ range $index, $section := $data.sections }}
+        {{ $content := dict "mediaType" "text/markdown" "value" $section.content }}
+
+        {{ $params := dict 
+          "title" $section.title
+          "chapter" (add $index 1)
+          "id" $dataName
+          "novel_id" $dataName
+        }}
+
+        {{ $page := dict
+          "content" $content
+          "kind" "page"
+          "params" $params
+          "path" (printf "%s/%d" $dataName (add $index 1)) 
+          "title" $section.title
+        }}
+        {{ $.AddPage $page }}
+      {{ end }}
+    {{ else }}
+      {{ warnf "Unable to process remote resource %s" $url }}
+    {{ end }}
   {{ end }}
-{{ end }}
-
-{{ range $index, $section := $data.sections }}
-  {{ $content := dict "mediaType" "text/markdown" "value" $section.content }}
-
-  {{ $params := dict 
-    "title" $section.title
-    "chapter" (add $index 1)
-    "id" $dataName
-  }}
-
-  {{ $page := dict
-    "content" $content
-    "kind" "page"
-    "params" $params
-    "path" (printf "%s/%d" $dataName (add $index 1)) 
-    "title" $section.title
-  }}
-  {{ $.AddPage $page }}
 {{ end }}
