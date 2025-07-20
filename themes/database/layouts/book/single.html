@@ -5,35 +5,6 @@
 			<div>
 				{{ .Content }}
 			</div>
-			
-			{{/* Extract ID from URL path (format: /read/<id>/<page>/) */}}
-			{{ $urlParts := split .RelPermalink "/" }}
-			{{ $currentID := index $urlParts 2 }}
-			
-			{{/* Get all pages in the "read" section */}}
-			{{ $allReadPages := where .Site.Pages "Section" "read" }}
-			
-			{{/* Filter pages with matching ID in their URL */}}
-			{{ $relatedPages := slice }}
-			{{ range $allReadPages }}
-				{{ $pageParts := split .RelPermalink "/" }}
-				{{ $pageID := index $pageParts 2 }}
-				{{ if eq $pageID $currentID }}
-					{{ $relatedPages = $relatedPages | append . }}
-				{{ end }}
-			{{ end }}
-			
-			{{/* Display the list of related pages */}}
-			{{ if gt (len $relatedPages) 1 }} {{/* Only show if there's more than 1 page */}}
-				<div class="related-pages">
-					<h2>All Parts (ID: {{ $currentID }})</h2>
-					<ul>
-						{{ range $relatedPages }}
-							<li><a href="{{ .RelPermalink }}">{{ .Title }}</a></li>
-						{{ end }}
-					</ul>
-				</div>
-			{{ end }}
 		</article>
 	</main>
 {{ end }}
