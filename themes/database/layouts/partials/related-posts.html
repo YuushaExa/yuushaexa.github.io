@@ -1,14 +1,31 @@
 {{/* related-posts.html */}}
-{{ with .Params.id }}
-    {{ $related := where (where site.Pages "Section" "read") "Params.id" "==" . }}
-    {{ $related = where $related "Title" "!=" .Title }}
+{{ $currentID := .Params.id }}
+{{ $currentTitle := .Title }}
+{{ $pages := .Site.Pages }}
+
+{{ if $currentID }}
+    {{ $readPages := where $pages "Section" "read" }}
+    {{ $related := where $readPages "Params.id" "==" $currentID }}
+    {{ $related = $related | intersect (where $readPages "Title" "!=" $currentTitle) }}
     
-    {{ with $related }}
+    {{ $sortedRelated := slice }}
+    {{ range $related }}
+        {{ $urlParts := split .RelPermalink "/" }}
+        {{ $lastPart := index $urlParts (sub (len $urlParts) 2) }}
+        {{ $num := int $lastPart }}
+        {{ $sortedRelated = $sortedRelated | append (dict "Page" . "Num" $num) }}
+    {{ end }}
+    
+    {{ $sortedRelated = sort $sortedRelated "Num" }}
+    
+    {{ if gt (len $sortedRelated) 0 }}
         <div class="related-posts">
             <h2>Related Posts</h2>
             <ul>
-                {{ range sort . "RelPermalink" }}
-                    <li><a href="{{ .RelPermalink }}">{{ .Title }}</a></li>
+                {{ range $sortedRelated }}
+                    <li>
+                        <a href="{{ .Page.RelPermalink }}">{{ .Page.Title }}</a>
+                    </li>
                 {{ end }}
             </ul>
         </div>
