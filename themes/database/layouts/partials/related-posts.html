@@ -1,0 +1,21 @@
+{{ $currentID := .id }}
+{{ $currentTitle := .title }}
+{{ $pages := .pages }}
+
+{{ with $currentID }}
+    {{ $related := where (where $pages "Section" "read") "Params.id" "==" . }}
+    {{ $related = where $related "Title" "!=" $currentTitle }}
+    
+    {{ with $related }}
+        <div class="related-posts">
+            <h2>Related Posts</h2>
+            <ul>
+                {{ range sort . "RelPermalink" }}
+                    <li>
+                        <a href="{{ .RelPermalink }}">{{ .Title }}</a>
+                    </li>
+                {{ end }}
+            </ul>
+        </div>
+    {{ end }}
+{{ end }}
