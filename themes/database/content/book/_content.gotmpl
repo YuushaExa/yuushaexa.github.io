@@ -54,7 +54,7 @@
           "content" $content
           "kind" "page"
           "params" $params
-          "path" (printf "read/%v/%v" . (add $index 1))
+          "path" (printf "read/%v-%v" . (add $index 1))  <!-- Simplified path format -->
           "title" $section.title
         }}
         {{ $.AddPage $page }}
