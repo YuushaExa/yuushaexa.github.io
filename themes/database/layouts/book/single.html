@@ -5,12 +5,7 @@
 			<div>
 				{{ .Content }}
 			</div>
-			
-			{{ partial "related-posts.html" (dict 
-                "id" .Params.id
-                "title" .Title
-                "pages" .Site.Pages
-            ) }}
+{{ partial "related-posts.html" . }}
 		</article>
 	</main>
 {{ end }}
