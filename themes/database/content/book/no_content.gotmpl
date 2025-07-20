@@ -1,5 +1,5 @@
 {{ $data := dict }}
-{{ $url := "https://raw.githubusercontent.com/YuushaExa/novels-all/refs/heads/main/result/tad1.json" }}
+{{ $url := "https://raw.githubusercontent.com/YuushaExa/novels-all/refs/heads/main/result/tad1-data.json" }}
 {{ with try (resources.GetRemote $url) }}
   {{ with .Err }}
     {{ errorf "Unable to get remote resource %s: %s" $url . }}
@@ -10,20 +10,20 @@
   {{ end }}
 {{ end }}
 
-{{ range $index, $section := $data.sections }}
-  {{ $content := dict "mediaType" "text/markdown" "value" $section.content }}
+{{ range $data }}
 
-  {{ $params := dict 
-    "title" $section.title
-    "chapter" (add $index 1)
-  }}
+  {{ $content := dict "mediaType" "text/markdown" "value" .content  }}
+     {{ $title := partial "slugify1.html" .title }}
+
+  {{ $params := dict "image" .image "tag" .tag "genre" .genre }}
 
   {{ $page := dict
     "content" $content
     "kind" "page"
     "params" $params
-    "path" (printf "read/%d" (add $index 1))
-    "title" $section.title
+    "path" $title
+    "title" .title
   }}
   {{ $.AddPage $page }}
+
 {{ end }}
