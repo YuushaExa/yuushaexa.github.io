@@ -9,7 +9,6 @@
 			{{/* Get the current page's ID */}}
 			{{ $currentID := .Params.id }}
 			
-			{{/* Only show related posts if an ID exists */}}
 			{{ if $currentID }}
 				{{/* Get all pages in the /read/ section */}}
 				{{ $readPages := where .Site.Pages "Section" "read" }}
@@ -18,14 +17,29 @@
 				{{ $related := where $readPages "Params.id" "==" $currentID }}
 				{{ $related = $related | intersect (where $readPages "Title" "!=" .Title) }}
 				
+				{{/* Sort by the last number in the URL */}}
+				{{ $sortedRelated := slice }}
+				{{ range $related }}
+					{{/* Extract the last part of the URL (e.g., "2" from "/1/2") */}}
+					{{ $urlParts := split .RelPermalink "/" }}
+					{{ $lastPart := index $urlParts (sub (len $urlParts) 2) }} {{/* Gets "2" from "/1/2/" */}}
+					{{ $num := int $lastPart }} {{/* Convert to integer for proper sorting */}}
+					{{ $sortedRelated = $sortedRelated | append (dict "Page" . "Num" $num) }}
+				{{ end }}
+				
+				{{/* Sort by extracted number */}}
+				{{ $sortedRelated = sort $sortedRelated "Num" }}
+				
 				{{/* Display related posts if any exist */}}
-				{{ if gt (len $related) 0 }}
+				{{ if gt (len $sortedRelated) 0 }}
 					<div class="related-posts">
 						<h2>Related Posts</h2>
 						<ul>
-							{{ range $related }}
+							{{ range $sortedRelated }}
 								<li>
-									<a href="{{ .RelPermalink }}">{{ .Title }}</a>
+									<a href="{{ .Page.RelPermalink }}">{{ .Page.Title }}</a>
+									{{/* Optional: Show the URL number */}}
+									<small>(URL: {{ .Page.RelPermalink }}, Num: {{ .Num }})</small>
 								</li>
 							{{ end }}
 						</ul>
