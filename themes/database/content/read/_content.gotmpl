@@ -13,7 +13,7 @@
       {{ if $data.chapters }}
         {{ range $index, $section := $data.chapters }}
           {{ $page := dict
-            "content" (dict "mediaType" "text/markdown" "value" $section.content)
+  "content" (dict "mediaType" "text/markdown" "value" ($section.content | safeHTML))
             "kind" "page"
             "params" (dict 
               "title" $section.title
