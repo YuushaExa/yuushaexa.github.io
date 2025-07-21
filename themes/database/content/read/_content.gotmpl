@@ -2,7 +2,7 @@
 {{ range $fileNum := seq 1 100 }}
   {{ $url := printf "%s%d.json" $baseURL $fileNum }}
   {{ $dataName := string $fileNum }}
-
+ 
   {{ with try (resources.GetRemote $url) }}
     {{ if or .Err (not .Value) }}
       {{/* Silent break on first error */}}
