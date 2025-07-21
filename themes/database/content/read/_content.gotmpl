@@ -1,4 +1,4 @@
-{{ $baseURL := "https://raw.githubusercontent.com/YuushaExa/novels-all/refs/heads/main/result/" }}
+{{ $baseURL := "https://raw.githubusercontent.com/YuushaExa/novels-end/refs/heads/main/result/" }}
 {{ range $fileNum := seq 1 100 }}
   {{ $url := printf "%s%d.json" $baseURL $fileNum }}
   {{ $dataName := string $fileNum }}
@@ -10,8 +10,8 @@
     {{ else }}
       {{ $data := .Value | transform.Unmarshal }}
       
-      {{ if $data.sections }}
-        {{ range $index, $section := $data.sections }}
+      {{ if $data.chapters }}
+        {{ range $index, $section := $data.chapters }}
           {{ $page := dict
             "content" (dict "mediaType" "text/markdown" "value" $section.content)
             "kind" "page"
