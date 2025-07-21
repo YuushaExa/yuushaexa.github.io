@@ -29,4 +29,5 @@ allowActionJSTmpl = true
     page = [ 'html' ]
     taxonomy = [ "HTML" ]
     term = [ "HTML" ]
-
+[services.googleAnalytics]
+ID = "G-ESRLVY7ZTR"
