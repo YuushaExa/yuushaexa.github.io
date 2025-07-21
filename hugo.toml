@@ -3,8 +3,6 @@ languageCode = 'en-us'
 title = "BookLibrary"
 theme = "database"  
 disableKinds = ['rss']
-[services.googleAnalytics]
-ID = "G-ESRLVY7ZTR"
 [params]
     description = "Book Library"
     author = "Yuusha"
