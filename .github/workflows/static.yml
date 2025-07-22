@@ -5,7 +5,7 @@ on:
     branches: ["main"]
   workflow_dispatch:
 
-permissions: 
+permissions:
   contents: read
   pages: write
   id-token: write
@@ -26,12 +26,11 @@ jobs:
       
       - name: Cache Hugo and dependencies
         uses: actions/cache@v3
-        id: cache
         with:
           path: |
             ~/.cache/hugo
-            /var/cache/apt/archives
-          key: ${{ runner.os }}-hugo-${{ hashFiles('**/go.mod') }}-${{ hashFiles('**/package-lock.json') }}-1
+            /var/cache/apt
+          key: ${{ runner.os }}-hugo-apt-1
       
       - name: Install dependencies
         run: |
