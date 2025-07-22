@@ -1,35 +1,33 @@
-{{ $baseURL := "https://raw.githubusercontent.com/YuushaExa/novels-end/refs/heads/main/result/" }}
-{{ range $fileNum := seq 1 100 }}
-  {{ $url := printf "%s%d.json" $baseURL $fileNum }}
-  {{ $dataName := string $fileNum }}
- 
-  {{ with try (resources.GetRemote $url) }}
-    {{ if or .Err (not .Value) }}
-      {{/* Silent break on first error */}}
-      {{ break }}
-    {{ else }}
-      {{ $data := .Value | transform.Unmarshal }}
-      
-      {{ if $data.chapters }}
-        {{ range $index, $section := $data.chapters }}
-          {{ $page := dict
-            "content" (dict "mediaType" "text/markdown" "value" $section.content)
-            "kind" "page"
-            "params" (dict 
+{{ $baseURL := "https://api.github.com/repos/YuushaExa/novels-end/contents/result" }}
+{{ $fileList := resources.GetRemote $baseURL | transform.Unmarshal }}
+
+{{ range $file := $fileList }}
+  {{ if strings.HasSuffix $file.name ".json" }}
+    {{ $fileURL := $file.download_url }}
+    {{ $dataName := strings.TrimSuffix ".json" $file.name }}
+    
+    {{ with try (resources.GetRemote $fileURL) }}
+      {{ if not .Err }}
+        {{ $data := . | transform.Unmarshal }}
+        
+        {{ if $data.chapters }}
+          {{ range $index, $section := $data.chapters }}
+            {{ $page := dict
+              "content" (dict "mediaType" "text/markdown" "value" $section.content)
+              "kind" "page"
+              "params" (dict 
+                "title" $section.title
+                "chapter" (add $index 1)
+                "id" $dataName
+                "novel_id" $dataName
+              )
+              "path" (printf "%s/%d" $dataName (add $index 1))
               "title" $section.title
-              "chapter" (add $index 1)
-              "id" $dataName
-              "novel_id" $dataName
-            )
-            "path" (printf "%s/%d" $dataName (add $index 1))
-            "title" $section.title
-          }}
-          {{ $.AddPage $page }}
+            }}
+            {{ $.AddPage $page }}
+          {{ end }}
         {{ end }}
       {{ end }}
     {{ end }}
-  {{ else }}
-    {{/* Silent break on fetch failure */}}
-    {{ break }}
   {{ end }}
 {{ end }}
