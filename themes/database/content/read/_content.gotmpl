@@ -3,24 +3,25 @@
   {{ $url := printf "%s%d.json.gz" $baseURL $fileNum }}
   {{ $dataName := string $fileNum }}
   
-  {{ with resources.GetRemote $url }}
+  {{ with resources.GetRemote $url (dict 
+    "headers" (dict 
+      "Accept-Encoding" "gzip"
+      "Accept" "application/json"
+    )
+  ) }}
     {{ if not .Err }}
-      {{/* Get the raw content bytes */}}
-      {{ $content := .Content }}
-      
-      {{/* Convert to JSON (Hugo will automatically handle gzipped content if server sends proper headers) */}}
-      {{ $data := $content | transform.Unmarshal }}
+      {{ $data := .Content | transform.Unmarshal }}
       
       {{ if $data.chapters }}
         {{ range $index, $section := $data.chapters }}
-          {{ $cleanContent := $section.content 
+          {{ $content := $section.content 
               | replaceRE `\\r\\n` "\n"  
               | replaceRE `\r\n` "\n"   
               | replaceRE `\n+` "\n\n"   
           }}
           
           {{ $page := dict
-            "content" (dict "mediaType" "text/markdown" "value" $cleanContent)
+            "content" (dict "mediaType" "text/markdown" "value" $content)
             "kind" "page"
             "params" (dict 
               "title" $section.title
@@ -34,6 +35,8 @@
           {{ $.AddPage $page }}
         {{ end }}
       {{ end }}
+    {{ else }}
+      {{ warnf "Failed to process %s: %v" $url .Err }}
     {{ end }}
   {{ end }}
 {{ end }}
