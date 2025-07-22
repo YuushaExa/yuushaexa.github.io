@@ -5,8 +5,13 @@ theme = "database"
 disableKinds = ['rss']
 [security]
   [security.http]
-    mediaTypes = ['^application/json$', '^application/gzip$']
-    methods = ['GET', 'HEAD']
+    mediaTypes = [
+      '^image/avif$',
+      '^application/vnd\.api\+json$',
+      '^application/json$',
+      '^application/gzip$',
+      '^application/octet-stream$' 
+    ]
 [params]
     description = "Book Library"
     author = "Yuusha"
