@@ -1,37 +1,31 @@
-{{ $baseURL := "https://api.github.com/repos/YuushaExa/novels-end/contents/result" }}
-{{ with resources.GetRemote $baseURL }}
-  {{ if not .Err }}
-    {{ $fileList := .Content | transform.Unmarshal }}
+{{ $baseURL := "https://raw.githubusercontent.com/YuushaExa/novels-end/refs/heads/main/result/武煉巔峰.json" }}
+{{ $url := .Get "url" | default (printf "%s1.json" $baseURL) }}
+
+{{ with try (resources.GetRemote $url) }}
+  {{ if or .Err (not .Value) }}
+    {{ errorf "Failed to fetch data from %s: %v" $url .Err }}
+  {{ else }}
+    {{ $data := .Value | transform.Unmarshal }}
+    {{ $dataName := index (last 1 (split (trimSuffix ".json" $url) "/")) 0 }}
     
-    {{ range $file := $fileList }}
-      {{ if strings.HasSuffix $file.name ".json" }}
-        {{ $fileURL := $file.download_url }}
-        {{ $dataName := strings.TrimSuffix ".json" $file.name }}
-        
-        {{ with resources.GetRemote $fileURL }}
-          {{ if not .Err }}
-            {{ $data := .Content | transform.Unmarshal }}
-            
-            {{ if $data.chapters }}
-              {{ range $index, $section := $data.chapters }}
-                {{ $page := dict
-                  "content" (dict "mediaType" "text/markdown" "value" $section.content)
-                  "kind" "page"
-                  "params" (dict 
-                    "title" $section.title
-                    "chapter" (add $index 1)
-                    "id" $dataName
-                    "novel_id" $dataName
-                  )
-                  "path" (printf "%s/%d" $dataName (add $index 1))
-                  "title" $section.title
-                }}
-                {{ $.AddPage $page }}
-              {{ end }}
-            {{ end }}
-          {{ end }}
-        {{ end }}
+    {{ if $data.chapters }}
+      {{ range $index, $section := $data.chapters }}
+        {{ $page := dict
+          "content" (dict "mediaType" "text/markdown" "value" $section.content)
+          "kind" "page"
+          "params" (dict 
+            "title" $section.title
+            "chapter" (add $index 1)
+            "id" $dataName
+            "novel_id" $dataName
+          )
+          "path" (printf "%s/%d" $dataName (add $index 1))
+          "title" $section.title
+        }}
+        {{ $.AddPage $page }}
       {{ end }}
     {{ end }}
   {{ end }}
+{{ else }}
+  {{ errorf "Failed to fetch data from %s" $url }}
 {{ end }}
