@@ -31,7 +31,7 @@ jobs:
         uses: actions/checkout@v4
       
       - name: Install dependencies
-        run: sudo apt-get install -y wget gunzip
+        run: sudo apt-get update && sudo apt-get install -y wget gzip
       
       - name: Fetch and decompress JSON files
         run: |
@@ -39,7 +39,7 @@ jobs:
           baseURL="https://raw.githubusercontent.com/YuushaExa/novels-end/refs/heads/main/result/"
           for i in {1..100}; do
             wget -q "${baseURL}${i}.json.gz" -O "data/gzipped/${i}.json.gz" && \
-            gunzip -f "data/gzipped/${i}.json.gz" || break
+            gzip -df "data/gzipped/${i}.json.gz" || break
           done
       
       - name: Build
