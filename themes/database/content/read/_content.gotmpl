@@ -3,12 +3,13 @@
   {{ $url := printf "%s%d.json" $baseURL $fileNum }}
   {{ $dataName := string $fileNum }}
  
-  {{ with try (resources.GetRemote $url) }}
+  {{ with try (resources.GetRemote $url (dict "headers" (dict "Accept-Encoding" "gzip"))) }}
     {{ if or .Err (not .Value) }}
       {{/* Silent break on first error */}}
       {{ break }}
     {{ else }}
-      {{ $data := .Value | transform.Unmarshal }}
+      {{ $content := .Value.Content }}
+      {{ $data := transform.Unmarshal $content }}
       
       {{ if $data.chapters }}
         {{ range $index, $section := $data.chapters }}
