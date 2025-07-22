@@ -1,14 +1,14 @@
 {{ range $fileNum := seq 1 100 }}
-  {{ $dataPath := printf "data/novels/%d.json" $fileNum }}
-  {{ if fileExists $dataPath }}
-    {{ $data := getJSON $dataPath }}
+  {{ $jsonPath := printf "novels/%d.json.gz" $fileNum }}
+  {{ with resources.Get $jsonPath }}
+    {{ $data := .Content | transform.Unmarshal }}
     
     {{ if $data.chapters }}
       {{ range $index, $section := $data.chapters }}
         {{ $content := $section.content 
-          | replaceRE `\\r\\n` "\n"  
-          | replaceRE `\r\n` "\n"   
-          | replaceRE `\n+` "\n\n"   
+            | replaceRE `\\r\\n` "\n"  
+            | replaceRE `\r\n` "\n"   
+            | replaceRE `\n+` "\n\n"   
         }}
         
         {{ $page := dict
