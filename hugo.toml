@@ -10,7 +10,6 @@ disableKinds = ['rss']
 [params]
     description = "Book Library"
     author = "Yuusha"
-    [security]
 [pagination]
   pagerSize = 50
 [services]
