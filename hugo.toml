@@ -11,8 +11,6 @@ disableKinds = ['rss']
     description = "Book Library"
     author = "Yuusha"
     [security]
-[security.gotemplates]
-allowActionJSTmpl = true
 [pagination]
   pagerSize = 50
 [services]
