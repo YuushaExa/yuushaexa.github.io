@@ -12,6 +12,8 @@
       
       {{ if $data.chapters }}
         {{ range $index, $section := $data.chapters }}
+{{ $content := replace $section.content "\n" "\n\n" }}
+
           {{ $page := dict
             "content" (dict "mediaType" "text/markdown" "value" $section.content)
             "kind" "page"
