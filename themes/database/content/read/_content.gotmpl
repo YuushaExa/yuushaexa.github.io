@@ -1,25 +1,22 @@
 {{ $baseURL := "https://raw.githubusercontent.com/YuushaExa/novels-end/refs/heads/main/result/" }}
 {{ range $fileNum := seq 1 100 }}
-  {{ $url := printf "%s%d.json.gz" $baseURL $fileNum }}
+  {{ $url := printf "%s%d.json" $baseURL $fileNum }}
   {{ $dataName := string $fileNum }}
-
-  {{ $remoteOpts := dict 
-    "mediaType" "application/json"
-    "headers" (dict "Accept-Encoding" "gzip")
-  }}
-  {{ with resources.GetRemote $url $remoteOpts }}
-    {{ if .Err }}
-      {{/* Break silently if error (e.g., 404) */}}
+ 
+  {{ with try (resources.GetRemote $url) }}
+    {{ if or .Err (not .Value) }}
+      {{/* Silent break on first error */}}
       {{ break }}
     {{ else }}
-      {{ $data := .Content | transform.Unmarshal }}
+      {{ $data := .Value | transform.Unmarshal }}
       
       {{ if $data.chapters }}
         {{ range $index, $section := $data.chapters }}
-          {{ $content := $section.content 
-            | replaceRE `\\r\\n` "\n"  
-            | replaceRE `\r\n` "\n"   
-            | replaceRE `\n+` "\n\n"   
+
+{{ $content := $section.content 
+              | replaceRE `\\r\\n` "\n"  
+              | replaceRE `\r\n` "\n"   
+              | replaceRE `\n+` "\n\n"   
           }}
           
           {{ $page := dict
@@ -39,7 +36,7 @@
       {{ end }}
     {{ end }}
   {{ else }}
-    {{/* Break if fetch fails entirely */}}
+    {{/* Silent break on fetch failure */}}
     {{ break }}
   {{ end }}
 {{ end }}
