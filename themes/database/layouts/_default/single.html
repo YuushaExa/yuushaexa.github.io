@@ -3,7 +3,7 @@
 		<article>
 			<h1>{{ .Title }}</h1>
 			<div>
-				{{ .Content }}
+				{{ .Content | markdownify }}
 			</div>
 		</article>
 	</main>
