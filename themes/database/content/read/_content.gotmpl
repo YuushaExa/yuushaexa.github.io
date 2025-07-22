@@ -13,14 +13,14 @@
       {{ if $data.chapters }}
         {{ range $index, $section := $data.chapters }}
 
- {{ $content := $section.content 
+{{ $content := $section.content 
               | replaceRE `\\r\\n` "\n"  
               | replaceRE `\r\n` "\n"   
               | replaceRE `\n+` "\n\n"   
           }}
-
+          
           {{ $page := dict
-            "content" (dict "mediaType" "text/markdown" "value" $section.content)
+            "content" (dict "mediaType" "text/markdown" "value" $content)
             "kind" "page"
             "params" (dict 
               "title" $section.title
