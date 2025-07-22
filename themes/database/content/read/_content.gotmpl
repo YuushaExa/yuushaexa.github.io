@@ -1,30 +1,34 @@
 {{ $baseURL := "https://api.github.com/repos/YuushaExa/novels-end/contents/result" }}
-{{ $fileList := resources.GetRemote $baseURL | transform.Unmarshal }}
-
-{{ range $file := $fileList }}
-  {{ if strings.HasSuffix $file.name ".json" }}
-    {{ $fileURL := $file.download_url }}
-    {{ $dataName := strings.TrimSuffix ".json" $file.name }}
+{{ with resources.GetRemote $baseURL }}
+  {{ if not .Err }}
+    {{ $fileList := .Content | transform.Unmarshal }}
     
-    {{ with try (resources.GetRemote $fileURL) }}
-      {{ if not .Err }}
-        {{ $data := . | transform.Unmarshal }}
+    {{ range $file := $fileList }}
+      {{ if strings.HasSuffix $file.name ".json" }}
+        {{ $fileURL := $file.download_url }}
+        {{ $dataName := strings.TrimSuffix ".json" $file.name }}
         
-        {{ if $data.chapters }}
-          {{ range $index, $section := $data.chapters }}
-            {{ $page := dict
-              "content" (dict "mediaType" "text/markdown" "value" $section.content)
-              "kind" "page"
-              "params" (dict 
-                "title" $section.title
-                "chapter" (add $index 1)
-                "id" $dataName
-                "novel_id" $dataName
-              )
-              "path" (printf "%s/%d" $dataName (add $index 1))
-              "title" $section.title
-            }}
-            {{ $.AddPage $page }}
+        {{ with resources.GetRemote $fileURL }}
+          {{ if not .Err }}
+            {{ $data := .Content | transform.Unmarshal }}
+            
+            {{ if $data.chapters }}
+              {{ range $index, $section := $data.chapters }}
+                {{ $page := dict
+                  "content" (dict "mediaType" "text/markdown" "value" $section.content)
+                  "kind" "page"
+                  "params" (dict 
+                    "title" $section.title
+                    "chapter" (add $index 1)
+                    "id" $dataName
+                    "novel_id" $dataName
+                  )
+                  "path" (printf "%s/%d" $dataName (add $index 1))
+                  "title" $section.title
+                }}
+                {{ $.AddPage $page }}
+              {{ end }}
+            {{ end }}
           {{ end }}
         {{ end }}
       {{ end }}
