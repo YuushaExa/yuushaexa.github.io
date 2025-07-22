@@ -3,13 +3,16 @@
   {{ $url := printf "%s%d.json.gz" $baseURL $fileNum }}
   {{ $dataName := string $fileNum }}
   
-  {{ with try (resources.GetRemote $url) }}
-    {{ if or .Err (not .Value) }}
-      {{/* Silent break on first error */}}
+  {{ with resources.GetRemote $url }}
+    {{ if .Err }}
+      {{ warnf "Failed to fetch %s: %v" $url .Err }}
       {{ break }}
     {{ else }}
-      {{/* Decompress Gzip data */}}
-      {{ $decompressed := .Value | resources.ExecuteAsTemplate (printf "decompressed_%d.json" $fileNum) . | resources.FromString (printf "decompressed_%d.json" $fileNum) }}
+      {{/* Create a temporary resource */}}
+      {{ $tmpResource := . | resources.Copy (printf "tmp/%d.json.gz" $fileNum) }}
+      
+      {{/* Decompress using Hugo Pipes */}}
+      {{ $decompressed := $tmpResource | resources.ExecuteAsTemplate (printf "decompressed_%d.json" $fileNum) . }}
       
       {{/* Parse JSON */}}
       {{ $data := $decompressed | transform.Unmarshal }}
@@ -33,7 +36,7 @@
       {{ end }}
     {{ end }}
   {{ else }}
-    {{/* Silent break on fetch failure */}}
+    {{ warnf "Resource fetch failed for %s" $url }}
     {{ break }}
   {{ end }}
 {{ end }}
