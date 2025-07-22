@@ -1,0 +1,34 @@
+{{ $baseURL := "https://raw.githubusercontent.com/YuushaExa/novels-end/refs/heads/main/result/" }}
+{{ $fileNames := slice "1.json" "武煉巔峰.json" }} 
+{{ range $fileName := $fileNames }}
+  {{ $url := printf "%s%s" $baseURL $fileName }}
+  {{ $dataName := replace $fileName ".json" "" }}
+
+  {{ with try (resources.GetRemote $url) }}
+    {{ if or .Err (not .Value) }}
+      {{ warnf "Failed to fetch %s: %v" $url .Err }}
+    {{ else }}
+      {{ $data := .Value | transform.Unmarshal }}
+      
+      {{ if $data.chapters }}
+        {{ range $index, $section := $data.chapters }}
+          {{ $page := dict
+            "content" (dict "mediaType" "text/markdown" "value" $section.content)
+            "kind" "page"
+            "params" (dict 
+              "title" $section.title
+              "chapter" (add $index 1)
+              "id" $dataName
+              "novel_id" $dataName
+            )
+            "path" (printf "%s/%d" $dataName (add $index 1))
+            "title" $section.title
+          }}
+          {{ $.AddPage $page }}
+        {{ end }}
+      {{ end }}
+    {{ end }}
+  {{ else }}
+    {{ warnf "Failed to fetch %s" $url }}
+  {{ end }}
+{{ end }}
