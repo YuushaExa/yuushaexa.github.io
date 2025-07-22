@@ -30,7 +30,38 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       
-      - name: Build
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+      
+      - name: Fetch and process JSON files
+        run: |
+          mkdir -p data/novels
+          BASE_URL="https://raw.githubusercontent.com/YuushaExa/novels-end/refs/heads/main/result/"
+          
+          for i in {1..100}; do
+            URL="${BASE_URL}${i}.json.gz"
+            OUTPUT_FILE="data/novels/${i}.json"
+            
+            # Download the gzipped file
+            if curl -s -f -L "$URL" | gunzip -c > "$OUTPUT_FILE.tmp"; then
+              # Validate JSON and only keep if valid
+              if jq empty "$OUTPUT_FILE.tmp" 2>/dev/null; then
+                mv "$OUTPUT_FILE.tmp" "$OUTPUT_FILE"
+                echo "Processed file $i.json successfully"
+              else
+                echo "Invalid JSON in file $i, skipping"
+                rm -f "$OUTPUT_FILE.tmp"
+                break
+              fi
+            else
+              echo "Failed to fetch file $i, stopping"
+              break
+            fi
+          done
+      
+      - name: Build Hugo
         run: hugo --minify --templateMetrics --templateMetricsHints --baseURL "https://yuushaexa.github.io/"
       
       - name: Upload Artifact
