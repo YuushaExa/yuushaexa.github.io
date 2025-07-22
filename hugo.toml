@@ -3,6 +3,10 @@ languageCode = 'en-us'
 title = "BookLibrary"
 theme = "database"  
 disableKinds = ['rss']
+[security]
+  [security.http]
+    mediaTypes = ['^application/json$', '^application/gzip$']
+    methods = ['GET', 'HEAD']
 [params]
     description = "Book Library"
     author = "Yuusha"
