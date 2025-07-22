@@ -1,5 +1,5 @@
 {{ $baseURL := "https://raw.githubusercontent.com/YuushaExa/novels-end/refs/heads/main/result/" }}
-{{ range $fileNum := seq 1 武煉巔峰 }}
+{{ range $fileNum := seq 1 100 }}
   {{ $url := printf "%s%d.json" $baseURL $fileNum }}
   {{ $dataName := string $fileNum }}
  
