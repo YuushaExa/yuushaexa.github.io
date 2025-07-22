@@ -30,24 +30,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       
-      - name: Download gzipped JSON files
-        run: |
-          mkdir -p assets/novels
-          BASE_URL="https://raw.githubusercontent.com/YuushaExa/novels-end/refs/heads/main/result/"
-          
-          for i in {1..100}; do
-            URL="${BASE_URL}${i}.json.gz"
-            OUTPUT_FILE="assets/novels/${i}.json.gz"
-            
-            if curl -s -f -L "$URL" -o "$OUTPUT_FILE"; then
-              echo "Downloaded file $i.json.gz successfully"
-            else
-              echo "Failed to fetch file $i, stopping"
-              break
-            fi
-          done
-      
-      - name: Build Hugo
+      - name: Build
         run: hugo --minify --templateMetrics --templateMetricsHints --baseURL "https://yuushaexa.github.io/"
       
       - name: Upload Artifact
