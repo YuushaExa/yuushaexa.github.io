@@ -21,17 +21,28 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Cache Hugo and dependencies
+        uses: actions/cache@v3
+        id: cache
+        with:
+          path: |
+            ~/.cache/hugo
+            /var/cache/apt/archives
+          key: ${{ runner.os }}-hugo-${{ hashFiles('**/go.mod') }}-${{ hashFiles('**/package-lock.json') }}-1
+      
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget gzip
+      
       - name: Install Hugo
         uses: peaceiris/actions-hugo@v2
         with:
           hugo-version: "latest"
           extended: true
-      
-      - name: Checkout
-        uses: actions/checkout@v4
-      
-      - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y wget gzip
       
       - name: Fetch and decompress JSON files
         run: |
