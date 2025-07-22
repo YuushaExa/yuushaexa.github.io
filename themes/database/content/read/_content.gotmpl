@@ -1,12 +1,12 @@
 {{ $baseURL := "https://raw.githubusercontent.com/YuushaExa/novels-end/refs/heads/main/result/" }}
-{{ range $fileNum := seq 1 100 }}
-  {{ $url := printf "%s%d.json" $baseURL $fileNum }}
-  {{ $dataName := string $fileNum }}
- 
+{{ $fileNames := slice "1.json" "武煉巔峰.json" }} 
+{{ range $fileName := $fileNames }}
+  {{ $url := printf "%s%s" $baseURL $fileName }}
+  {{ $dataName := replace $fileName ".json" "" }}
+
   {{ with try (resources.GetRemote $url) }}
     {{ if or .Err (not .Value) }}
-      {{/* Silent break on first error */}}
-      {{ break }}
+      {{ warnf "Failed to fetch %s: %v" $url .Err }}
     {{ else }}
       {{ $data := .Value | transform.Unmarshal }}
       
@@ -29,7 +29,6 @@
       {{ end }}
     {{ end }}
   {{ else }}
-    {{/* Silent break on fetch failure */}}
-    {{ break }}
+    {{ warnf "Failed to fetch %s" $url }}
   {{ end }}
 {{ end }}
