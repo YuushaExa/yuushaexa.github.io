@@ -3,8 +3,11 @@
   {{ $url := printf "%s%d.json.gz" $baseURL $fileNum }}
   {{ $dataName := string $fileNum }}
  
-{{ with resources.GetRemote $url (dict "headers" (dict "Accept-Encoding" "gzip")) }}
-    {{ if or .Err (not .Value) }}
+{{ with resources.GetRemote $url (dict 
+    "mediaType" "application/json"
+    "headers" (dict "Accept-Encoding" "gzip")
+  }}
+{{ if or .Err (not .Value) }}
       {{/* Silent break on first error */}}
       {{ break }}
     {{ else }}
