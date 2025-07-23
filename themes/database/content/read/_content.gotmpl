@@ -9,9 +9,8 @@
 {{ range $novelId, $url := $novelUrls }}
   {{ $remoteData := resources.GetRemote $url }}
   {{ if $remoteData }}
-    {{/* Clean JSON before parsing */}}
     {{ $cleanJson := $remoteData.Content 
-      | replace `，"` `,"`  /* Fix Chinese commas */
+      | replace `，"` `,"`  
       | replace `\r\n` `\n` 
       | replace `\\"` `\"`
     }}
