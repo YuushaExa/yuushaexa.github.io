@@ -3,7 +3,7 @@
 {{ with try (resources.GetRemote $url) }}
   {{ with .Err }}
     {{ errorf "Unable to get remote resource %s: %s" $url . }}
-  {{ else with .Value }}
+  {{ else with .Value }} 
     {{ $data = . | transform.Unmarshal }}
   {{ else }}
     {{ errorf "Unable to get remote resource %s" $url }}
