@@ -37,11 +37,10 @@ jobs:
         run: |
           mkdir -p data/gzipped
           baseURL="https://raw.githubusercontent.com/YuushaExa/novels-end/refs/heads/main/result/"
-          for i in {武煉巔峰..帝霸}; do
-            if ! wget -q "${baseURL}${i}.json.gz" -O "data/gzipped/${i}.json.gz"; then
+            if ! wget -q "${baseURL}${帝霸}.json.gz" -O "data/gzipped/${帝霸}.json.gz"; then
               break
             fi
-            gzip -df "data/gzipped/${i}.json.gz" || true
+            gzip -df "data/gzipped/${帝霸}.json.gz" || true
           done
       
       - name: Build Hugo site
