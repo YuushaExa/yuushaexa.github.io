@@ -1,26 +1,31 @@
 {{ $jsonUrl := "https://github.com/YuushaExa/novels-end/raw/refs/heads/main/result/%E5%B8%9D%E9%9C%B8.json" }}
-{{ $data := getJSON $jsonUrl }}
+{{ $remoteData := resources.GetRemote $jsonUrl }}
+{{ if $remoteData }}
+  {{ $data := $remoteData.Content | transform.Unmarshal }}
 
-{{ if $data.chapters }}
-  {{ range $index, $section := $data.chapters }}
-    {{ $content := $section.content 
-                  | replaceRE `\\r\\n` "\n"  
-                  | replaceRE `\r\n` "\n"   
-                  | replaceRE `\n+` "\n\n"   
-              }}
-              
-    {{ $page := dict
-      "content" (dict "mediaType" "text/markdown" "value" $content)
-      "kind" "page"
-      "params" (dict 
+  {{ if $data.chapters }}
+    {{ range $index, $section := $data.chapters }}
+      {{ $content := $section.content 
+                    | replaceRE `\\r\\n` "\n"  
+                    | replaceRE `\r\n` "\n"   
+                    | replaceRE `\n+` "\n\n"   
+                }}
+                
+      {{ $page := dict
+        "content" (dict "mediaType" "text/markdown" "value" $content)
+        "kind" "page"
+        "params" (dict 
+          "title" $section.title
+          "chapter" (add $index 1)
+          "id" "novel"
+          "novel_id" "novel"
+        )
+        "path" (printf "novel/%d" (add $index 1))
         "title" $section.title
-        "chapter" (add $index 1)
-        "id" "novel" 
-        "novel_id" "novel"
-      )
-      "path" (printf "novel/%d" (add $index 1))  
-      "title" $section.title
-    }}
-    {{ $.AddPage $page }}
+      }}
+      {{ $.AddPage $page }}
+    {{ end }}
   {{ end }}
+{{ else }}
+  {{ warnf "Failed to fetch data from %s" $jsonUrl }}
 {{ end }}
