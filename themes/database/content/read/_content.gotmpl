@@ -16,7 +16,8 @@
                       | replaceRE "；" ";"   
                       | replaceRE `\\r\\n` "\n"  
                       | replaceRE `\r\n` "\n"   
-                      | replaceRE `\n+` "\n\n"   
+                      | replaceRE `\n+` "\n\n"  
+                      | safeHTML
                   }}
                   
         {{ $page := dict
