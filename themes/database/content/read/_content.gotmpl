@@ -4,25 +4,15 @@
   {{ $dataName := string $fileNum }}
   
   {{ if fileExists $filePath }}
-    {{ $fileContent := readFile $filePath }}
+    {{ $content := readFile $filePath }}
+    {{ $data := $content | transform.Unmarshal }}
     
-    {{/* Try to unmarshal, skip on failure */}}
-    {{ $data := dict }}
-    {{ with transform.Unmarshal $fileContent }}
-      {{ $data = . }}
-    {{ else }}
-      {{ warnf "Skipping unprocessable file: %s (contains invalid JSON or unsupported characters)" $filePath }}
-      {{ continue }} <!-- Skip to next file -->
-    {{ end }}
-
     {{ if $data.chapters }}
       {{ range $index, $section := $data.chapters }}
-        {{/* Use safeHTML to preserve special chars in content */}}
         {{ $content := $section.content 
                       | replaceRE `\\r\\n` "\n"  
                       | replaceRE `\r\n` "\n"   
-                      | replaceRE `\n+` "\n\n"
-                      | safeHTML
+                      | replaceRE `\n+` "\n\n"   
                   }}
                   
         {{ $page := dict
@@ -41,6 +31,7 @@
       {{ end }}
     {{ end }}
   {{ else }}
-    {{ break }} <!-- Stop if file doesn't exist -->
+    {{/* Silent break when file doesn't exist */}}
+    {{ break }}
   {{ end }}
 {{ end }}
