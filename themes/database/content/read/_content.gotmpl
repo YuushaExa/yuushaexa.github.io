@@ -2,10 +2,10 @@
 {{ $novelUrls := dict
   "hh" "https://github.com/YuushaExa/novels-end/raw/main/result/%E5%B8%9D%E9%9C%B8.json"
   "novel2" "https://github.com/YuushaExa/novels-end/raw/refs/heads/main/result/%E5%85%89%E9%99%B0%E4%B9%8B%E5%A4%96.json"
+  "novel2" "https://github.com/YuushaExa/novels-end/raw/refs/heads/main/result/%E5%8F%B2%E4%B8%8A%E6%9C%80%E5%BC%B7%E9%8D%8A%E6%B0%A3%E6%9C%9F.json"
   "novel4" "https://github.com/YuushaExa/novels-end/raw/refs/heads/main/result/%E6%AD%A6%E7%85%89%E5%B7%94%E5%B3%B0.json"
   "novel5" "https://github.com/YuushaExa/novels-end/raw/refs/heads/main/result/%E8%BC%AA%E8%BF%B4%E6%A8%82%E5%9C%92.json"
 }}
-
 {{ range $novelId, $url := $novelUrls }}
   {{/* Fetch remote JSON */}}
   {{ $remoteData := resources.GetRemote $url (dict "headers" (dict "Accept" "application/json")) }}
