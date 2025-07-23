@@ -1,37 +1,26 @@
-{{ $basePath := "data/gzipped/" }}
-{{ range $fileNum := seq 1 100 }}
-  {{ $filePath := printf "%s%d.json" $basePath $fileNum }}
-  {{ $dataName := string $fileNum }}
-  
-  {{ if fileExists $filePath }}
-    {{ $content := readFile $filePath }}
-    {{ $data := $content | transform.Unmarshal }}
-    
-    {{ if $data.chapters }}
-      {{ range $index, $section := $data.chapters }}
-        {{ $content := $section.content 
-                      | replaceRE `\\r\\n` "\n"  
-                      | replaceRE `\r\n` "\n"   
-                      | replaceRE `\n+` "\n\n"   
-                  }}
-                  
-        {{ $page := dict
-          "content" (dict "mediaType" "text/markdown" "value" $content)
-          "kind" "page"
-          "params" (dict 
-            "title" $section.title
-            "chapter" (add $index 1)
-            "id" $dataName
-            "novel_id" $dataName
-          )
-          "path" (printf "%s/%d" $dataName (add $index 1))
-          "title" $section.title
-        }}
-        {{ $.AddPage $page }}
-      {{ end }}
-    {{ end }}
-  {{ else }}
-    {{/* Silent break when file doesn't exist */}}
-    {{ break }}
+{{ $jsonUrl := "https://github.com/YuushaExa/novels-end/raw/refs/heads/main/result/%E5%B8%9D%E9%9C%B8.json" }}
+{{ $data := getJSON $jsonUrl }}
+
+{{ if $data.chapters }}
+  {{ range $index, $section := $data.chapters }}
+    {{ $content := $section.content 
+                  | replaceRE `\\r\\n` "\n"  
+                  | replaceRE `\r\n` "\n"   
+                  | replaceRE `\n+` "\n\n"   
+              }}
+              
+    {{ $page := dict
+      "content" (dict "mediaType" "text/markdown" "value" $content)
+      "kind" "page"
+      "params" (dict 
+        "title" $section.title
+        "chapter" (add $index 1)
+        "id" "novel"  <!-- Changed since we're not using file numbers anymore -->
+        "novel_id" "novel"
+      )
+      "path" (printf "novel/%d" (add $index 1))  <!-- Updated path structure -->
+      "title" $section.title
+    }}
+    {{ $.AddPage $page }}
   {{ end }}
 {{ end }}
