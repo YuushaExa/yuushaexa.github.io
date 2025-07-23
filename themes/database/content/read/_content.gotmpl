@@ -4,19 +4,24 @@
   {{ $dataName := string $fileNum }}
   
   {{ if fileExists $filePath }}
-    {{ $content := readFile $filePath }}
-    {{ $data := $content | transform.Unmarshal }}
+    {{ $fileContent := readFile $filePath }}
+    
+    {{/* Attempt to unmarshal with error handling */}}
+    {{ $data := dict }}
+    {{ with transform.Unmarshal $fileContent }}
+      {{ $data = . }}
+    {{ else }}
+      {{ warnf "Skipping problematic file (failed to unmarshal): %s" $filePath }}
+      {{ continue }}
+    {{ end }}
     
     {{ if $data.chapters }}
       {{ range $index, $section := $data.chapters }}
+        {{/* Process content with safeHTML to preserve special chars */}}
         {{ $content := $section.content 
-                      | replaceRE `[！]` "!" 
-                      | replaceRE "，" ","  
-                      | replaceRE "。" "."    
-                      | replaceRE "；" ";"   
                       | replaceRE `\\r\\n` "\n"  
                       | replaceRE `\r\n` "\n"   
-                      | replaceRE `\n+` "\n\n"  
+                      | replaceRE `\n+` "\n\n"
                       | safeHTML
                   }}
                   
