@@ -31,60 +31,24 @@ jobs:
           extended: true
       
       - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y wget jq
-          echo "Dependencies installed"
-      
+        run: sudo apt-get update && sudo apt-get install -y wget
+
       - name: Fetch and decompress JSON files
         run: |
-          echo "Creating data directory..."
-          mkdir -p data/gzipped
-          
-          echo "Downloading tad1-data.json..."
-          wget -q "https://raw.githubusercontent.com/YuushaExa/novels-all/refs/heads/main/result/tad1-data.json" -O tad1-data.json
-          
-          echo "Extracting IDs..."
-          ids=$(jq -r '.[].id' tad1-data.json)
-          echo "Found IDs: $(echo $ids | wc -w)"
-          
-          baseURL="https://raw.githubusercontent.com/YuushaExa/novels-end/refs/heads/main/result/"
-          success=0
-          failures=0
-          
-          for id in $ids; do
-            output_file="data/gzipped/${id}.json.gz"
-            echo "Downloading ${id}.json.gz..."
-            
-            if wget -q "${baseURL}${id}.json.gz" -O "$output_file"; then
-              echo "Successfully downloaded ${id}.json.gz"
-              if gzip -df "$output_file"; then
-                ((success++))
-                echo "Successfully decompressed ${id}.json.gz"
-              else
-                ((failures++))
-                echo "Failed to decompress ${id}.json.gz"
-                rm -f "$output_file"  # Clean up corrupted gzip
-              fi
-            else
-              ((failures++))
-              echo "Failed to download ${id}.json.gz"
-            fi
+         mkdir -p data/gzipped
+         baseURL="https://raw.githubusercontent.com/YuushaExa/novels-end/refs/heads/main/result/"
+         # Manually specify the file numbers you want to download
+         files=(1 168108 212475 396056)
+         for i in "${files[@]}"; do
+          if ! wget -q "${baseURL}${i}.json.gz" -O "data/gzipped/${i}.json.gz"; then
+           echo "Failed to download file ${i}.json.gz"
+          continue
+          fi
+          gzip -df "data/gzipped/${i}.json.gz" || true
           done
-          
-          echo "Download summary:"
-          echo "Successfully processed: $success files"
-          echo "Failed to process: $failures files"
-          
-          echo "Verifying downloaded files..."
-          ls -lh data/gzipped/
-          echo "Total JSON files: $(find data/gzipped/ -name "*.json" | wc -l)"
       
       - name: Build Hugo site
-        run: |
-          echo "Building Hugo site..."
-          hugo --minify --baseURL "https://yuushaexa.github.io/"
-          echo "Build complete"
+        run: hugo --minify --baseURL "https://yuushaexa.github.io/"
       
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
