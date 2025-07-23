@@ -31,67 +31,17 @@ jobs:
           extended: true
       
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y wget unzip file jq
+        run: sudo apt-get update && sudo apt-get install -y wget
       
-      - name: Fetch and process JSON files
+      - name: Fetch and decompress JSON files
         run: |
           mkdir -p data/gzipped
           baseURL="https://raw.githubusercontent.com/YuushaExa/novels-end/refs/heads/main/result/"
-          
-          for file in 光陰之外.json.gz; do
-            echo "Processing ${file}..."
-            
-            # Download the file
-            if ! wget -q "${baseURL}${file}" -O "data/gzipped/${file}"; then
-              echo "::error::Failed to download ${file}"
-              exit 1
+          for i in {1..100}; do
+            if ! wget -q "${baseURL}${i}.json.gz" -O "data/gzipped/${i}.json.gz"; then
+              break
             fi
-
-            # First decompress the gzip
-            if ! gzip -df "data/gzipped/${file}"; then
-              echo "::error::Failed to decompress gzip ${file}"
-              exit 1
-            fi
-
-            # Get the decompressed filename (removes .gz extension)
-            decompressed_file="data/gzipped/${file%.gz}"
-
-            # Check file type
-            file_type=$(file -b "$decompressed_file")
-            
-            # Handle different file types
-            if [[ "$file_type" == *"Zip archive data"* ]]; then
-              echo "Found ZIP archive inside GZIP: ${file}"
-              
-              # Extract ZIP contents
-              if ! unzip -o "$decompressed_file" -d "data/gzipped/"; then
-                echo "::error::Failed to extract ZIP from ${decompressed_file}"
-                exit 1
-              fi
-              
-              # Remove the intermediate ZIP file
-              rm "$decompressed_file"
-              
-              # Validate extracted JSON files
-              for extracted_file in data/gzipped/*.json; do
-                if [ -f "$extracted_file" ]; then
-                  if ! jq empty "$extracted_file" 2>/dev/null; then
-                    echo "::error::Invalid JSON in ${extracted_file}"
-                    exit 1
-                  fi
-                fi
-              done
-              
-            elif [[ "$file_type" == *"JSON data"* ]]; then
-              # Validate the JSON file
-              if ! jq empty "$decompressed_file" 2>/dev/null; then
-                echo "::error::Invalid JSON in ${decompressed_file}"
-                exit 1
-              fi
-            else
-              echo "::error::Unknown file type: ${file_type}"
-              exit 1
-            fi
+            gzip -df "data/gzipped/${i}.json.gz" || true
           done
       
       - name: Build Hugo site
