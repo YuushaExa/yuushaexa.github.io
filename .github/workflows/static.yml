@@ -35,14 +35,18 @@ jobs:
       
       - name: Fetch and decompress JSON files
         run: |
-         mkdir -p data/gzipped
-         baseURL="https://raw.githubusercontent.com/YuushaExa/novels-end/refs/heads/main/result/"
+          mkdir -p data/gzipped
+          baseURL="https://raw.githubusercontent.com/YuushaExa/novels-end/refs/heads/main/result/"
           for file in 光陰之外.json.gz; do
             if ! wget -q "${baseURL}${file}" -O "data/gzipped/${file}"; then
-            break
-           fi
-           gzip -df "data/gzipped/${file}" || true
-           done
+              echo "::error::Failed to download ${file}"
+              exit 1
+            fi
+            if ! gzip -df "data/gzipped/${file}"; then
+              echo "::error::Failed to decompress ${file}"
+              exit 1
+            fi
+          done
       
       - name: Build Hugo site
         run: hugo --minify --baseURL "https://yuushaexa.github.io/"
