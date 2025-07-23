@@ -31,18 +31,24 @@ jobs:
           extended: true
       
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y wget
-      
+        run: sudo apt-get update && sudo apt-get install -y wget jq
+
       - name: Fetch and decompress JSON files
         run: |
-          mkdir -p data/gzipped
-          baseURL="https://raw.githubusercontent.com/YuushaExa/novels-end/refs/heads/main/result/"
-          for i in {1..100}; do
-            if ! wget -q "${baseURL}${i}.json.gz" -O "data/gzipped/${i}.json.gz"; then
-              break
-            fi
-            gzip -df "data/gzipped/${i}.json.gz" || true
-          done
+         mkdir -p data/gzipped
+         wget -q "https://raw.githubusercontent.com/YuushaExa/novels-all/refs/heads/main/result/tad1-data.json" -O tad1-data.json
+    
+         ids=$(jq -r '.[].id' tad1-data.json)
+    
+         baseURL="https://raw.githubusercontent.com/YuushaExa/novels-end/refs/heads/main/result/"
+    
+         for id in $ids; do
+         if ! wget -q "${baseURL}${id}.json.gz" -O "data/gzipped/${id}.json.gz"; then
+         echo "Failed to download ${id}.json.gz"
+         continue
+         fi
+         gzip -df "data/gzipped/${id}.json.gz" || true
+         done
       
       - name: Build Hugo site
         run: hugo --minify --baseURL "https://yuushaexa.github.io/"
