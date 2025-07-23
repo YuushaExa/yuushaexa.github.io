@@ -43,12 +43,12 @@ jobs:
          baseURL="https://raw.githubusercontent.com/YuushaExa/novels-end/refs/heads/main/result/"
     
          for id in $ids; do
-         if ! wget -q "${baseURL}${id}.json.gz" -O "data/gzipped/${id}.json.gz"; then
-         echo "Failed to download ${id}.json.gz"
-         continue
-         fi
-         gzip -df "data/gzipped/${id}.json.gz" || true
-         done
+             if ! wget -q "${baseURL}${id}.json.gz" -O "data/gzipped/${id}.json.gz"; then
+               echo "Failed to download ${id}.json.gz"
+               continue
+             fi
+             gzip -df "data/gzipped/${id}.json.gz" || true
+           done
       
       - name: Build Hugo site
         run: hugo --minify --baseURL "https://yuushaexa.github.io/"
