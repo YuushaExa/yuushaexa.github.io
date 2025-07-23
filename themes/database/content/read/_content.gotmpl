@@ -15,10 +15,10 @@
       "params" (dict 
         "title" $section.title
         "chapter" (add $index 1)
-        "id" "novel"  <!-- Changed since we're not using file numbers anymore -->
+        "id" "novel" 
         "novel_id" "novel"
       )
-      "path" (printf "novel/%d" (add $index 1))  <!-- Updated path structure -->
+      "path" (printf "novel/%d" (add $index 1))  
       "title" $section.title
     }}
     {{ $.AddPage $page }}
