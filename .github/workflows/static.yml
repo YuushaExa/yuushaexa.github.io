@@ -32,19 +32,16 @@ jobs:
       
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y wget
-
+      
       - name: Fetch and decompress JSON files
         run: |
-         mkdir -p data/gzipped
-         baseURL="https://raw.githubusercontent.com/YuushaExa/novels-end/refs/heads/main/result/"
-         # Manually specify the file numbers you want to download
-         files=(1 168108 212475 396056)
-         for i in "${files[@]}"; do
-          if ! wget -q "${baseURL}${i}.json.gz" -O "data/gzipped/${i}.json.gz"; then
-           echo "Failed to download file ${i}.json.gz"
-          continue
-          fi
-          gzip -df "data/gzipped/${i}.json.gz" || true
+          mkdir -p data/gzipped
+          baseURL="https://raw.githubusercontent.com/YuushaExa/novels-end/refs/heads/main/result/"
+          for i in {1..100}; do
+            if ! wget -q "${baseURL}${i}.json.gz" -O "data/gzipped/${i}.json.gz"; then
+              break
+            fi
+            gzip -df "data/gzipped/${i}.json.gz" || true
           done
       
       - name: Build Hugo site
