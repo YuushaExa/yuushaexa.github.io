@@ -29,21 +29,7 @@ jobs:
         with:
           hugo-version: "latest"
           extended: true
-      
-      - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y wget
-      
-      - name: Fetch and decompress JSON files
-        run: |
-          mkdir -p data/gzipped
-          baseURL="https://raw.githubusercontent.com/YuushaExa/novels-end/refs/heads/main/result/"
-          for i in {4..5}; do
-            if ! wget -q "${baseURL}${i}.json.gz" -O "data/gzipped/${i}.json.gz"; then
-              break
-            fi
-            gzip -df "data/gzipped/${i}.json.gz" || true
-          done
-      
+  
       - name: Build Hugo site
         run: hugo --minify --baseURL "https://yuushaexa.github.io/"
       
