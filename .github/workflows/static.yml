@@ -37,7 +37,7 @@ jobs:
         run: |
           mkdir -p data/gzipped
           baseURL="https://raw.githubusercontent.com/YuushaExa/novels-end/refs/heads/main/result/"
-          for i in {1..2}; do
+          for i in {1..3}; do
             if ! wget -q "${baseURL}${i}.json.gz" -O "data/gzipped/${i}.json.gz"; then
               break
             fi
