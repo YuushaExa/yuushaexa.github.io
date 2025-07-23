@@ -1,0 +1,57 @@
+name: Deploy Hugo to GitHub Pages
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v2
+        with:
+          hugo-version: "latest"
+          extended: true
+      
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y wget
+      
+      - name: Fetch and decompress JSON files
+        run: |
+          mkdir -p data/gzipped
+          baseURL="https://raw.githubusercontent.com/YuushaExa/novels-end/refs/heads/main/result/"
+          for i in {1..100}; do
+            if ! wget -q "${baseURL}${i}.json.gz" -O "data/gzipped/${i}.json.gz"; then
+              break
+            fi
+            gzip -df "data/gzipped/${i}.json.gz" || true
+          done
+      
+      - name: Build Hugo site
+        run: hugo --minify --baseURL "https://yuushaexa.github.io/"
+      
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./public
+      
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
