@@ -35,13 +35,14 @@ jobs:
       
       - name: Fetch and decompress JSON files
         run: |
-          mkdir -p data/gzipped
-          baseURL="https://raw.githubusercontent.com/YuushaExa/novels-end/refs/heads/main/result/"
-            if ! wget -q "${baseURL}${帝霸}.json.gz" -O "data/gzipped/${帝霸}.json.gz"; then
-              break
-            fi
-            gzip -df "data/gzipped/${帝霸}.json.gz" || true
-          done
+         mkdir -p data/gzipped
+         baseURL="https://raw.githubusercontent.com/YuushaExa/novels-end/refs/heads/main/result/"
+          for file in 1.json.gz; do
+            if ! wget -q "${baseURL}${file}" -O "data/gzipped/${file}"; then
+            break
+           fi
+           gzip -df "data/gzipped/${file}" || true
+           done
       
       - name: Build Hugo site
         run: hugo --minify --baseURL "https://yuushaexa.github.io/"
