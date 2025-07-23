@@ -10,6 +10,7 @@
     {{ if $data.chapters }}
       {{ range $index, $section := $data.chapters }}
         {{ $content := $section.content 
+                      | replaceRE `[！]` "!" 
                       | replaceRE "，" ","  
                       | replaceRE "。" "."    
                       | replaceRE "；" ";"   
