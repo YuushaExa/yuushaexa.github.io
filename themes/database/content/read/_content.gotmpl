@@ -8,28 +8,26 @@
   {{ if $remoteData }} 
     {{ $data := $remoteData.Content | transform.Unmarshal }}
     
-    {{/* Process chapters */}} 
-    {{ if $data.content }}
-      {{ range $index, $section := $data.content }}
-        {{ $content := $section.content 
-                      | replaceRE `\\r\\n` "\n"  
-                      | replaceRE `\r\n` "\n"   
-                      | replaceRE `\n+` "\n\n" }}
+    {{/* Process chapters - note $data is an array */}} 
+    {{ range $index, $section := $data }}
+      {{ $content := $section.content 
+                    | replaceRE `\\r\\n` "\n"  
+                    | replaceRE `\r\n` "\n"   
+                    | replaceRE `\n+` "\n\n" }}
         
-        {{ $page := dict
-          "content" (dict "mediaType" "text/markdown" "value" $content)
-          "kind" "page"
-          "params" (dict 
-            "title" $section.title
-            "content" (add $index 1)
-            "id" $novelId
-            "novel_id" $novelId
-          )
-          "path" (printf "%s/%d" $novelId (add $index 1))
+      {{ $page := dict
+        "content" (dict "mediaType" "text/markdown" "value" $content)
+        "kind" "page"
+        "params" (dict 
           "title" $section.title
-        }}
-        {{ $.AddPage $page }}
-      {{ end }}
+          "content" (add $index 1)
+          "id" $novelId
+          "novel_id" $novelId
+        )
+        "path" (printf "%s/%d" $novelId (add $index 1))
+        "title" $section.title
+      }}
+      {{ $.AddPage $page }}
     {{ end }}
   {{ else }}
     {{ warnf "Failed to fetch novel: %s from %s" $novelId $url }}
