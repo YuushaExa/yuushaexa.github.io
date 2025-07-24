@@ -1,10 +1,6 @@
 {{/* Define all novel JSON URLs */}}
 {{ $novelUrls := dict 
-  "hh" "https://github.com/YuushaExa/novels-end/raw/refs/heads/main/result/168108_tw.json"
-  "novel3" "https://github.com/YuushaExa/novels-end/raw/refs/heads/main/result/396056.json"
   "novel4" "https://github.com/YuushaExa/crawl/raw/refs/heads/main/results/212475.json"
-  "hh1" "https://github.com/YuushaExa/novels-end/raw/refs/heads/main/result/68885.json"
-  "novel12" "https://github.com/YuushaExa/novels-end/raw/refs/heads/main/result/70031_tw.json"
 }} 
 {{ range $novelId, $url := $novelUrls }}
   {{/* Fetch remote JSON */}}
@@ -13,8 +9,8 @@
     {{ $data := $remoteData.Content | transform.Unmarshal }}
     
     {{/* Process chapters */}} 
-    {{ if $data.chapters }}
-      {{ range $index, $section := $data.chapters }}
+    {{ if $data.content }}
+      {{ range $index, $section := $data.content }}
         {{ $content := $section.content 
                       | replaceRE `\\r\\n` "\n"  
                       | replaceRE `\r\n` "\n"   
@@ -25,7 +21,7 @@
           "kind" "page"
           "params" (dict 
             "title" $section.title
-            "chapter" (add $index 1)
+            "content" (add $index 1)
             "id" $novelId
             "novel_id" $novelId
           )
