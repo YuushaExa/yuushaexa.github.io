@@ -6,7 +6,7 @@
 {{ range $novelId, $url := $novelUrls }}
   {{/* Fetch remote JSON */}}
   {{ $remoteData := resources.GetRemote $url (dict "headers" (dict "Accept" "application/json")) }}
-  {{ if $remoteData }}
+  {{ if $remoteData }} 
     {{ $data := $remoteData.Content | transform.Unmarshal }}
     
     {{/* Process chapters */}} 
