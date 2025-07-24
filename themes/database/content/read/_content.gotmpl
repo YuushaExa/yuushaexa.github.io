@@ -11,7 +11,7 @@
     {{/* Process chapters - note $data is an array */}} 
     {{ range $index, $section := $data }}
       {{ $content := $section.content 
-                    | replaceRE `\\r\\n` "\n"  
+                    | replaceRE `\\r\\n` "\n"   
                     | replaceRE `\r\n` "\n"   
                     | replaceRE `\n+` "\n\n" }}
         
