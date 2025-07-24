@@ -9,7 +9,7 @@
   {{ if $remoteData }}
     {{ $data := $remoteData.Content | transform.Unmarshal }}
     
-    {{/* Process chapters */}}
+    {{/* Process chapters */}} 
     {{ if $data.chapters }}
       {{ range $index, $section := $data.chapters }}
         {{ $content := $section.content 
