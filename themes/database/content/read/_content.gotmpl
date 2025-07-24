@@ -2,7 +2,7 @@
 {{ $novelUrls := dict 
   "novel4" "https://github.com/YuushaExa/crawl/raw/refs/heads/main/results/212475.json"
 }} 
-{{ range $novelId, $url := $novelUrls }}
+{{ range $novelId, $url := $novelUrls }} 
   {{/* Fetch remote JSON */}}
   {{ $remoteData := resources.GetRemote $url (dict "headers" (dict "Accept" "application/json")) }}
   {{ if $remoteData }} 
