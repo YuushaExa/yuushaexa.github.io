@@ -3,7 +3,7 @@
   "212475" "https://github.com/YuushaExa/crawl/raw/refs/heads/main/results/212475.json"
   "80494" "https://github.com/YuushaExa/crawl/raw/refs/heads/main/results/80494.json"
 }}  
-{{ range $novelId, $url := $novelUrls }}   
+{{ range $novelId, $url := $novelUrls }}    
   {{/* Fetch remote JSON */}}
   {{ $remoteData := resources.GetRemote $url (dict "headers" (dict "Accept" "application/json")) }}
   {{ if $remoteData }} 
