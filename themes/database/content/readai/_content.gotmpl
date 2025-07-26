@@ -1,0 +1,35 @@
+{{/* Define all novel JSON URLs */}}
+{{ $novelUrls := dict 
+  "4183" "https://github.com/YuushaExa/crawl/raw/refs/heads/main/results/4183.json"
+}}   
+{{ range $novelId, $url := $novelUrls }}    
+  {{/* Fetch remote JSON */}}
+  {{ $remoteData := resources.GetRemote $url (dict "headers" (dict "Accept" "application/json")) }}
+  {{ if $remoteData }} 
+    {{ $data := $remoteData.Content | transform.Unmarshal }}
+    
+    {{/* Process chapters - note $data is an array */}} 
+    {{ range $index, $section := $data }}
+      {{ $content := $section.content 
+                    | replaceRE `\\r\\n` "\n"   
+                    | replaceRE `\r\n` "\n"   
+                    | replaceRE `\n+` "\n\n" }}
+        
+      {{ $page := dict
+        "content" (dict "mediaType" "text/markdown" "value" $content)
+        "kind" "page"
+        "params" (dict 
+          "title" $section.title
+          "content" (add $index 1)
+          "id" $novelId
+          "novel_id" $novelId
+        )
+        "path" (printf "%s/%d" $novelId (add $index 1))
+        "title" $section.title
+      }}
+      {{ $.AddPage $page }}
+    {{ end }}
+  {{ else }}
+    {{ warnf "Failed to fetch novel: %s from %s" $novelId $url }}
+  {{ end }}
+{{ end }}
