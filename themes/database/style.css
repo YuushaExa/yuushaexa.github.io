@@ -2,7 +2,7 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-
+    margin: 0;
     font-family: sans-serif;
     max-width: 800px;
     margin: 0 auto;
@@ -30,7 +30,7 @@ h1 {
     width: 700px;
     font-size: 18px;
     padding: 64px;
-    font-family: "SourceHanSansSC-Regular","SourceHanSansCN-Regular","PingFangSC-Regular","Microsoft YaHei",system-ui,"-apple-system",Segoe UI,Roboto,Emoji,Helvetica,Arial,sans-serif;
+    font-family: "Microsoft YaHei",system-ui,"-apple-system",Segoe UI,Roboto,Emoji,Helvetica,Arial,sans-serif;
     line-height: 1.8;
     color: #000000e6;
 }
