@@ -24,7 +24,7 @@
           "id" $novelId
           "novel_id" $novelId
         )
-        "path" (printf "%s/%d" $novelId (add $index 1))
+        "path" (printf "book" $novelId (add $index 1))
         "title" $section.title
       }}
       {{ $.AddPage $page }}
