@@ -7,33 +7,23 @@
 
   <!-- Sort Buttons -->
   <div class="sort-buttons">
-    <button onclick="sortFavorites('id', 'asc')">Sort by ID ↑</button>
-    <button onclick="sortFavorites('id', 'desc')">Sort by ID ↓</button>
-    <button onclick="sortFavorites('domain', 'asc')">Sort by Domain A-Z</button>
-    <button onclick="sortFavorites('domain', 'desc')">Sort by Domain Z-A</button>
-    <button onclick="sortFavorites('title', 'asc')">Sort by Title A-Z</button>
-    <button onclick="sortFavorites('title', 'desc')">Sort by Title Z-A</button>
+    <button onclick="sortById('asc')">Sort by ID ↑</button>
+    <button onclick="sortById('desc')">Sort by ID ↓</button>
   </div>
 
   <!-- Favorites List -->
   <div class="favorites-list" id="favoritesList">
     {{ range .Pages }}
-    <div class="favorite-item" 
-         data-id="{{ with .File }}{{ .BaseFileName }}{{ end }}"
-         data-domain="{{ .Params.url | replaceRE "^https?://([^/]+).*" "$1" }}"
-         data-title="{{ .Title | lower }}">
+    <div class="favorite-item">
       <div class="favicon">
         {{ if .Params.url }}
         <img src="https://www.google.com/s2/favicons?domain={{ .Params.url }}&sz=32" alt="Favicon">
         {{ end }}
       </div>
       <div class="favorite-content">
-        <h2><a href="{{ .RelPermalink }}">{{ .Title }}</a></h2>
+        <h2><a href="{{ .RelPermalink }}" class="fav-link">{{ .Title }}</a></h2>
         {{ if .Params.url }}
         <div class="url"><a href="{{ .Params.url }}" target="_blank">{{ .Params.url }}</a></div>
-        {{ end }}
-        {{ if .Description }}
-        <div class="description">{{ .Description }}</div>
         {{ end }}
       </div>
     </div>
@@ -42,7 +32,6 @@
 </div>
 
 <style>
-  /* Same CSS as before */
   .favorites-container {
     max-width: 800px;
     margin: 0 auto;
@@ -59,7 +48,6 @@
     margin-bottom: 20px;
     display: flex;
     gap: 10px;
-    flex-wrap: wrap;
   }
   .sort-buttons button {
     padding: 8px 12px;
@@ -90,12 +78,34 @@
     font-size: 0.9em;
     margin: 5px 0;
   }
-  .description {
-    color: #444;
-  }
 </style>
 
 <script>
+  // Extract ID from URL like /fav/662/
+  function extractIdFromUrl(url) {
+    const match = url.match(/\/fav\/(\d+)\//);
+    return match ? parseInt(match[1]) : 0;
+  }
+
+  // Sort by ID function
+  function sortById(direction) {
+    const container = document.getElementById('favoritesList');
+    const items = Array.from(document.querySelectorAll('.favorite-item'));
+    
+    items.sort((a, b) => {
+      const aLink = a.querySelector('.fav-link').getAttribute('href');
+      const bLink = b.querySelector('.fav-link').getAttribute('href');
+      const aId = extractIdFromUrl(aLink);
+      const bId = extractIdFromUrl(bLink);
+      
+      return direction === 'asc' ? aId - bId : bId - aId;
+    });
+
+    // Clear and re-append sorted items
+    container.innerHTML = '';
+    items.forEach(item => container.appendChild(item));
+  }
+
   // Search function
   function searchFavorites() {
     const input = document.getElementById('searchInput');
@@ -108,39 +118,9 @@
     });
   }
 
-  // Improved sort function
-  function sortFavorites(key, direction) {
-    const container = document.getElementById('favoritesList');
-    const items = Array.from(document.querySelectorAll('.favorite-item'));
-
-    items.sort((a, b) => {
-      let aValue = a.getAttribute(`data-${key}`);
-      let bValue = b.getAttribute(`data-${key}`);
-
-      // Convert to number if sorting by ID
-      if (key === 'id') {
-        aValue = parseInt(aValue) || 0;
-        bValue = parseInt(bValue) || 0;
-      }
-
-      // Handle empty values
-      if (!aValue) return direction.includes('asc') ? 1 : -1;
-      if (!bValue) return direction.includes('asc') ? -1 : 1;
-
-      // Perform comparison
-      if (aValue > bValue) return direction.includes('asc') ? 1 : -1;
-      if (aValue < bValue) return direction.includes('asc') ? -1 : 1;
-      return 0;
-    });
-
-    // Clear and re-append sorted items
-    container.innerHTML = '';
-    items.forEach(item => container.appendChild(item));
-  }
-
   // Initial sort by ID ascending
   document.addEventListener('DOMContentLoaded', () => {
-    sortFavorites('id', 'asc');
+    sortById('asc');
   });
 </script>
 {{ end }}
