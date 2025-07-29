@@ -10,10 +10,12 @@
   {{ end }}
 {{ end }}
 
+{{ $counter := 1 }}
 {{ range $data }}
 
   {{ $content := dict "mediaType" "text/markdown" "value" .url  }}
-     {{ $title := partial "slugify1.html" .title }}
+  {{ $title := partial "slugify1.html" .title }}
+  {{ $path := printf "%d" $counter }}
 
   {{ $params := dict "url" .url }}
 
@@ -21,9 +23,11 @@
     "content" $content
     "kind" "page"
     "params" $params
-    "path" $title
+    "path" $path
     "title" .title
   }}
   {{ $.AddPage $page }}
+  
+  {{ $counter = add $counter 1 }}
 
 {{ end }}
