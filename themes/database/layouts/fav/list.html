@@ -1,15 +1,131 @@
 {{ define "main" }}
-  <h1>{{ .Title }}</h1>
-  <div class="page-list">
-    {{ range where .Site.RegularPages "Section" "fav" }}
-      <article class="page-card">
-        {{ if .Params.url }}
-        <div>
-          <img src="https://www.google.com/s2/favicons?domain={{ .Params.url }}&sz=1" alt="Favicon">
-        </div>
-        {{ end }}
-        <h2><a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a></h2>
-      </article>
+<div class="favorites-container">
+  <!-- Search Box -->
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="Search favorites..." onkeyup="searchFavorites()">
+  </div>
+
+  <!-- Sort Buttons -->
+  <div class="sort-buttons">
+    <button onclick="sortFavorites('id', 'asc')">Sort by ID ↑</button>
+    <button onclick="sortFavorites('id', 'desc')">Sort by ID ↓</button>
+    <button onclick="sortFavorites('domain', 'asc')">Sort by Domain A-Z</button>
+    <button onclick="sortFavorites('domain', 'desc')">Sort by Domain Z-A</button>
+  </div>
+
+  <!-- Favorites List -->
+  <div class="favorites-list" id="favoritesList">
+    {{ range .Pages }}
+    <div class="favorite-item" data-id="{{ .Params.id }}" data-domain="{{ .Params.url | replaceRE "^https?://([^/]+).*" "$1" }}">
+      <div class="favicon">
+        <img src="https://www.google.com/s2/favicons?domain={{ .Params.url }}&sz=32" alt="Favicon">
+      </div>
+      <div class="favorite-content">
+        <h2><a href="{{ .RelPermalink }}">{{ .Title }}</a></h2>
+        <div class="url"><a href="{{ .Params.url }}" target="_blank">{{ .Params.url }}</a></div>
+        <div class="description">{{ .Description }}</div>
+      </div>
+    </div>
     {{ end }}
   </div>
+</div>
+
+<style>
+  .favorites-container {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  .search-box {
+    margin: 20px 0;
+  }
+  .search-box input {
+    width: 100%;
+    padding: 8px;
+    font-size: 16px;
+  }
+  .sort-buttons {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .sort-buttons button {
+    padding: 8px 12px;
+    cursor: pointer;
+  }
+  .favorites-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  .favorite-item {
+    display: flex;
+    gap: 15px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    align-items: center;
+  }
+  .favicon img {
+    width: 32px;
+    height: 32px;
+  }
+  .favorite-content {
+    flex-grow: 1;
+  }
+  .url {
+    color: #666;
+    font-size: 0.9em;
+    margin: 5px 0;
+  }
+  .description {
+    color: #444;
+  }
+</style>
+
+<script>
+  // Search function
+  function searchFavorites() {
+    const input = document.getElementById('searchInput');
+    const filter = input.value.toLowerCase();
+    const items = document.querySelectorAll('.favorite-item');
+
+    items.forEach(item => {
+      const text = item.textContent.toLowerCase();
+      if (text.includes(filter)) {
+        item.style.display = 'flex';
+      } else {
+        item.style.display = 'none';
+      }
+    });
+  }
+
+  // Sort function
+  function sortFavorites(key, direction) {
+    const container = document.getElementById('favoritesList');
+    const items = Array.from(document.querySelectorAll('.favorite-item'));
+
+    items.sort((a, b) => {
+      let aValue, bValue;
+
+      if (key === 'id') {
+        aValue = parseInt(a.getAttribute('data-id'));
+        bValue = parseInt(b.getAttribute('data-id'));
+      } else if (key === 'domain') {
+        aValue = a.getAttribute('data-domain').toLowerCase();
+        bValue = b.getAttribute('data-domain').toLowerCase();
+      }
+
+      if (direction === 'asc') {
+        return aValue > bValue ? 1 : -1;
+      } else {
+        return aValue < bValue ? 1 : -1;
+      }
+    });
+
+    // Clear and re-append sorted items
+    container.innerHTML = '';
+    items.forEach(item => container.appendChild(item));
+  }
+</script>
 {{ end }}
