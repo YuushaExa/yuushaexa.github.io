@@ -9,29 +9,36 @@
   <div class="sort-buttons">
     <button onclick="sortById('asc')">Sort by ID ↑</button>
     <button onclick="sortById('desc')">Sort by ID ↓</button>
+    <button onclick="sortByDomain('asc')">Sort by Domain A-Z</button>
+    <button onclick="sortByDomain('desc')">Sort by Domain Z-A</button>
   </div>
 
   <!-- Favorites List -->
   <div class="favorites-list" id="favoritesList">
     {{ range .Pages }}
-    <div class="favorite-item">
-      <div class="favicon">
-        {{ if .Params.url }}
-        <img src="https://www.google.com/s2/favicons?domain={{ .Params.url }}&sz=32" alt="Favicon">
-        {{ end }}
+      {{ if not (hasPrefix .Params.url "chrome://newtab/") }}
+      <div class="favorite-item">
+        <div class="favicon">
+          {{ if .Params.url }}
+          <img src="https://www.google.com/s2/favicons?domain={{ .Params.url | replaceRE "^https?://([^/]+).*" "$1" }}" alt="Favicon">
+          {{ end }}
+        </div>
+        <div class="favorite-content">
+          <h2><a href="{{ .RelPermalink }}" class="fav-link">{{ .Title }}</a></h2>
+          {{ if .Params.url }}
+          <div class="url" data-domain="{{ .Params.url | replaceRE "^https?://([^/]+).*" "$1" }}">
+            <a href="{{ .Params.url }}" target="_blank">{{ .Params.url }}</a>
+          </div>
+          {{ end }}
+        </div>
       </div>
-      <div class="favorite-content">
-        <h2><a href="{{ .RelPermalink }}" class="fav-link">{{ .Title }}</a></h2>
-        {{ if .Params.url }}
-        <div class="url"><a href="{{ .Params.url }}" target="_blank">{{ .Params.url }}</a></div>
-        {{ end }}
-      </div>
-    </div>
+      {{ end }}
     {{ end }}
   </div>
 </div>
 
 <style>
+  /* Previous CSS remains the same */
   .favorites-container {
     max-width: 800px;
     margin: 0 auto;
@@ -48,6 +55,7 @@
     margin-bottom: 20px;
     display: flex;
     gap: 10px;
+    flex-wrap: wrap;
   }
   .sort-buttons button {
     padding: 8px 12px;
@@ -87,6 +95,18 @@
     return match ? parseInt(match[1]) : 0;
   }
 
+  // Extract domain from URL
+  function extractDomain(url) {
+    if (!url) return '';
+    // Remove protocol and paths
+    let domain = url.replace(/(https?:\/\/)?(www\.)?/, '');
+    // Remove everything after first slash
+    domain = domain.split('/')[0];
+    // Remove port numbers if present
+    domain = domain.split(':')[0];
+    return domain.toLowerCase();
+  }
+
   // Sort by ID function
   function sortById(direction) {
     const container = document.getElementById('favoritesList');
@@ -99,6 +119,29 @@
       const bId = extractIdFromUrl(bLink);
       
       return direction === 'asc' ? aId - bId : bId - aId;
+    });
+
+    // Clear and re-append sorted items
+    container.innerHTML = '';
+    items.forEach(item => container.appendChild(item));
+  }
+
+  // Sort by Domain function
+  function sortByDomain(direction) {
+    const container = document.getElementById('favoritesList');
+    const items = Array.from(document.querySelectorAll('.favorite-item'));
+    
+    items.sort((a, b) => {
+      const aUrl = a.querySelector('.url a')?.getAttribute('href') || '';
+      const bUrl = b.querySelector('.url a')?.getAttribute('href') || '';
+      const aDomain = extractDomain(aUrl);
+      const bDomain = extractDomain(bUrl);
+      
+      if (direction === 'asc') {
+        return aDomain.localeCompare(bDomain);
+      } else {
+        return bDomain.localeCompare(aDomain);
+      }
     });
 
     // Clear and re-append sorted items
