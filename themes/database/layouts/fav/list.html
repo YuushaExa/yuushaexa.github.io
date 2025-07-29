@@ -1,11 +1,15 @@
 {{ define "main" }}
   <h1>{{ .Title }}</h1>
+  <div class="page-list">
+    {{ range .Site.RegularPages }}
       <article class="page-card">
-			{{ if .Params.url }}
-			<div>
-				<img src="https://www.google.com/s2/favicons?domain={{ .Params.url }}&sz=1" alt="Favicon">
-			</div>
-			{{ end }}
+        {{ if .Params.url }}
+        <div>
+          <img src="https://www.google.com/s2/favicons?domain={{ .Params.url }}&sz=1" alt="Favicon">
+        </div>
+        {{ end }}
         <h2><a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a></h2>
       </article>
+    {{ end }}
+  </div>
 {{ end }}
