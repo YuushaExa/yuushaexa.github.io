@@ -1,0 +1,29 @@
+{{ $data := dict }}
+{{ $url := "https://github.com/YuushaExa/novels-all/raw/refs/heads/main/result/fav.json" }}
+{{ with try (resources.GetRemote $url) }}
+  {{ with .Err }}
+    {{ errorf "Unable to get remote resource %s: %s" $url . }}
+  {{ else with .Value }} 
+    {{ $data = . | transform.Unmarshal }}
+  {{ else }}
+    {{ errorf "Unable to get remote resource %s" $url }}
+  {{ end }}
+{{ end }}
+
+{{ range $data }}
+
+  {{ $content := dict "mediaType" "text/markdown" "value" .url  }}
+     {{ $title := partial "slugify1.html" .title }}
+
+  {{ $params := dict "url" .url }}
+
+  {{ $page := dict
+    "content" $content
+    "kind" "page"
+    "params" $params
+    "path" $title
+    "title" .title
+  }}
+  {{ $.AddPage $page }}
+
+{{ end }}
