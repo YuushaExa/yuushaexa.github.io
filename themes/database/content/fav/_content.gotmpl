@@ -1,5 +1,5 @@
 {{ $data := dict }}
-{{ $url := "https://github.com/YuushaExa/novels-all/raw/refs/heads/main/result/fav.json" }}
+{{ $url := "https://raw.githubusercontent.com/YuushaExa/novels-all/refs/heads/main/result/fav.json" }}
 {{ with try (resources.GetRemote $url) }}
   {{ with .Err }}
     {{ errorf "Unable to get remote resource %s: %s" $url . }}
