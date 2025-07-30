@@ -1,71 +1,35 @@
 {{ define "main" }}
-<div class="history-container">
-  <!-- Header with search and controls -->
-  <div class="history-header">
-    <h1>{{ .Title }}</h1>
-    <div class="history-controls">
-      <div class="search-box">
-        <svg class="search-icon" viewBox="0 0 24 24">
-          <path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 0 0 1.48-5.34c-.47-2.78-2.79-5-5.59-5.34a6.505 6.505 0 0 0-7.27 7.27c.34 2.8 2.56 5.12 5.34 5.59a6.5 6.5 0 0 0 5.34-1.48l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0 .41-.41.41-1.08 0-1.49L15.5 14zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-        </svg>
-        <input type="text" id="searchInput" placeholder="Search history..." onkeyup="searchFavorites()">
-      </div>
-      <div class="sort-buttons">
-        <button class="sort-btn" onclick="sortById('asc')">
-          <span>Oldest</span>
-        </button>
-        <button class="sort-btn" onclick="sortById('desc')">
-          <span>Newest</span>
-        </button>
-        <button class="sort-btn" onclick="sortByDomain('asc')">
-          <span>Site A-Z</span>
-        </button>
-      </div>
-    </div>
+<div class="favorites-container">
+  <!-- Search Box -->
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="Search favorites..." onkeyup="searchFavorites()">
   </div>
 
-  <!-- History List -->
-  <div class="history-list" id="favoritesList">
+  <!-- Sort Buttons -->
+  <div class="sort-buttons">
+    <button onclick="sortById('asc')">Sort by ID ↑</button>
+    <button onclick="sortById('desc')">Sort by ID ↓</button>
+    <button onclick="sortByDomain('asc')">Sort by Domain A-Z</button>
+    <button onclick="sortByDomain('desc')">Sort by Domain Z-A</button>
+  </div>
+
+  <!-- Favorites List -->
+  <div class="favorites-list" id="favoritesList">
     {{ range .Pages }}
       {{ if not (hasPrefix .Params.url "chrome://newtab/") }}
-      <div class="history-item">
-        <div class="favicon-time">
-          <div class="favicon">
-            {{ if .Params.url }}
-            <img src="https://www.google.com/s2/favicons?domain={{ .Params.url | replaceRE "^https?://([^/]+).*" "$1" }}" alt="Favicon">
-            {{ else }}
-            <div class="default-favicon">
-              <svg viewBox="0 0 24 24">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
-              </svg>
-            </div>
-            {{ end }}
-          </div>
-          <div class="time" data-id="{{ with .File }}{{ .BaseFileName }}{{ end }}">
-            ID: {{ with .File }}{{ .BaseFileName }}{{ end }}
-          </div>
+      <div class="favorite-item">
+        <div class="favicon">
+          {{ if .Params.url }}
+          <img src="https://www.google.com/s2/favicons?domain={{ .Params.url | replaceRE "^https?://([^/]+).*" "$1" }}" alt="Favicon">
+          {{ end }}
         </div>
-        <div class="history-content">
-          <div class="title-domain">
-            <a href="{{ .RelPermalink }}" class="title">{{ .Title }}</a>
-            <div class="domain" data-domain="{{ .Params.url | replaceRE "^https?://([^/]+).*" "$1" }}">
-              {{ if .Params.url }}
-                {{ .Params.url | replaceRE "^https?://([^/]+).*" "$1" }}
-              {{ end }}
-            </div>
+        <div class="favorite-content">
+          <h2><a href="{{ .RelPermalink }}" class="fav-link">{{ .Title }}</a></h2>
+          {{ if .Params.url }}
+          <div class="url" data-domain="{{ .Params.url | replaceRE "^https?://([^/]+).*" "$1" }}">
+            <a href="{{ .Params.url }}" target="_blank">{{ .Params.url }}</a>
           </div>
-          <div class="url">
-            {{ if .Params.url }}
-            <a href="{{ .Params.url }}" target="_blank" class="url-link">{{ .Params.url }}</a>
-            {{ end }}
-          </div>
-        </div>
-        <div class="history-actions">
-          <button class="more-btn">
-            <svg viewBox="0 0 24 24">
-              <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
-            </svg>
-          </button>
+          {{ end }}
         </div>
       </div>
       {{ end }}
@@ -74,222 +38,53 @@
 </div>
 
 <style>
-  :root {
-    --primary-color: #1a73e8;
-    --text-color: #202124;
-    --secondary-text: #5f6368;
-    --border-color: #dadce0;
-    --hover-bg: #f1f3f4;
-  }
-
-  body {
-    font-family: 'Roboto', Arial, sans-serif;
-    color: var(--text-color);
-    margin: 0;
-    padding: 0;
-    background: #fff;
-  }
-
-  .history-container {
-    max-width: 900px;
+  /* Previous CSS remains the same */
+  .favorites-container {
+    max-width: 800px;
     margin: 0 auto;
-    padding: 20px;
   }
-
-  .history-header {
-    margin-bottom: 24px;
-  }
-
-  .history-header h1 {
-    font-size: 24px;
-    font-weight: 400;
-    margin: 0 0 16px 0;
-    color: var(--text-color);
-  }
-
-  .history-controls {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-
   .search-box {
-    position: relative;
-    max-width: 600px;
+    margin: 20px 0;
   }
-
-  .search-icon {
-    position: absolute;
-    left: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 20px;
-    height: 20px;
-    fill: var(--secondary-text);
-  }
-
   .search-box input {
     width: 100%;
-    padding: 10px 16px 10px 40px;
-    font-size: 16px;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    outline: none;
-  }
-
-  .search-box input:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 1px var(--primary-color);
-  }
-
-  .sort-buttons {
-    display: flex;
-    gap: 8px;
-  }
-
-  .sort-btn {
-    background: transparent;
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    padding: 8px 12px;
-    font-size: 14px;
-    color: var(--primary-color);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .sort-btn:hover {
-    background: var(--hover-bg);
-  }
-
-  .history-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-    background: var(--border-color);
-    border-radius: 8px;
-    overflow: hidden;
-  }
-
-  .history-item {
-    display: flex;
-    background: #fff;
-    padding: 12px 16px;
-    align-items: center;
-    gap: 16px;
-  }
-
-  .history-item:hover {
-    background: var(--hover-bg);
-  }
-
-  .favicon-time {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-width: 72px;
-    gap: 4px;
-  }
-
-  .favicon {
-    width: 16px;
-    height: 16px;
-  }
-
-  .favicon img {
-    width: 100%;
-    height: 100%;
-  }
-
-  .default-favicon {
-    width: 16px;
-    height: 16px;
-    fill: var(--secondary-text);
-  }
-
-  .time {
-    font-size: 12px;
-    color: var(--secondary-text);
-  }
-
-  .history-content {
-    flex-grow: 1;
-    min-width: 0;
-  }
-
-  .title-domain {
-    display: flex;
-    gap: 8px;
-    align-items: baseline;
-    margin-bottom: 4px;
-  }
-
-  .title {
-    font-size: 14px;
-    color: var(--primary-color);
-    text-decoration: none;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .title:hover {
-    text-decoration: underline;
-  }
-
-  .domain {
-    font-size: 12px;
-    color: var(--secondary-text);
-    white-space: nowrap;
-  }
-
-  .url {
-    font-size: 12px;
-    color: var(--secondary-text);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .url-link {
-    color: inherit;
-    text-decoration: none;
-  }
-
-  .url-link:hover {
-    text-decoration: underline;
-  }
-
-  .history-actions {
-    opacity: 0;
-    transition: opacity 0.2s;
-  }
-
-  .history-item:hover .history-actions {
-    opacity: 1;
-  }
-
-  .more-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
     padding: 8px;
-    border-radius: 50%;
+    font-size: 16px;
+  }
+  .sort-buttons {
+    margin-bottom: 20px;
     display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .sort-buttons button {
+    padding: 8px 12px;
+    cursor: pointer;
+  }
+  .favorites-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  .favorite-item {
+    display: flex;
+    gap: 15px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
     align-items: center;
-    justify-content: center;
   }
-
-  .more-btn:hover {
-    background: rgba(0, 0, 0, 0.1);
+  .favicon img {
+    width: 32px;
+    height: 32px;
   }
-
-  .more-btn svg {
-    width: 20px;
-    height: 20px;
-    fill: var(--secondary-text);
+  .favorite-content {
+    flex-grow: 1;
+  }
+  .url {
+    color: #666;
+    font-size: 0.9em;
+    margin: 5px 0;
   }
 </style>
 
@@ -315,11 +110,14 @@
   // Sort by ID function
   function sortById(direction) {
     const container = document.getElementById('favoritesList');
-    const items = Array.from(document.querySelectorAll('.history-item'));
+    const items = Array.from(document.querySelectorAll('.favorite-item'));
     
     items.sort((a, b) => {
-      const aId = parseInt(a.querySelector('.time').getAttribute('data-id')) || 0;
-      const bId = parseInt(b.querySelector('.time').getAttribute('data-id')) || 0;
+      const aLink = a.querySelector('.fav-link').getAttribute('href');
+      const bLink = b.querySelector('.fav-link').getAttribute('href');
+      const aId = extractIdFromUrl(aLink);
+      const bId = extractIdFromUrl(bLink);
+      
       return direction === 'asc' ? aId - bId : bId - aId;
     });
 
@@ -331,11 +129,13 @@
   // Sort by Domain function
   function sortByDomain(direction) {
     const container = document.getElementById('favoritesList');
-    const items = Array.from(document.querySelectorAll('.history-item'));
+    const items = Array.from(document.querySelectorAll('.favorite-item'));
     
     items.sort((a, b) => {
-      const aDomain = a.querySelector('.domain').getAttribute('data-domain') || '';
-      const bDomain = b.querySelector('.domain').getAttribute('data-domain') || '';
+      const aUrl = a.querySelector('.url a')?.getAttribute('href') || '';
+      const bUrl = b.querySelector('.url a')?.getAttribute('href') || '';
+      const aDomain = extractDomain(aUrl);
+      const bDomain = extractDomain(bUrl);
       
       if (direction === 'asc') {
         return aDomain.localeCompare(bDomain);
@@ -353,7 +153,7 @@
   function searchFavorites() {
     const input = document.getElementById('searchInput');
     const filter = input.value.toLowerCase();
-    const items = document.querySelectorAll('.history-item');
+    const items = document.querySelectorAll('.favorite-item');
 
     items.forEach(item => {
       const text = item.textContent.toLowerCase();
@@ -361,9 +161,9 @@
     });
   }
 
-  // Initial sort by ID descending (newest first)
+  // Initial sort by ID ascending
   document.addEventListener('DOMContentLoaded', () => {
-    sortById('desc');
+    sortById('asc');
   });
 </script>
 {{ end }}
