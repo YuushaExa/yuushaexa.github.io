@@ -61,31 +61,89 @@
     padding: 8px 12px;
     cursor: pointer;
   }
-  .favorites-list {
+.favorites-list {
+    font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.favorite-item {
     display: flex;
-    flex-direction: column;
-    gap: 15px;
-  }
-  .favorite-item {
-    display: flex;
-    gap: 15px;
-    padding: 15px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
     align-items: center;
-  }
-  .favicon img {
-    width: 32px;
-    height: 32px;
-  }
-  .favorite-content {
+    padding: 12px 16px;
+    border-radius: 8px;
+    transition: background-color 0.2s;
+}
+
+.favorite-item:hover {
+    background-color: #f5f5f5;
+}
+
+.favicon {
+    width: 16px;
+    height: 16px;
+    margin-right: 16px;
+    flex-shrink: 0;
+}
+
+.favicon img {
+    width: 100%;
+    height: 100%;
+}
+
+.favorite-content {
     flex-grow: 1;
-  }
-  .url {
-    color: #666;
-    font-size: 0.9em;
-    margin: 5px 0;
-  }
+    min-width: 0;
+    overflow: hidden;
+}
+
+.favorite-content h2 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: normal;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.favorite-content h2 a {
+    color: #1a0dab;
+    text-decoration: none;
+}
+
+.favorite-content h2 a:hover {
+    text-decoration: underline;
+}
+
+.url {
+    margin-top: 4px;
+    font-size: 12px;
+    color: #5f6368;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.url a {
+    color: #5f6368;
+    text-decoration: none;
+}
+
+.url a:hover {
+    color: #1a0dab;
+    text-decoration: underline;
+}
+
+.url::before {
+    content: attr(data-domain);
+    color: #5f6368;
+}
+
+.url a::after {
+    content: attr(href);
+    display: none;
+}
 </style>
 
 <script>
