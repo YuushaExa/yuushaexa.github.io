@@ -1,391 +1,241 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>大文件分割器 - 完美中文支持</title>
+    <title>Text to DOCX Converter</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/7.8.2/docx.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
         body {
-            font-family: "Microsoft YaHei", sans-serif;
+            font-family: Arial, sans-serif;
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
             line-height: 1.6;
-            background-color: #f9f9f9;
         }
         .container {
-            background-color: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            background-color: #f5f5f5;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         h1 {
             color: #333;
             text-align: center;
-            margin-bottom: 25px;
         }
-        .form-group {
-            margin-bottom: 20px;
+        .upload-area {
+            border: 2px dashed #ccc;
+            border-radius: 5px;
+            padding: 30px;
+            text-align: center;
+            margin: 20px 0;
+            cursor: pointer;
+            transition: all 0.3s;
         }
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: #555;
+        .upload-area:hover {
+            border-color: #4CAF50;
+            background-color: #f9f9f9;
         }
-        input, select, button {
-            padding: 10px;
-            width: 100%;
-            box-sizing: border-box;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
+        .upload-area.active {
+            border-color: #4CAF50;
+            background-color: #e8f5e9;
+        }
+        #fileInput {
+            display: none;
         }
         button {
-            background-color: #1890ff;
+            background-color: #4CAF50;
             color: white;
             border: none;
-            cursor: pointer;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
             font-size: 16px;
-            margin-top: 15px;
+            margin: 10px 2px;
+            cursor: pointer;
+            border-radius: 5px;
             transition: background-color 0.3s;
         }
         button:hover {
-            background-color: #40a9ff;
+            background-color: #45a049;
         }
         button:disabled {
-            background-color: #d9d9d9;
+            background-color: #cccccc;
             cursor: not-allowed;
         }
-        #status {
+        .preview {
             margin-top: 20px;
-            padding: 12px;
-            border-radius: 4px;
-            font-size: 15px;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: white;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
         }
         .success {
-            background-color: #f6ffed;
-            color: #52c41a;
-            border: 1px solid #b7eb8f;
+            background-color: #dff0d8;
+            color: #3c763d;
         }
         .error {
-            background-color: #fff2f0;
-            color: #ff4d4f;
-            border: 1px solid #ffccc7;
-        }
-        .info {
-            background-color: #e6f7ff;
-            color: #1890ff;
-            border: 1px solid #91d5ff;
-        }
-        progress {
-            width: 100%;
-            height: 8px;
-            margin-top: 15px;
-            border-radius: 4px;
+            background-color: #f2dede;
+            color: #a94442;
         }
         .file-info {
             margin-top: 10px;
-            font-size: 14px;
-            color: #666;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>大文件分割器</h1>
+        <h1>Text to DOCX Converter</h1>
+        <p>Upload a text file and convert it to a Microsoft Word document (DOCX).</p>
         
-        <div class="form-group">
-            <label for="fileInput">选择文本文件:</label>
-            <input type="file" id="fileInput" accept=".txt,.csv,.log">
-            <div class="file-info" id="fileInfo"></div>
+        <div id="uploadArea" class="upload-area">
+            <p>Click to select a text file or drag and drop it here</p>
+            <input type="file" id="fileInput" accept=".txt,.text">
         </div>
         
-        <div class="form-group">
-            <label for="encoding">文件编码:</label>
-            <select id="encoding">
-                <option value="UTF-8" selected>UTF-8 (推荐)</option>
-                <option value="GB18030">GB18030 (简体中文)</option>
-                <option value="GBK">GBK</option>
-                <option value="BIG5">BIG5 (繁体中文)</option>
-                <option value="SHIFT_JIS">Shift-JIS (日文)</option>
-                <option value="EUC-KR">EUC-KR (韩文)</option>
-                <option value="ISO-8859-1">ISO-8859-1 (西欧)</option>
-            </select>
+        <div class="file-info" id="fileInfo"></div>
+        
+        <div class="preview" id="preview">
+            <p>File content will appear here...</p>
         </div>
         
-        <div class="form-group">
-            <label for="chunkSize">分割大小 (MB):</label>
-            <input type="number" id="chunkSize" min="0.1" step="0.1" value="4">
-        </div>
+        <div class="status" id="status"></div>
         
-        <div class="form-group">
-            <label for="dividerPattern">分割标记 (使用*作为通配符):</label>
-            <input type="text" id="dividerPattern" value="第.*章">
-            <small>例如: 第.*章, CHAPTER*, ###*</small>
-        </div>
-        
-        <div class="form-group">
-            <label>
-                <input type="checkbox" id="ignoreCase" checked> 忽略大小写
-            </label>
-        </div>
-        
-        <button id="splitButton">分割文件</button>
-        <progress id="progressBar" value="0" max="100" style="display: none;"></progress>
-        
-        <div id="status"></div>
+        <button id="convertBtn" disabled>Convert to DOCX</button>
     </div>
 
     <script>
-        document.getElementById('splitButton').addEventListener('click', splitFile);
-        document.getElementById('fileInput').addEventListener('change', updateFileInfo);
-
-        function updateFileInfo() {
+        document.addEventListener('DOMContentLoaded', function() {
+            const uploadArea = document.getElementById('uploadArea');
             const fileInput = document.getElementById('fileInput');
-            const fileInfo = document.getElementById('fileInfo');
-            
-            if (fileInput.files && fileInput.files.length > 0) {
-                const file = fileInput.files[0];
-                const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
-                fileInfo.textContent = `已选择: ${file.name} (${fileSizeMB} MB)`;
-            } else {
-                fileInfo.textContent = '';
-            }
-        }
-
-        async function splitFile() {
-            const fileInput = document.getElementById('fileInput');
-            const encoding = document.getElementById('encoding').value;
-            const chunkSizeMB = parseFloat(document.getElementById('chunkSize').value);
-            let dividerPattern = document.getElementById('dividerPattern').value;
-            const ignoreCase = document.getElementById('ignoreCase').checked;
+            const preview = document.getElementById('preview');
+            const convertBtn = document.getElementById('convertBtn');
             const statusDiv = document.getElementById('status');
-            const progressBar = document.getElementById('progressBar');
-            const splitButton = document.getElementById('splitButton');
+            const fileInfoDiv = document.getElementById('fileInfo');
             
-            statusDiv.textContent = '';
-            statusDiv.className = '';
-            progressBar.style.display = 'none';
-            splitButton.disabled = true;
+            let currentFile = null;
+            let fileContent = '';
             
-            if (!fileInput.files || fileInput.files.length === 0) {
-                showStatus('请先选择文件', 'error');
-                splitButton.disabled = false;
-                return;
-            }
+            // Handle click on upload area
+            uploadArea.addEventListener('click', function() {
+                fileInput.click();
+            });
             
-            if (isNaN(chunkSizeMB) || chunkSizeMB <= 0) {
-                showStatus('请输入有效的分割大小', 'error');
-                splitButton.disabled = false;
-                return;
-            }
+            // Handle drag and drop
+            uploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                uploadArea.classList.add('active');
+            });
             
-            const file = fileInput.files[0];
-            const fileSizeMB = file.size / (1024 * 1024);
+            uploadArea.addEventListener('dragleave', function() {
+                uploadArea.classList.remove('active');
+            });
             
-            if (fileSizeMB > 100) {
-                showStatus('文件太大，请选择小于100MB的文件', 'error');
-                splitButton.disabled = false;
-                return;
-            }
-            
-            // Show processing started
-            progressBar.style.display = 'block';
-            showStatus(`正在处理 ${file.name} (${fileSizeMB.toFixed(1)}MB)...`, 'info');
-            
-            try {
-                // Read file with proper encoding
-                const content = await readFileWithEncoding(file, encoding);
-                progressBar.value = 30;
+            uploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                uploadArea.classList.remove('active');
                 
-                // Process the content
-                const result = await processContent(content, chunkSizeMB, dividerPattern, ignoreCase, progressBar);
-                progressBar.value = 80;
-                
-                // Download chunks with proper encoding
-                await downloadChunks(result.chunks, file.name, encoding);
-                progressBar.value = 100;
-                
-                showStatus(`成功分割为 ${result.chunks.length} 个文件 (找到 ${result.dividerCount} 个分隔符)`, 'success');
-            } catch (error) {
-                showStatus(`错误: ${error.message}`, 'error');
-                console.error(error);
-            } finally {
-                splitButton.disabled = false;
-            }
-        }
-        
-        function readFileWithEncoding(file, encoding) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    // For encodings other than UTF-8, we may need to use TextDecoder
-                    if (encoding === 'UTF-8') {
-                        resolve(e.target.result);
-                    } else {
-                        const decoder = new TextDecoder(encoding);
-                        const buffer = e.target.result;
-                        resolve(decoder.decode(buffer));
-                    }
-                };
-                reader.onerror = (e) => reject(new Error('文件读取失败'));
-                
-                if (encoding === 'UTF-8') {
-                    reader.readAsText(file, 'UTF-8');
-                } else {
-                    reader.readAsArrayBuffer(file);
+                if (e.dataTransfer.files.length) {
+                    fileInput.files = e.dataTransfer.files;
+                    handleFileSelection(e.dataTransfer.files[0]);
                 }
             });
-        }
-        
-        async function processContent(content, chunkSizeMB, dividerPattern, ignoreCase, progressBar) {
-            const chunkSizeBytes = chunkSizeMB * 1024 * 1024;
             
-            // Convert the wildcard pattern to a proper regex
-            dividerPattern = dividerPattern.replace(/\*/g, '.*');
-            let flags = 'gm';
-            if (ignoreCase) flags += 'i';
+            // Handle file selection
+            fileInput.addEventListener('change', function() {
+                if (fileInput.files.length) {
+                    handleFileSelection(fileInput.files[0]);
+                }
+            });
             
-            let dividerRegex;
-            try {
-                dividerRegex = new RegExp(`(${dividerPattern})`, flags);
-            } catch (e) {
-                throw new Error(`无效的分隔符模式: ${e.message}`);
-            }
-            
-            // Find all divider positions
-            const dividerMatches = [];
-            let match;
-            dividerRegex.lastIndex = 0;
-            
-            while ((match = dividerRegex.exec(content)) !== null) {
-                dividerMatches.push({
-                    text: match[0],
-                    index: match.index,
-                    length: match[0].length
-                });
-            }
-            
-            if (progressBar) progressBar.value = 50;
-            
-            if (dividerMatches.length === 0) {
-                return {
-                    chunks: splitBySizeOnly(content, chunkSizeBytes),
-                    dividerCount: 0
+            // Handle file processing
+            function handleFileSelection(file) {
+                // Check if file is text
+                if (!file.type.match('text/plain') && !file.name.match(/\.(txt|text)$/i)) {
+                    showStatus('Please select a text file (.txt)', 'error');
+                    return;
+                }
+                
+                currentFile = file;
+                fileInfoDiv.textContent = `Selected file: ${file.name} (${formatFileSize(file.size)})`;
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    fileContent = e.target.result;
+                    preview.textContent = fileContent;
+                    convertBtn.disabled = false;
+                    showStatus('File loaded successfully. Ready to convert.', 'success');
                 };
+                reader.onerror = function() {
+                    showStatus('Error reading file', 'error');
+                };
+                reader.readAsText(file);
             }
             
-            // NEW: Split BEFORE each divider
-            const chunks = [];
-            let currentChunkStart = 0;
-            let currentChunkSize = 0;
-            let dividerCount = 0;
-
-            // Add content before first divider
-            if (dividerMatches[0].index > 0) {
-                const initialContent = content.substring(0, dividerMatches[0].index);
-                chunks.push(initialContent);
-            }
-
-            // Process each divider
-            for (let i = 0; i < dividerMatches.length; i++) {
-                const divider = dividerMatches[i];
-                const nextDivider = dividerMatches[i + 1] || { index: content.length };
-                
-                const sectionContent = content.substring(divider.index, nextDivider.index);
-                const sectionSize = new Blob([sectionContent]).size;
-                
-                // If adding this section would exceed chunk size, split before current divider
-                if (currentChunkSize > 0 && currentChunkSize + sectionSize > chunkSizeBytes) {
-                    chunks.push(content.substring(currentChunkStart, divider.index));
-                    currentChunkStart = divider.index;
-                    currentChunkSize = 0;
+            // Convert to DOCX
+            convertBtn.addEventListener('click', function() {
+                if (!currentFile || !fileContent) {
+                    showStatus('No file loaded', 'error');
+                    return;
                 }
                 
-                currentChunkSize += sectionSize;
-                dividerCount++;
-                
-                if (progressBar) {
-                    progressBar.value = 50 + Math.floor((i / dividerMatches.length) * 30);
+                try {
+                    const { Document, Paragraph, TextRun, Packer } = docx;
+                    
+                    // Create a new document
+                    const doc = new Document({
+                        sections: [{
+                            properties: {},
+                            children: [
+                                new Paragraph({
+                                    children: [
+                                        new TextRun({
+                                            text: fileContent,
+                                            size: 24 // Half-points (24 = 12pt)
+                                        })
+                                    ]
+                                })
+                            ]
+                        }]
+                    });
+                    
+                    // Generate the DOCX file
+                    Packer.toBlob(doc).then(blob => {
+                        // Save the file
+                        const fileName = currentFile.name.replace(/\.txt$/i, '') + '.docx';
+                        saveAs(blob, fileName);
+                        showStatus(`File converted and saved as ${fileName}`, 'success');
+                    });
+                } catch (error) {
+                    console.error('Conversion error:', error);
+                    showStatus('Error during conversion: ' + error.message, 'error');
                 }
+            });
+            
+            // Helper functions
+            function showStatus(message, type) {
+                statusDiv.textContent = message;
+                statusDiv.className = 'status ' + (type || '');
             }
             
-            // Add the final chunk
-            if (currentChunkStart < content.length) {
-                chunks.push(content.substring(currentChunkStart));
+            function formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
             }
-            
-            return {
-                chunks: chunks,
-                dividerCount: dividerCount
-            };
-        }
-            
-            
-        function splitBySizeOnly(content, chunkSizeBytes) {
-            const chunks = [];
-            let position = 0;
-            
-            while (position < content.length) {
-                let chunkEnd = position + chunkSizeBytes;
-                
-                // Don't split in the middle of a line
-                if (chunkEnd < content.length) {
-                    const nextNewline = content.indexOf('\n', chunkEnd);
-                    if (nextNewline !== -1) {
-                        chunkEnd = nextNewline + 1;
-                    } else {
-                        // Or at least don't break a multi-byte character
-                        while (chunkEnd > position) {
-                            const testStr = content.substring(position, chunkEnd);
-                            const blobSize = new Blob([testStr]).size;
-                            if (blobSize <= chunkSizeBytes) {
-                                break;
-                            }
-                            chunkEnd--;
-                        }
-                    }
-                }
-                
-                chunks.push(content.substring(position, Math.min(chunkEnd, content.length)));
-                position = chunkEnd;
-            }
-            
-            return chunks;
-        }
-        
-        async function downloadChunks(chunks, originalFilename, encoding) {
-            const baseName = originalFilename.replace(/\.[^/.]+$/, '');
-            const extension = originalFilename.split('.').pop();
-            
-            for (let i = 0; i < chunks.length; i++) {
-                const chunk = chunks[i];
-                
-                // Create blob with proper encoding
-                const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), chunk], { 
-                    type: `text/plain;charset=${encoding}` 
-                });
-                
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `${baseName}_part${i + 1}.${extension}`;
-                document.body.appendChild(a);
-                a.click();
-                
-                // Release resources and avoid memory leaks
-                await new Promise(resolve => setTimeout(resolve, 100));
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            }
-        }
-        
-        function showStatus(message, type) {
-            const statusDiv = document.getElementById('status');
-            statusDiv.textContent = message;
-            statusDiv.className = type;
-        }
+        });
     </script>
 </body>
 </html>
