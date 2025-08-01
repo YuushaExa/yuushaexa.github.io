@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Text to DOCX Converter</title>
-    <script src="https://cdn.jsdelivr.net/npm/docx@7.1.0/build/index.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+    <title>Text to DOCX Converter (GBK)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/7.8.2/docx.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -65,15 +64,6 @@
             background-color: #cccccc;
             cursor: not-allowed;
         }
-        .preview {
-            margin-top: 20px;
-            border: 1px solid #ddd;
-            padding: 15px;
-            border-radius: 5px;
-            background-color: white;
-            max-height: 300px;
-            overflow-y: auto;
-        }
         .status {
             margin-top: 10px;
             padding: 10px;
@@ -91,12 +81,20 @@
             margin-top: 10px;
             font-weight: bold;
         }
+        #downloadLink {
+            display: none;
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #e7f3fe;
+            border-left: 5px solid #2196F3;
+            word-break: break-all;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Text to DOCX Converter</h1>
-        <p>Upload a text file and convert it to a Microsoft Word document (DOCX).</p>
+        <h1>Text to DOCX Converter (GBK Support)</h1>
+        <p>Upload a GBK encoded text file and convert it to DOCX format.</p>
         
         <div id="uploadArea" class="upload-area">
             <p>Click to select a text file or drag and drop it here</p>
@@ -105,23 +103,21 @@
         
         <div class="file-info" id="fileInfo"></div>
         
-        <div class="preview" id="preview">
-            <p>File content will appear here...</p>
-        </div>
+        <button id="convertBtn" disabled>Convert to DOCX</button>
+        
+        <div id="downloadLink"></div>
         
         <div class="status" id="status"></div>
-        
-        <button id="convertBtn" disabled>Convert to DOCX</button>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const uploadArea = document.getElementById('uploadArea');
             const fileInput = document.getElementById('fileInput');
-            const preview = document.getElementById('preview');
             const convertBtn = document.getElementById('convertBtn');
             const statusDiv = document.getElementById('status');
             const fileInfoDiv = document.getElementById('fileInfo');
+            const downloadLink = document.getElementById('downloadLink');
             
             let currentFile = null;
             let fileContent = '';
@@ -158,8 +154,8 @@
                 }
             });
             
-            // Handle file processing
-            function handleFileSelection(file) {
+            // Handle file processing with GBK support
+            async function handleFileSelection(file) {
                 // Check if file is text
                 if (!file.type.match('text/plain') && !file.name.match(/\.(txt|text)$/i)) {
                     showStatus('Please select a text file (.txt)', 'error');
@@ -169,21 +165,48 @@
                 currentFile = file;
                 fileInfoDiv.textContent = `Selected file: ${file.name} (${formatFileSize(file.size)})`;
                 
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    fileContent = e.target.result;
-                    preview.textContent = fileContent;
+                try {
+                    // First try UTF-8
+                    fileContent = await readFileAsText(file);
                     convertBtn.disabled = false;
                     showStatus('File loaded successfully. Ready to convert.', 'success');
-                };
-                reader.onerror = function() {
-                    showStatus('Error reading file', 'error');
-                };
-                reader.readAsText(file);
+                } catch (utf8Error) {
+                    try {
+                        // If UTF-8 fails, try GBK
+                        const buffer = await readFileAsArrayBuffer(file);
+                        const decoder = new TextDecoder('gbk');
+                        fileContent = decoder.decode(buffer);
+                        convertBtn.disabled = false;
+                        showStatus('GBK file loaded successfully. Ready to convert.', 'success');
+                    } catch (gbkError) {
+                        showStatus('Error reading file - could not decode as UTF-8 or GBK', 'error');
+                        console.error('File reading error:', gbkError);
+                    }
+                }
+            }
+            
+            // Helper function to read file as text
+            function readFileAsText(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = () => reject(new Error('Failed to read file as text'));
+                    reader.readAsText(file);
+                });
+            }
+            
+            // Helper function to read file as array buffer
+            function readFileAsArrayBuffer(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = () => reject(new Error('Failed to read file as array buffer'));
+                    reader.readAsArrayBuffer(file);
+                });
             }
             
             // Convert to DOCX
-            convertBtn.addEventListener('click', function() {
+            convertBtn.addEventListener('click', async function() {
                 if (!currentFile || !fileContent) {
                     showStatus('No file loaded', 'error');
                     return;
@@ -210,12 +233,19 @@
                     });
                     
                     // Generate the DOCX file
-                    Packer.toBlob(doc).then(blob => {
-                        // Save the file
-                        const fileName = currentFile.name.replace(/\.txt$/i, '') + '.docx';
-                        saveAs(blob, fileName);
-                        showStatus(`File converted and saved as ${fileName}`, 'success');
-                    });
+                    const blob = await Packer.toBlob(doc);
+                    
+                    // Create download link
+                    const fileName = currentFile.name.replace(/\.txt$/i, '') + '.docx';
+                    const url = URL.createObjectURL(blob);
+                    
+                    downloadLink.innerHTML = `
+                        Conversion complete! <a href="${url}" download="${fileName}">Click here to download ${fileName}</a>
+                        <br><small>Link will expire when you close this page</small>
+                    `;
+                    downloadLink.style.display = 'block';
+                    
+                    showStatus(`File converted successfully. Click the link above to download.`, 'success');
                 } catch (error) {
                     console.error('Conversion error:', error);
                     showStatus('Error during conversion: ' + error.message, 'error');
