@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text File Splitter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, button {
+            padding: 8px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+        .error {
+            background-color: #f2dede;
+            color: #a94442;
+        }
+        .info {
+            background-color: #d9edf7;
+            color: #31708f;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Text File Splitter</h1>
+        
+        <div class="form-group">
+            <label for="fileInput">Select Text File:</label>
+            <input type="file" id="fileInput" accept=".txt">
+        </div>
+        
+        <div class="form-group">
+            <label for="chunkSize">Desired Chunk Size (in MB):</label>
+            <input type="number" id="chunkSize" min="0.1" step="0.1" value="1">
+        </div>
+        
+        <div class="form-group">
+            <label for="dividerPattern">Divider Pattern (use * as wildcard):</label>
+            <input type="text" id="dividerPattern" value="第*章">
+            <small>Example: "第*章" will match "第一章", "第二章", etc.</small>
+        </div>
+        
+        <button id="splitButton">Split File</button>
+        
+        <div id="status"></div>
+    </div>
+
+    <script>
+        document.getElementById('splitButton').addEventListener('click', splitFile);
+
+        function splitFile() {
+            const fileInput = document.getElementById('fileInput');
+            const chunkSizeMB = parseFloat(document.getElementById('chunkSize').value);
+            const dividerPattern = document.getElementById('dividerPattern').value;
+            const statusDiv = document.getElementById('status');
+            
+            statusDiv.textContent = '';
+            statusDiv.className = '';
+            
+            if (!fileInput.files || fileInput.files.length === 0) {
+                showStatus('Please select a file first.', 'error');
+                return;
+            }
+            
+            if (isNaN(chunkSizeMB) || chunkSizeMB <= 0) {
+                showStatus('Please enter a valid chunk size.', 'error');
+                return;
+            }
+            
+            if (!dividerPattern) {
+                showStatus('Please enter a divider pattern.', 'error');
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const content = e.target.result;
+                const chunkSizeBytes = chunkSizeMB * 1024 * 1024;
+                
+                // Convert the wildcard pattern to a regex
+                const regexPattern = dividerPattern.replace(/\*/g, '.*');
+                const dividerRegex = new RegExp(`(${regexPattern})`, 'g');
+                
+                try {
+                    const chunks = splitText(content, chunkSizeBytes, dividerRegex);
+                    downloadChunks(chunks, file.name);
+                    showStatus(`Successfully split file into ${chunks.length} parts.`, 'success');
+                } catch (error) {
+                    showStatus(`Error: ${error.message}`, 'error');
+                }
+            };
+            
+            reader.onerror = function() {
+                showStatus('Error reading file.', 'error');
+            };
+            
+            reader.readAsText(file, 'UTF-8');
+        }
+        
+        function splitText(content, chunkSizeBytes, dividerRegex) {
+            const chunks = [];
+            let currentChunk = '';
+            let currentSize = 0;
+            let lastDividerPos = 0;
+            
+            // Find all divider positions
+            const dividerMatches = [];
+            let match;
+            while ((match = dividerRegex.exec(content)) !== null) {
+                dividerMatches.push({
+                    text: match[0],
+                    index: match.index
+                });
+                // Reset regex lastIndex if the pattern doesn't have global flag
+                if (!dividerRegex.global) break;
+            }
+            
+            if (dividerMatches.length === 0) {
+                throw new Error('No dividers found in the text.');
+            }
+            
+            // Add the content before the first divider
+            const firstDivider = dividerMatches[0];
+            currentChunk = content.substring(0, firstDivider.index);
+            currentSize = new Blob([currentChunk]).size;
+            lastDividerPos = firstDivider.index;
+            
+            // Process each section between dividers
+            for (let i = 0; i < dividerMatches.length; i++) {
+                const divider = dividerMatches[i];
+                const nextDivider = dividerMatches[i + 1] || { index: content.length };
+                
+                const sectionContent = content.substring(divider.index, nextDivider.index);
+                const sectionSize = new Blob([sectionContent]).size;
+                
+                if (currentSize + sectionSize > chunkSizeBytes && currentChunk) {
+                    // Current chunk is full, save it and start a new one
+                    chunks.push(currentChunk);
+                    currentChunk = sectionContent;
+                    currentSize = sectionSize;
+                } else {
+                    // Add to current chunk
+                    currentChunk += sectionContent;
+                    currentSize += sectionSize;
+                }
+                
+                lastDividerPos = nextDivider.index;
+            }
+            
+            // Add the final chunk
+            if (currentChunk) {
+                chunks.push(currentChunk);
+            }
+            
+            return chunks;
+        }
+        
+        function downloadChunks(chunks, originalFilename) {
+            const baseName = originalFilename.replace(/\.[^/.]+$/, '');
+            const extension = originalFilename.split('.').pop();
+            
+            chunks.forEach((chunk, index) => {
+                const blob = new Blob([chunk], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${baseName}_part${index + 1}.${extension}`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            });
+        }
+        
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = type;
+        }
+    </script>
+</body>
+</html>
