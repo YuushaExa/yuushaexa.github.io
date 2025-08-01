@@ -1,6 +1,7 @@
 {{/* Define all novel JSON URLs */}}
 {{ $novelUrls := dict 
   "4183" "https://github.com/YuushaExa/crawl/raw/refs/heads/main/results/4183.json"
+  "1" "https://github.com/YuushaExa/novels-end/raw/refs/heads/main/result/%E3%80%8A%E7%A9%BA%E9%80%9F%E6%98%9F%E7%97%95%E3%80%8B%EF%BC%88%E6%A0%A1%E5%AF%B9%E7%89%88%E5%85%A8%E6%9C%AC%EF%BC%89%E4%BD%9C%E8%80%85%EF%BC%9A%E5%94%90%E5%AE%B6%E4%B8%89%E5%B0%91.txt.json"
 }}   
 {{ range $novelId, $url := $novelUrls }}    
   {{/* Fetch remote JSON */}}
