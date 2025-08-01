@@ -1,178 +1,294 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Text File Splitter</title>
+    <title>大文件分割器 - 完美中文支持</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: "Microsoft YaHei", sans-serif;
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
             line-height: 1.6;
+            background-color: #f9f9f9;
         }
         .container {
-            background-color: #f5f5f5;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background-color: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
         }
         h1 {
             color: #333;
             text-align: center;
+            margin-bottom: 25px;
         }
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
         label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             font-weight: bold;
+            color: #555;
         }
-        input, button {
-            padding: 8px;
+        input, select, button {
+            padding: 10px;
             width: 100%;
             box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
         }
         button {
-            background-color: #4CAF50;
+            background-color: #1890ff;
             color: white;
             border: none;
             cursor: pointer;
             font-size: 16px;
-            margin-top: 10px;
+            margin-top: 15px;
+            transition: background-color 0.3s;
         }
         button:hover {
-            background-color: #45a049;
+            background-color: #40a9ff;
+        }
+        button:disabled {
+            background-color: #d9d9d9;
+            cursor: not-allowed;
         }
         #status {
             margin-top: 20px;
-            padding: 10px;
+            padding: 12px;
             border-radius: 4px;
+            font-size: 15px;
         }
         .success {
-            background-color: #dff0d8;
-            color: #3c763d;
+            background-color: #f6ffed;
+            color: #52c41a;
+            border: 1px solid #b7eb8f;
         }
         .error {
-            background-color: #f2dede;
-            color: #a94442;
+            background-color: #fff2f0;
+            color: #ff4d4f;
+            border: 1px solid #ffccc7;
         }
         .info {
-            background-color: #d9edf7;
-            color: #31708f;
+            background-color: #e6f7ff;
+            color: #1890ff;
+            border: 1px solid #91d5ff;
+        }
+        progress {
+            width: 100%;
+            height: 8px;
+            margin-top: 15px;
+            border-radius: 4px;
+        }
+        .file-info {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #666;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Text File Splitter</h1>
+        <h1>大文件分割器</h1>
         
         <div class="form-group">
-            <label for="fileInput">Select Text File:</label>
-            <input type="file" id="fileInput" accept=".txt">
+            <label for="fileInput">选择文本文件:</label>
+            <input type="file" id="fileInput" accept=".txt,.csv,.log">
+            <div class="file-info" id="fileInfo"></div>
         </div>
         
         <div class="form-group">
-            <label for="chunkSize">Desired Chunk Size (in MB):</label>
-            <input type="number" id="chunkSize" min="0.1" step="0.1" value="1">
+            <label for="encoding">文件编码:</label>
+            <select id="encoding">
+                <option value="UTF-8" selected>UTF-8 (推荐)</option>
+                <option value="GB18030">GB18030 (简体中文)</option>
+                <option value="GBK">GBK</option>
+                <option value="BIG5">BIG5 (繁体中文)</option>
+                <option value="SHIFT_JIS">Shift-JIS (日文)</option>
+                <option value="EUC-KR">EUC-KR (韩文)</option>
+                <option value="ISO-8859-1">ISO-8859-1 (西欧)</option>
+            </select>
         </div>
         
         <div class="form-group">
-            <label for="dividerPattern">Divider Pattern (use * as wildcard):</label>
-            <input type="text" id="dividerPattern" value="第*章">
-            <small>Example: "第*章" will match "第一章", "第二章", etc.</small>
+            <label for="chunkSize">分割大小 (MB):</label>
+            <input type="number" id="chunkSize" min="0.1" step="0.1" value="4">
         </div>
         
-        <button id="splitButton">Split File</button>
+        <div class="form-group">
+            <label for="dividerPattern">分割标记 (使用*作为通配符):</label>
+            <input type="text" id="dividerPattern" value="第.*章">
+            <small>例如: 第.*章, CHAPTER*, ###*</small>
+        </div>
+        
+        <div class="form-group">
+            <label>
+                <input type="checkbox" id="ignoreCase" checked> 忽略大小写
+            </label>
+        </div>
+        
+        <button id="splitButton">分割文件</button>
+        <progress id="progressBar" value="0" max="100" style="display: none;"></progress>
         
         <div id="status"></div>
     </div>
 
     <script>
         document.getElementById('splitButton').addEventListener('click', splitFile);
+        document.getElementById('fileInput').addEventListener('change', updateFileInfo);
 
-        function splitFile() {
+        function updateFileInfo() {
             const fileInput = document.getElementById('fileInput');
+            const fileInfo = document.getElementById('fileInfo');
+            
+            if (fileInput.files && fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+                fileInfo.textContent = `已选择: ${file.name} (${fileSizeMB} MB)`;
+            } else {
+                fileInfo.textContent = '';
+            }
+        }
+
+        async function splitFile() {
+            const fileInput = document.getElementById('fileInput');
+            const encoding = document.getElementById('encoding').value;
             const chunkSizeMB = parseFloat(document.getElementById('chunkSize').value);
-            const dividerPattern = document.getElementById('dividerPattern').value;
+            let dividerPattern = document.getElementById('dividerPattern').value;
+            const ignoreCase = document.getElementById('ignoreCase').checked;
             const statusDiv = document.getElementById('status');
+            const progressBar = document.getElementById('progressBar');
+            const splitButton = document.getElementById('splitButton');
             
             statusDiv.textContent = '';
             statusDiv.className = '';
+            progressBar.style.display = 'none';
+            splitButton.disabled = true;
             
             if (!fileInput.files || fileInput.files.length === 0) {
-                showStatus('Please select a file first.', 'error');
+                showStatus('请先选择文件', 'error');
+                splitButton.disabled = false;
                 return;
             }
             
             if (isNaN(chunkSizeMB) || chunkSizeMB <= 0) {
-                showStatus('Please enter a valid chunk size.', 'error');
-                return;
-            }
-            
-            if (!dividerPattern) {
-                showStatus('Please enter a divider pattern.', 'error');
+                showStatus('请输入有效的分割大小', 'error');
+                splitButton.disabled = false;
                 return;
             }
             
             const file = fileInput.files[0];
-            const reader = new FileReader();
+            const fileSizeMB = file.size / (1024 * 1024);
             
-            reader.onload = function(e) {
-                const content = e.target.result;
-                const chunkSizeBytes = chunkSizeMB * 1024 * 1024;
+            if (fileSizeMB > 100) {
+                showStatus('文件太大，请选择小于100MB的文件', 'error');
+                splitButton.disabled = false;
+                return;
+            }
+            
+            // Show processing started
+            progressBar.style.display = 'block';
+            showStatus(`正在处理 ${file.name} (${fileSizeMB.toFixed(1)}MB)...`, 'info');
+            
+            try {
+                // Read file with proper encoding
+                const content = await readFileWithEncoding(file, encoding);
+                progressBar.value = 30;
                 
-                // Convert the wildcard pattern to a regex
-                const regexPattern = dividerPattern.replace(/\*/g, '.*');
-                const dividerRegex = new RegExp(`(${regexPattern})`, 'g');
+                // Process the content
+                const result = await processContent(content, chunkSizeMB, dividerPattern, ignoreCase, progressBar);
+                progressBar.value = 80;
                 
-                try {
-                    const chunks = splitText(content, chunkSizeBytes, dividerRegex);
-                    downloadChunks(chunks, file.name);
-                    showStatus(`Successfully split file into ${chunks.length} parts.`, 'success');
-                } catch (error) {
-                    showStatus(`Error: ${error.message}`, 'error');
-                }
-            };
-            
-            reader.onerror = function() {
-                showStatus('Error reading file.', 'error');
-            };
-            
-            reader.readAsText(file, 'UTF-8');
+                // Download chunks with proper encoding
+                await downloadChunks(result.chunks, file.name, encoding);
+                progressBar.value = 100;
+                
+                showStatus(`成功分割为 ${result.chunks.length} 个文件 (找到 ${result.dividerCount} 个分隔符)`, 'success');
+            } catch (error) {
+                showStatus(`错误: ${error.message}`, 'error');
+                console.error(error);
+            } finally {
+                splitButton.disabled = false;
+            }
         }
         
-        function splitText(content, chunkSizeBytes, dividerRegex) {
-            const chunks = [];
-            let currentChunk = '';
-            let currentSize = 0;
-            let lastDividerPos = 0;
+        function readFileWithEncoding(file, encoding) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    // For encodings other than UTF-8, we may need to use TextDecoder
+                    if (encoding === 'UTF-8') {
+                        resolve(e.target.result);
+                    } else {
+                        const decoder = new TextDecoder(encoding);
+                        const buffer = e.target.result;
+                        resolve(decoder.decode(buffer));
+                    }
+                };
+                reader.onerror = (e) => reject(new Error('文件读取失败'));
+                
+                if (encoding === 'UTF-8') {
+                    reader.readAsText(file, 'UTF-8');
+                } else {
+                    reader.readAsArrayBuffer(file);
+                }
+            });
+        }
+        
+        async function processContent(content, chunkSizeMB, dividerPattern, ignoreCase, progressBar) {
+            const chunkSizeBytes = chunkSizeMB * 1024 * 1024;
+            
+            // Convert the wildcard pattern to a proper regex
+            dividerPattern = dividerPattern.replace(/\*/g, '.*');
+            let flags = 'gm';
+            if (ignoreCase) flags += 'i';
+            
+            let dividerRegex;
+            try {
+                dividerRegex = new RegExp(`(${dividerPattern})`, flags);
+            } catch (e) {
+                throw new Error(`无效的分隔符模式: ${e.message}`);
+            }
             
             // Find all divider positions
             const dividerMatches = [];
             let match;
+            dividerRegex.lastIndex = 0;
+            
             while ((match = dividerRegex.exec(content)) !== null) {
                 dividerMatches.push({
                     text: match[0],
-                    index: match.index
+                    index: match.index,
+                    length: match[0].length
                 });
-                // Reset regex lastIndex if the pattern doesn't have global flag
-                if (!dividerRegex.global) break;
             }
+            
+            if (progressBar) progressBar.value = 50;
             
             if (dividerMatches.length === 0) {
-                throw new Error('No dividers found in the text.');
+                return {
+                    chunks: splitBySizeOnly(content, chunkSizeBytes),
+                    dividerCount: 0
+                };
             }
             
-            // Add the content before the first divider
-            const firstDivider = dividerMatches[0];
-            currentChunk = content.substring(0, firstDivider.index);
-            currentSize = new Blob([currentChunk]).size;
-            lastDividerPos = firstDivider.index;
-            
-            // Process each section between dividers
+            // NEW: Split BEFORE each divider
+            const chunks = [];
+            let currentChunkStart = 0;
+            let currentChunkSize = 0;
+            let dividerCount = 0;
+
+            // Add content before first divider
+            if (dividerMatches[0].index > 0) {
+                const initialContent = content.substring(0, dividerMatches[0].index);
+                chunks.push(initialContent);
+            }
+
+            // Process each divider
             for (let i = 0; i < dividerMatches.length; i++) {
                 const divider = dividerMatches[i];
                 const nextDivider = dividerMatches[i + 1] || { index: content.length };
@@ -180,43 +296,89 @@
                 const sectionContent = content.substring(divider.index, nextDivider.index);
                 const sectionSize = new Blob([sectionContent]).size;
                 
-                if (currentSize + sectionSize > chunkSizeBytes && currentChunk) {
-                    // Current chunk is full, save it and start a new one
-                    chunks.push(currentChunk);
-                    currentChunk = sectionContent;
-                    currentSize = sectionSize;
-                } else {
-                    // Add to current chunk
-                    currentChunk += sectionContent;
-                    currentSize += sectionSize;
+                // If adding this section would exceed chunk size, split before current divider
+                if (currentChunkSize > 0 && currentChunkSize + sectionSize > chunkSizeBytes) {
+                    chunks.push(content.substring(currentChunkStart, divider.index));
+                    currentChunkStart = divider.index;
+                    currentChunkSize = 0;
                 }
                 
-                lastDividerPos = nextDivider.index;
+                currentChunkSize += sectionSize;
+                dividerCount++;
+                
+                if (progressBar) {
+                    progressBar.value = 50 + Math.floor((i / dividerMatches.length) * 30);
+                }
             }
             
             // Add the final chunk
-            if (currentChunk) {
-                chunks.push(currentChunk);
+            if (currentChunkStart < content.length) {
+                chunks.push(content.substring(currentChunkStart));
+            }
+            
+            return {
+                chunks: chunks,
+                dividerCount: dividerCount
+            };
+        }
+            
+            
+        function splitBySizeOnly(content, chunkSizeBytes) {
+            const chunks = [];
+            let position = 0;
+            
+            while (position < content.length) {
+                let chunkEnd = position + chunkSizeBytes;
+                
+                // Don't split in the middle of a line
+                if (chunkEnd < content.length) {
+                    const nextNewline = content.indexOf('\n', chunkEnd);
+                    if (nextNewline !== -1) {
+                        chunkEnd = nextNewline + 1;
+                    } else {
+                        // Or at least don't break a multi-byte character
+                        while (chunkEnd > position) {
+                            const testStr = content.substring(position, chunkEnd);
+                            const blobSize = new Blob([testStr]).size;
+                            if (blobSize <= chunkSizeBytes) {
+                                break;
+                            }
+                            chunkEnd--;
+                        }
+                    }
+                }
+                
+                chunks.push(content.substring(position, Math.min(chunkEnd, content.length)));
+                position = chunkEnd;
             }
             
             return chunks;
         }
         
-        function downloadChunks(chunks, originalFilename) {
+        async function downloadChunks(chunks, originalFilename, encoding) {
             const baseName = originalFilename.replace(/\.[^/.]+$/, '');
             const extension = originalFilename.split('.').pop();
             
-            chunks.forEach((chunk, index) => {
-                const blob = new Blob([chunk], { type: 'text/plain' });
+            for (let i = 0; i < chunks.length; i++) {
+                const chunk = chunks[i];
+                
+                // Create blob with proper encoding
+                const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), chunk], { 
+                    type: `text/plain;charset=${encoding}` 
+                });
+                
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `${baseName}_part${index + 1}.${extension}`;
+                a.download = `${baseName}_part${i + 1}.${extension}`;
                 document.body.appendChild(a);
                 a.click();
+                
+                // Release resources and avoid memory leaks
+                await new Promise(resolve => setTimeout(resolve, 100));
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
-            });
+            }
         }
         
         function showStatus(message, type) {
