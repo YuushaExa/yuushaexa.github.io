@@ -1,6 +1,6 @@
 {{/* Define all novel JSON URLs */}}
 {{ $novelUrls := dict 
-  "4183" "https://github.com/YuushaExa/trnsl/raw/refs/heads/main/results/4183_translated_1_250.json"
+  "4183" "https://github.com/YuushaExa/trnsl/raw/refs/heads/main/data/4183_translated.json"
 }}   
 {{ range $novelId, $url := $novelUrls }}    
   {{/* Fetch remote JSON */}}
@@ -9,8 +9,8 @@
     {{ $data := $remoteData.Content | transform.Unmarshal }}
     
     {{/* Process chapters - note $data is an array */}} 
-    {{ range $index, $section := $data }}
-      {{ $content := $section.content 
+    {{ range $index, $chapter := $data }}
+      {{ $content := $chapter.content 
                     | replaceRE `\\r\\n` "\n"   
                     | replaceRE `\r\n` "\n"   
                     | replaceRE `\n+` "\n\n" }}
@@ -19,13 +19,14 @@
         "content" (dict "mediaType" "text/markdown" "value" $content)
         "kind" "page"
         "params" (dict 
-          "title" $section.title
-          "content" (add $index 1)
+          "title" $chapter.title
+          "chapter" (add $index 1)
           "id" $novelId
           "novel_id" $novelId
+          "translation_model" $chapter.model
         )
         "path" (printf "%s/%d" $novelId (add $index 1))
-        "title" $section.title
+        "title" $chapter.title
       }}
       {{ $.AddPage $page }}
     {{ end }}
